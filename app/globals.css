@@ -83,10 +83,12 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .trust-grid p, .trust-grid p:first-child { display: flex; flex-direction: column; justify-content: center; padding-top: 16px; padding-bottom: 16px; }
 }
 
-.introduction { padding: 122px 0; display: grid; grid-template-columns: 1fr 1.7fr; gap: 12%; align-items: start; }
+.introduction { padding: 122px 0; }
 .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; font-weight: 700; color: var(--muted); margin: 0 0 18px; }
 .intro-copy h2, .area-section h2, .service-heading h2, .page-hero h1, .vehicle-copy h2, .directions h2, .person-section h2, .inquiry h2, .faq-section h2 { font-size: clamp(34px, 4vw, 61px); line-height: 1; letter-spacing: -.06em; font-weight: 650; margin: 0; }
+.intro-copy { max-width: 820px; }
 .intro-copy p { font-size: 20px; max-width: 640px; margin: 32px 0; }
+.intro-copy .eyebrow { margin: 0 0 18px; font-size: 11px; }
 .text-link { display: inline-flex; gap: 13px; align-items: center; border-bottom: 1px solid var(--ink); padding-bottom: 7px; font-weight: 700; font-size: 14px; }
 .text-link-light { color: #fff; border-color: #fff; margin-top: 30px; }
 
@@ -113,9 +115,10 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .area-section { padding: 128px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12%; align-items: center; }
 .area-section > div:last-child > p:not(.eyebrow) { font-size: 18px; color: #426166; margin: 30px 0; }
 .faq-section { background: #e8eaed; padding: 110px 0; }
-.faq-grid { display: grid; grid-template-columns: .9fr 1.1fr; gap: 11%; }
-.faq-section h2 { max-width: 460px; }
-.faq-list { border-top: 1px solid var(--line); }
+.faq-grid { display: block; }
+.faq-intro { max-width: 760px; }
+.faq-section h2 { max-width: 680px; }
+.faq-list { border-top: 1px solid var(--line); margin-top: 52px; max-width: 860px; }
 .faq-list details { border-bottom: 1px solid var(--line); }
 .faq-list summary { cursor: pointer; list-style: none; padding: 24px 38px 24px 0; font-size: 18px; font-weight: 700; position: relative; }
 .faq-list summary::-webkit-details-marker { display: none; }
@@ -148,9 +151,9 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .transport-row h2 { margin: 0 0 10px; font-size: 32px; letter-spacing: -.055em; }
 .transport-row p { margin: 0; max-width: 580px; color: #456368; font-size: 17px; }
 .transport-row > a { font-weight: 700; font-size: 14px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid var(--ink); padding-bottom: 5px; }
-.note-block { background: var(--ink); color: #fff; margin-bottom: 105px; padding: 61px 8%; display: grid; grid-template-columns: .8fr 1.4fr; gap: 55px; }
-.note-block h2 { font-size: 35px; letter-spacing: -.05em; margin: 0; }
-.note-block p { font-size: 19px; margin: 0 0 25px; color: #cae0de; }
+.note-block { background: var(--ink); color: #fff; margin-bottom: 105px; padding: 61px 8%; }
+.note-block h2 { font-size: 35px; letter-spacing: -.05em; margin: 0; max-width: 700px; }
+.note-block p { font-size: 19px; margin: 24px 0 25px; color: #cae0de; max-width: 720px; }
 .note-block .text-link { border-color: #fff; }
 
 .vehicle-stage { background: var(--ink); color: white; padding: 92px 0; }
@@ -166,10 +169,11 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .vehicle-set .truck path:not(.truck-line) { fill: var(--orange); stroke: #fff; }
 .vehicle-set .truck .truck-line, .vehicle-set .truck circle { stroke: #fff; }
 .vehicle-set .truck circle { fill: var(--ink); }
-.directions { padding: 115px 0; display: grid; grid-template-columns: .85fr 1.15fr; gap: 45px 9%; align-items: start; }
-.direction-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.directions { padding: 115px 0; }
+.directions-copy { max-width: 820px; }
+.directions-copy > p:not(.eyebrow) { margin: 28px 0 0; color: #486669; font-size: 18px; }
+.direction-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 42px; max-width: 900px; }
 .direction-list span { border: 1px solid var(--ink); padding: 10px 13px; font-size: 15px; }
-.directions > p { grid-column: 2; margin: 0; color: #486669; font-size: 18px; }
 
 .process-layout { padding: 30px 0 110px; display: grid; grid-template-columns: .9fr 1.1fr; gap: 13%; align-items: start; }
 .process-lead { padding-top: 45px; }
@@ -227,7 +231,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .trust-grid p:nth-child(2) { border-right: 0; }
   .trust-grid p:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
   .introduction { padding: 77px 0; display: block; }
-  .intro-copy { margin-top: 32px; }
+  .intro-copy { margin-top: 0; }
   .intro-copy h2, .area-section h2, .service-heading h2, .page-hero h1, .vehicle-copy h2, .directions h2, .person-section h2, .inquiry h2, .faq-section h2 { font-size: 39px; }
   .intro-copy p { font-size: 17px; }
   .service-band { padding: 68px 0; }
@@ -263,9 +267,9 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .vehicle-set .truck { min-height: 48px; }
   .vehicle-set strong { font-size: 14px; }
   .vehicle-set > div { font-size: 11px; }
-  .directions { padding: 74px 0; display: block; }
+  .directions { padding: 74px 0; }
   .direction-list { margin: 29px 0; }
-  .directions > p { font-size: 16px; }
+  .directions-copy > p:not(.eyebrow) { font-size: 16px; }
   .process-layout { display: block; padding: 0 0 70px; }
   .process-lead { padding-top: 35px; }
   .process-lead h2 { font-size: 38px; }

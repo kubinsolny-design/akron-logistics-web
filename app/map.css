@@ -22,11 +22,11 @@
 .czech-map .label-poland { left: 72%; top: 30%; }
 .czech-map .label-austria { left: 39%; top: 81%; }
 .czech-map .label-slovakia { left: 76%; top: 67%; }
-.czech-map .label-czech { left: 51%; top: 57%; color: #f2f2f2; font-size: clamp(12px, 1.35vw, 19px); }
+.czech-map .label-czech { left: 59%; top: 50%; transform: translate(-50%, -50%); color: #f2f2f2; font-size: clamp(12px, 1.35vw, 19px); }
 .czech-map .city-label { color: #152236; font-size: clamp(8px, .9vw, 12px); font-weight: 700; }
 .czech-map .city-label:before { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #f2f2f2; border: 1px solid #152236; left: -11px; top: 50%; transform: translateY(-50%); }
-.czech-map .city-prague { left: 45%; top: 55%; }
-.czech-map .city-brno { left: 60%; top: 63%; }
+.czech-map .city-prague { left: 45%; top: 59%; }
+.czech-map .city-brno { left: 65%; top: 65%; }
 
 .service-note {
   max-width: 820px;
