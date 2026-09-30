@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Arrow, RouteLine } from './ui'
 import { Truck } from './trucks'
+import { CzechMap } from './czech-map'
 
 export default function Home() {
   return <>
@@ -35,10 +36,11 @@ export default function Home() {
         <article><div className="rail-icon"><Truck type="box" label="Sólo vozidlo" /></div><h3>Menší zásilka</h3><p>Pro náklad, který nepotřebuje celý návěs, ale potřebuje se dostat na místo.</p><Link href="/preprava#mensi">Zjistit více <Arrow /></Link></article>
         <article><div className="rail-icon"><Truck type="van" label="Dodávka" /></div><h3>Rychlé doručení</h3><p>Když rozhoduje čas, ladíme vozidlo a trasu podle aktuální situace.</p><Link href="/preprava#expres">Zjistit více <Arrow /></Link></article>
       </div>
+      <p className="shell service-note">Vedle jednorázových jízd řešíme také sběrnou a pravidelnou přepravu. Podobu zakázky vždy koordinujeme s dopravcem, který odpovídá trase a nákladu.</p>
     </section>
 
-    <section className="shell area-section">
-      <div className="area-map" aria-hidden="true"><div className="map-cz"></div><span className="map-point point-prague">Praha</span><span className="map-point point-morava">Morava</span><span className="map-point point-europe">Evropa</span></div>
+    <section className="shell area-section" id="trasy">
+      <CzechMap />
       <div><p className="eyebrow">Odkud a kam</p><h2>Česko jako výchozí bod. Evropské trasy jako každodenní práce.</h2><p>Přepravy řešíme po celé České republice i do zahraničí. Obsluhujeme zákazníky z Prahy, středních Čech i Moravy — bez zbytečného dělení na regiony.</p><Link className="text-link" href="/moznosti#smery">Přepravní možnosti a směry <Arrow /></Link></div>
     </section>
 

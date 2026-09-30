@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import './brand.css'
+import './map.css'
 import { Footer, Header } from './ui'
 
 const orbitron = localFont({

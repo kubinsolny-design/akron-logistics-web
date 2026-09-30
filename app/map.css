@@ -1,0 +1,62 @@
+.czech-map {
+  margin: 0;
+  border: 1px solid var(--line);
+  background: #e6e9ed;
+  padding: 15px;
+}
+
+.czech-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.czech-map figcaption {
+  border-top: 1px solid var(--line);
+  margin-top: 7px;
+  padding: 12px 4px 0;
+  color: #526174;
+  font-size: 11px;
+}
+
+.czech-map .country {
+  stroke: #152236;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.czech-map .country-germany { fill: #d7dde4; }
+.czech-map .country-poland { fill: #cdd5de; }
+.czech-map .country-austria { fill: #dce1e7; }
+.czech-map .country-slovakia { fill: #d2d9e1; }
+.czech-map .country-czech { fill: #ff5a00; stroke-width: 3; }
+
+.czech-map .border-route {
+  fill: none;
+  stroke: #152236;
+  stroke-width: 2;
+  stroke-dasharray: 6 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.czech-map .city-dot { fill: #f2f2f2; stroke: #152236; stroke-width: 2; }
+.czech-map .city-label, .czech-map .country-label { fill: #152236; font-family: var(--font-orbitron), Arial, sans-serif; }
+.czech-map .city-label { font-size: 14px; font-weight: 700; }
+.czech-map .country-label { font-size: 17px; font-weight: 700; letter-spacing: -.04em; }
+.czech-map .label-czech { fill: #f2f2f2; font-size: 19px; }
+
+.service-note {
+  max-width: 820px;
+  margin: 18px auto 0;
+  color: #526174;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 750px) {
+  .czech-map { order: 2; padding: 8px; }
+  .czech-map .country-label { font-size: 14px; }
+  .czech-map .city-label { font-size: 12px; }
+  .czech-map .label-czech { font-size: 16px; }
+  .service-note { margin-top: 24px; font-size: 12px; }
+}
