@@ -4,6 +4,7 @@ import './globals.css'
 import './brand.css'
 import './map.css'
 import './form.css'
+import './service.css'
 import { Footer, Header } from './ui'
 
 const orbitron = localFont({

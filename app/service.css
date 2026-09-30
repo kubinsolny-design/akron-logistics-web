@@ -1,0 +1,13 @@
+.service-rail article {
+  align-items: center;
+  text-align: center;
+}
+
+.service-rail .rail-icon { justify-content: center; }
+
+.service-rail p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.service-note { text-align: center; }
