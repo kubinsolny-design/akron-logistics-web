@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Arrow, RouteLine } from './ui'
+import { Arrow, RouteJourney } from './ui'
 import { Truck } from './trucks'
 import { CzechMap } from './czech-map'
 
@@ -9,40 +9,45 @@ export default function Home() {
     <section className="hero hero-with-trucks">
       <div className="hero-photo" aria-hidden="true"><Image src="/images/scania-volvo-highway.png" alt="" fill priority sizes="100vw" /></div>
       <div className="shell hero-topline"><span>Česko · Evropa</span><span>Silniční přeprava &amp; spedice</span></div>
-      <div className="shell"><h1>Zboží potřebuje jet.<br />Vy potřebujete vědět, <em>že je o něj postaráno.</em></h1></div>
-      <div className="hero-road" aria-hidden="true"><div className="shell"><RouteLine /></div></div>
+      <div className="shell"><h1>Potřebujete přepravit zboží? <em>Najdeme řešení a pohlídáme průběh.</em></h1></div>
+      <div className="hero-road"><div className="shell"><RouteJourney /></div></div>
       <div className="shell hero-bottom">
-        <p>Najdeme vhodné vozidlo, domluvíme přepravu a zůstáváme v obraze až do doručení.</p>
-        <Link className="button button-light" href="/spoluprace#poptavka">Poptat přepravu <Arrow /></Link>
+        <p>Od poptávky po doručení máte jednoho člověka, který zná vaši zakázku a koordinuje její průběh.</p>
+        <div className="hero-actions"><Link className="button button-light" href="/spoluprace#poptavka">Poptat přepravu <Arrow /></Link><Link className="hero-text-link" href="/preprava">Co umíme přepravit</Link></div>
       </div>
     </section>
 
+    <section className="trust-strip" aria-label="Přehled přepravních možností"><div className="shell trust-grid"><p><strong>Česko i Evropa</strong><span>vnitrostátní a mezinárodní trasy</span></p><p><strong>Dodávka až návěs</strong><span>vozidlo podle nákladu</span></p><p><strong>Jednorázově i pravidelně</strong><span>včetně expresních zásilek</span></p><p><strong>Jeden přímý kontakt</strong><span>po celou dobu přepravy</span></p></div></section>
+
     <section className="shell introduction">
-      <p className="eyebrow">Když řešíte náklad, řešíte víc než trasu.</p>
-      <div className="intro-copy"><h2>Termín. Povahu zboží. Místo nakládky. Prostor na rampě.</h2><p>AKRON Logistics propojí tyto detaily do jedné přepravy. A místo automatické odpovědi máte na druhé straně člověka, který ví, co se s vaší zakázkou děje.</p><Link className="text-link" href="/spoluprace">Jak spolupráce probíhá <Arrow /></Link></div>
+      <p className="eyebrow">Nejdřív potřebujeme pochopit náklad</p>
+      <div className="intro-copy"><h2>Termín. Trasa. Rozměry. Způsob nakládky.</h2><p>Tyto detaily rozhodují o tom, jaké řešení dává smysl. AKRON Logistics je spojí do jedné přepravy, vybere vhodnou možnost a domluví ji se spolupracujícím dopravcem.</p><Link className="text-link" href="/spoluprace">Jak spolupráce probíhá <Arrow /></Link></div>
     </section>
 
     <section className="truck-focus">
       <div className="shell truck-focus-grid">
-        <div className="truck-focus-copy"><p className="eyebrow">Tahače, které mají být vidět</p><h2>Scania a Volvo<br />v popředí přepravy.</h2><p>Na evropských trasách chceme stavět na tahačích Scania a Volvo. Značky jsou součástí přepravního obrazu AKRON Logistics — vedle správně zvolené soupravy a domluveného průběhu zakázky.</p></div>
-        <figure><Image src="/images/scania-volvo-highway.png" alt="Dva dálkové tahače na evropské dálnici" width={2055} height={765} sizes="(max-width: 750px) 100vw, 53vw" /><figcaption><span>Scania</span><span>Volvo</span><em>Evropské silniční přepravy</em></figcaption></figure>
+        <div className="truck-focus-copy"><p className="eyebrow">Přeprava je souhra detailů</p><h2>Nejde jen sehnat auto. Všechno musí navazovat.</h2><p>Vhodné vozidlo, čas nakládky, podmínky na trase i předání informací dopravci. Zakázku koordinujeme tak, abyste věděli, kdo ji řeší a co bude následovat.</p><Link className="text-link text-link-light" href="/spoluprace">Poznat náš postup <Arrow /></Link></div>
+        <figure><Image src="/images/logistics-coordination.jpg" alt="Kamion u nakládací rampy během koordinace přepravy" width={1672} height={941} sizes="(max-width: 750px) 100vw, 53vw" /><figcaption><span>Vozidlo</span><span>Termín</span><span>Trasa</span><em>Jedna koordinovaná zakázka</em></figcaption></figure>
       </div>
     </section>
 
     <section className="service-band">
       <div className="shell service-heading"><p className="eyebrow">Vyberte situaci, kterou právě řešíte</p><h2>Pro každý náklad nehledáme stejné auto.</h2></div>
-      <div className="shell service-rail">
+      <div className="shell service-rail service-rail-four">
         <article><div className="rail-icon"><Truck type="trailer" label="Návěs" /></div><h3>Plný návěs</h3><p>Když zboží zaplní prostor nebo potřebuje jet samostatně.</p><Link href="/preprava#celovozova">Zjistit více <Arrow /></Link></article>
         <article><div className="rail-icon"><Truck type="box" label="Sólo vozidlo" /></div><h3>Menší zásilka</h3><p>Pro náklad, který nepotřebuje celý návěs, ale potřebuje se dostat na místo.</p><Link href="/preprava#mensi">Zjistit více <Arrow /></Link></article>
         <article><div className="rail-icon"><Truck type="van" label="Dodávka" /></div><h3>Rychlé doručení</h3><p>Když rozhoduje čas, ladíme vozidlo a trasu podle aktuální situace.</p><Link href="/preprava#expres">Zjistit více <Arrow /></Link></article>
+        <article><div className="rail-number">↻</div><h3>Pravidelné trasy</h3><p>Pro opakované přepravy s domluvenou četností a jasným postupem.</p><Link href="/preprava#pravidelna">Zjistit více <Arrow /></Link></article>
       </div>
-      <p className="shell service-note">Vedle jednorázových jízd řešíme také sběrnou a pravidelnou přepravu. Podobu zakázky vždy koordinujeme s dopravcem, který odpovídá trase a nákladu.</p>
+      <p className="shell service-note">Podobu zakázky vždy koordinujeme s dopravcem, který odpovídá trase, termínu a nákladu.</p>
     </section>
 
     <section className="shell area-section" id="trasy">
       <CzechMap />
-      <div><p className="eyebrow">Odkud a kam</p><h2>Česko jako výchozí bod. Evropské trasy jako každodenní práce.</h2><p>Přepravy řešíme po celé České republice i do zahraničí. Obsluhujeme zákazníky z Prahy, středních Čech i Moravy — bez zbytečného dělení na regiony.</p><Link className="text-link" href="/moznosti#smery">Přepravní možnosti a směry <Arrow /></Link></div>
+      <div><p className="eyebrow">Odkud a kam</p><h2>Po Česku. Do Evropy. A také zpět.</h2><p>Přepravy řešíme po celé České republice i do zahraničí. Z Prahy a středních Čech, z Moravy nebo odkudkoli podle potřeby konkrétní zakázky.</p><Link className="text-link" href="/moznosti#smery">Přepravní možnosti a směry <Arrow /></Link></div>
     </section>
+
+    <section className="faq-section"><div className="shell faq-grid"><div><p className="eyebrow">Nejčastější otázky</p><h2>Stačí vědět, co potřebujete přepravit.</h2></div><div className="faq-list"><details><summary>Musím předem znát typ vozidla?</summary><p>Nemusíte. Podle rozměrů, hmotnosti, termínu a způsobu nakládky společně vybereme vhodnou přepravní možnost.</p></details><details><summary>Řešíte i menší zásilky?</summary><p>Ano. Vedle celovozových přeprav zajišťujeme menší zásilky, sběrnou přepravu i expresní jízdy.</p></details><details><summary>Mohu poptat pravidelnou trasu?</summary><p>Ano. U opakovaných přeprav nastavíme četnost, podmínky nakládek a způsob komunikace.</p></details><details><summary>Kam přepravujete?</summary><p>Po celé České republice i do zahraničí. Konkrétní trasu a možnosti ověříme podle nákladu a požadovaného termínu.</p></details></div></div></section>
 
     <section className="closing-strip"><div className="shell"><span>Máte trasu, termín a náklad?</span><Link href="/spoluprace#poptavka">Připravit poptávku <Arrow /></Link></div></section>
   </>

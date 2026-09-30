@@ -48,6 +48,32 @@
 .form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus { outline: 3px solid #ff5a00; outline-offset: 2px; }
 .form-wide { grid-column: 1 / -1; }
 
+.form-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.privacy-check {
+  display: flex !important;
+  grid-template-columns: none !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px !important;
+  font-weight: 500 !important;
+  color: #526174 !important;
+}
+
+.privacy-check input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  accent-color: #ff5a00;
+}
+
 .form-action {
   display: flex;
   justify-content: space-between;
@@ -70,6 +96,9 @@
   background: #f2f2f2;
   color: var(--ink);
 }
+
+.form-feedback-success { border-left-color: #237a57; }
+.form-feedback-error { border-left-color: #b32b2b; }
 
 @media (max-width: 750px) {
   .inquiry-form { margin-top: 28px; padding: 24px 18px; }
