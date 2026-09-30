@@ -59,10 +59,23 @@ export function RouteJourney() {
       <span className="route-point route-point-start"><i>A</i><small>Nakládka</small></span>
       <span className="route-point route-point-end"><i>B</i><small>Doručení</small></span>
       <span className="route-truck">
-        <svg viewBox="0 0 152 58">
-          <path d="M3 10h92v35H3zM95 22h31l20 16v7H95z" />
-          <path className="route-window" d="M103 27h20l11 9h-31z" />
-          <circle cx="31" cy="46" r="8" /><circle cx="118" cy="46" r="8" />
+        <svg viewBox="0 0 210 78" focusable="false">
+          <path className="route-trailer" d="M3 12h133v43H3z" />
+          <path className="route-trailer-edge" d="M11 19h117M11 47h117M19 22v22M45 22v22M71 22v22M97 22v22M123 22v22" />
+          <path className="route-chassis" d="M5 55h195" />
+          <path className="route-cab" d="M136 19h39l23 22 8 2v12h-70z" />
+          <path className="route-window" d="M146 25h25l16 16h-41z" />
+          <path className="route-cab-accent" d="M143 45h48" />
+          <path className="route-cab-detail" d="M177 24v31M192 45h11M192 49h11M144 32h-6M139 28v10" />
+          <path className="route-light" d="M199 42h7v5h-7z" />
+          <g className="route-wheels">
+            <circle className="route-wheel" cx="31" cy="57" r="10" />
+            <circle className="route-hub" cx="31" cy="57" r="3" />
+            <circle className="route-wheel" cx="110" cy="57" r="10" />
+            <circle className="route-hub" cx="110" cy="57" r="3" />
+            <circle className="route-wheel" cx="169" cy="57" r="10" />
+            <circle className="route-hub" cx="169" cy="57" r="3" />
+          </g>
         </svg>
       </span>
     </div>
