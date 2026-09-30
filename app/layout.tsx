@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 import './brand.css'
 import './map.css'
+import './form.css'
 import { Footer, Header } from './ui'
 
 const orbitron = localFont({
