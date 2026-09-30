@@ -7,7 +7,7 @@ import { CzechMap } from './czech-map'
 export default function Home() {
   return <>
     <section className="hero hero-with-trucks">
-      <div className="hero-photo" aria-hidden="true"><Image src="/images/scania-volvo-highway.png" alt="" fill priority sizes="100vw" /></div>
+      <div className="hero-photo" aria-hidden="true"><Image src="/images/trucks-highway.png" alt="" fill priority sizes="100vw" /></div>
       <div className="shell hero-topline"><span>Česko · Evropa</span><span>Silniční přeprava &amp; spedice</span></div>
       <div className="shell"><h1>Potřebujete přepravit zboží? <em>Najdeme řešení a pohlídáme průběh.</em></h1></div>
       <div className="hero-road"><div className="shell"><RouteJourney /></div></div>
