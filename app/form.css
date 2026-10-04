@@ -97,7 +97,6 @@
 .privacy-confirmation input:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 .privacy-confirmation a { text-decoration: underline; text-underline-offset: 3px; }
 .privacy-confirmation a:hover { color: #b33d00; }
-.form-privacy > p { margin: 8px 0 0 30px; }
 
 .form-feedback {
   margin-top: 18px;
@@ -115,5 +114,5 @@
   .form-grid { grid-template-columns: 1fr; gap: 17px; margin-top: 25px; }
   .form-wide { grid-column: auto; }
   .form-action { display: block; }
-  .form-privacy { margin-top: 18px; }
+  .form-action > .button { display: flex; margin: 18px 0 0 auto; }
 }
