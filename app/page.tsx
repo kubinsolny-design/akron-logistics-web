@@ -2,7 +2,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { RouteJourney } from './ui'
 import { Truck } from './trucks'
-import { CzechMap } from './czech-map'
+import { EuropeMap } from './europe-map'
+import { company } from './site'
 
 export default function Home() {
   return <>
@@ -13,7 +14,7 @@ export default function Home() {
           <p className="eyebrow">Silniční přeprava · Česko a Evropa</p>
           <h1>Přepravu vyřešíme.<br /><em>Od A do B.</em></h1>
           <p className="hero-description">Najdeme vhodné vozidlo a postaráme se o průběh přepravy.</p>
-          <div className="hero-actions"><Link className="button" href="/spoluprace#poptavka">Poptat přepravu</Link><Link className="hero-text-link" href="/preprava">Co umíme přepravit</Link></div>
+          <div className="hero-actions"><Link className="button" href="/spoluprace#poptavka">Poptat přepravu</Link><a className="hero-text-link" href={company.phoneHref}>Zavolat {company.phone}</a></div>
         </div>
       </div>
       <div className="hero-road"><div className="shell"><RouteJourney /></div></div>
@@ -44,7 +45,7 @@ export default function Home() {
     </section>
 
     <section className="shell area-section" id="trasy">
-      <CzechMap />
+      <EuropeMap />
       <div><p className="eyebrow">Odkud a kam</p><h2>Po Česku. Do Evropy. A také zpět.</h2><p>Přepravy řešíme po celé České republice i do zahraničí. Z Prahy a středních Čech, z Moravy nebo odkudkoli podle potřeby konkrétní zakázky.</p><Link className="text-link" href="/moznosti#smery">Přepravní možnosti a směry</Link></div>
     </section>
 

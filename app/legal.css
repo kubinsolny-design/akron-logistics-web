@@ -1,5 +1,11 @@
 .footer-legal { display: flex; flex-wrap: wrap; gap: 12px 24px; padding-bottom: 28px; margin-top: 22px; font-size: 12px; color: #d9e0e8; }
 .footer-legal a:hover, .cookie-settings-link:hover { color: var(--orange); }
+.site-footer .footer-credit { text-align: center; margin: 6px 0 0; color: #aab4c2; font-size: 15px; font-weight: 400; }
+.footer-credit a { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 1px; }
+.footer-credit a:hover, .footer-contact a:hover { color: var(--orange); }
+.personal-contact { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 24px; font-weight: 600; }
+.personal-contact a { text-decoration: underline; text-underline-offset: 5px; }
+.personal-contact a:hover { color: var(--orange); }
 .cookie-settings-link { border: 0; background: none; color: inherit; font: inherit; padding: 0; cursor: pointer; text-align: left; }
 .legal-page { max-width: 850px; padding: 70px 0 90px; }
 .legal-page h1 { font-size: clamp(32px, 4vw, 52px); margin: 0 0 24px; overflow-wrap: anywhere; }

@@ -45,12 +45,15 @@ export function Footer() {
       <div className="footer-contact">
         <span>Přepravu s vámi řeší</span>
         <strong>{company.contactName}</strong>
+        <a href={company.phoneHref}>{company.phone}</a>
+        <a href={`mailto:${company.email}`}>{company.email}</a>
         <Link className="footer-action" href="/spoluprace#poptavka">Poslat poptávku</Link>
       </div>
       <div className="footer-links">{links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
     </div>
     <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><span>Vnitrostátní a mezinárodní silniční přeprava</span></div>
     <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link><Link href="/cookies">Cookies</Link><CookieSettingsButton /></nav>
+    <p className="footer-credit">Vytvořili <a href="https://webaci.cz" target="_blank" rel="noopener noreferrer">Webáci</a></p>
   </footer>
 }
 

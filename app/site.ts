@@ -1,6 +1,9 @@
 export const company = {
   name: 'AKRON Logistics s.r.o.',
   contactName: 'Adam Bartusek',
+  email: 'info@akronlogistics.cz',
+  phone: '+420 606 187 648',
+  phoneHref: 'tel:+420606187648',
   registrationNumber: '29858895',
   street: 'Soukenická 877/9',
   city: '702 00 Ostrava – Moravská Ostrava',

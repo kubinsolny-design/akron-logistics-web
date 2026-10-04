@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <h1>Ochrana osobních údajů</h1>
     <p>V těchto informacích vysvětlujeme, jak nakládáme s údaji při používání tohoto webu a při vyřizování poptávky přepravy.</p>
     <h2>Kdo je správcem údajů</h2>
-    <p><strong>{company.name}</strong>, IČO {company.registrationNumber}, se sídlem {company.street}, {company.city}. Se žádostí týkající se ochrany údajů se můžete obrátit písemně na tuto adresu, s označením „Ochrana osobních údajů“.</p>
+    <p><strong>{company.name}</strong>, IČO {company.registrationNumber}, se sídlem {company.street}, {company.city}. Se žádostí týkající se ochrany údajů se můžete obrátit na <a href={`mailto:${company.email}`}>{company.email}</a> nebo písemně na tuto adresu, s označením „Ochrana osobních údajů“.</p>
     <h2>Jaké údaje zpracováváme a proč</h2>
     <ul>
       <li><strong>Poptávka a navazující komunikace:</strong> jméno a firma, e-mail, případně telefon, místa nakládky a vykládky, termín, četnost přeprav a popis nákladu. Tyto údaje slouží k posouzení poptávky, přípravě nabídky a komunikaci s vámi.</li>
