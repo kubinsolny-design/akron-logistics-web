@@ -16,7 +16,7 @@
   font-size: 11px;
 }
 
-.czech-map .country-label { position: absolute; z-index: 1; transform: translate(-50%, -50%); font-family: var(--font-orbitron), Arial, sans-serif; white-space: nowrap; }
+.czech-map .country-label { position: absolute; z-index: 1; transform: translate(-50%, -50%); font-family: var(--font-poppins), Arial, sans-serif; white-space: nowrap; }
 .czech-map .country-label { color: #152236; font-size: clamp(10px, 1.15vw, 16px); font-weight: 700; letter-spacing: -.04em; }
 .czech-map .label-germany { left: 27%; top: 45%; }
 .czech-map .label-poland { left: 69%; top: 34%; }

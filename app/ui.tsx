@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { company } from './site'
 
 const links = [
@@ -7,8 +8,8 @@ const links = [
   { href: '/spoluprace', label: 'Spolupráce' },
 ]
 
-export function Logo() {
-  return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><span>AKRON</span><small>LOGISTICS</small></Link>
+export function Logo({ light = false }: { light?: boolean }) {
+  return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><Image src={`/images/akron-${light ? 'white' : 'black'}.svg`} alt="AKRON Logistics" width={875} height={280} priority={!light} /></Link>
 }
 
 export function Header() {
@@ -33,7 +34,7 @@ export function Header() {
 export function Footer() {
   return <footer className="site-footer" id="kontakt">
     <div className="shell footer-grid">
-      <div><Logo /><p>Silniční přeprava a spedice<br />v Česku i za hranicemi.</p></div>
+      <div><Logo light /><p>Silniční přeprava a spedice<br />v Česku i za hranicemi.</p></div>
       <div className="footer-address">
         <strong>{company.name}</strong>
         <span>{company.street}</span>

@@ -8,16 +8,15 @@ import './service.css'
 import { Footer, Header } from './ui'
 import { getSiteUrl } from './site'
 
-const orbitron = localFont({
+const poppins = localFont({
   src: [
-    { path: './fonts/static/Orbitron-Regular.ttf', weight: '400', style: 'normal' },
-    { path: './fonts/static/Orbitron-Medium.ttf', weight: '500', style: 'normal' },
-    { path: './fonts/static/Orbitron-SemiBold.ttf', weight: '600', style: 'normal' },
-    { path: './fonts/static/Orbitron-Bold.ttf', weight: '700', style: 'normal' },
-    { path: './fonts/static/Orbitron-ExtraBold.ttf', weight: '800', style: 'normal' },
-    { path: './fonts/static/Orbitron-Black.ttf', weight: '900', style: 'normal' },
+    { path: './fonts/static/Poppins-Regular.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/static/Poppins-Medium.ttf', weight: '500', style: 'normal' },
+    { path: './fonts/static/Poppins-SemiBold.ttf', weight: '600', style: 'normal' },
+    { path: './fonts/static/Poppins-Bold.ttf', weight: '700', style: 'normal' },
+    { path: './fonts/static/Poppins-ExtraBold.ttf', weight: '800', style: 'normal' },
   ],
-  variable: '--font-orbitron',
+  variable: '--font-poppins',
   display: 'swap',
 })
 
@@ -52,7 +51,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="cs">
-      <body className={orbitron.variable}>
+      <body className={poppins.variable}>
         <a className="skip-link" href="#obsah">Přeskočit na obsah</a>
         <Header />
         <main id="obsah">{children}</main>
