@@ -139,7 +139,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .footer-action { display: flex; gap: 8px; align-items: center; width: max-content; color: #fff; border-bottom: 1px solid #fff; padding-bottom: 5px; margin-top: 12px; font-weight: 700; }
 .footer-links { display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
 .footer-links a:hover { color: var(--orange); }
-.footer-bottom { border-top: 1px solid #3f5655; margin-top: 55px; padding-top: 18px; display: flex; justify-content: space-between; color: #94aaa7; font-size: 12px; }
+.footer-bottom { border-top: 1px solid #3f5655; margin-top: 55px; padding-top: 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: baseline; gap: 16px; color: #94aaa7; font-size: 12px; }
+.footer-bottom > span:last-child { text-align: right; }
 
 .page-hero { padding: 108px 0 86px; border-bottom: 1px solid var(--line); }
 .page-hero h1 { max-width: 1010px; }
