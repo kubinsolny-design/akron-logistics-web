@@ -89,6 +89,16 @@
   line-height: 1.55;
 }
 
+.required-mark { color: #b33d00; font-weight: 700; }
+.form-action > .button { flex-shrink: 0; }
+.form-privacy { max-width: 580px; }
+.privacy-confirmation { display: flex; align-items: flex-start; gap: 10px; color: var(--ink); font-size: 12px; line-height: 1.6; cursor: pointer; }
+.privacy-confirmation input { flex: 0 0 20px; width: 20px; height: 20px; margin: 0; accent-color: var(--orange); cursor: pointer; }
+.privacy-confirmation input:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+.privacy-confirmation a { text-decoration: underline; text-underline-offset: 3px; }
+.privacy-confirmation a:hover { color: #b33d00; }
+.form-privacy > p { margin: 8px 0 0 30px; }
+
 .form-feedback {
   margin-top: 18px;
   padding: 14px 16px;
@@ -105,5 +115,5 @@
   .form-grid { grid-template-columns: 1fr; gap: 17px; margin-top: 25px; }
   .form-wide { grid-column: auto; }
   .form-action { display: block; }
-  .form-action p { margin-top: 17px; }
+  .form-privacy { margin-top: 18px; }
 }

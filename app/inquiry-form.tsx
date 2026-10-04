@@ -10,19 +10,19 @@ export function InquiryForm() {
 
   return (
     <form className="inquiry-form" action={formAction}>
-      <div className="form-heading"><h3>Krátká poptávka</h3><p>Stačí základní údaje. Co bude potřeba, společně upřesníme.</p></div>
+      <div className="form-heading"><h3>Krátká poptávka</h3><p>Stačí základní údaje. Co bude potřeba, společně upřesníme. Hvězdičkou (*) jsou označené povinné údaje.</p></div>
       <label className="form-honeypot" aria-hidden="true">Web<input name="website" tabIndex={-1} autoComplete="off" /></label>
       <div className="form-grid">
-        <label> Místo nakládky <input required name="pickup" autoComplete="address-level2" placeholder="Např. Praha 10" disabled={isPending} /> </label>
-        <label> Místo vykládky <input required name="delivery" autoComplete="address-level2" placeholder="Např. Mnichov" disabled={isPending} /> </label>
-        <label> Termín <input required name="date" type="date" disabled={isPending} /> </label>
+        <label><span>Místo nakládky <span className="required-mark" aria-hidden="true">*</span></span><input required name="pickup" autoComplete="address-level2" placeholder="Např. Praha 10" disabled={isPending} /></label>
+        <label><span>Místo vykládky <span className="required-mark" aria-hidden="true">*</span></span><input required name="delivery" autoComplete="address-level2" placeholder="Např. Mnichov" disabled={isPending} /></label>
+        <label><span>Termín <span className="required-mark" aria-hidden="true">*</span></span><input required name="date" type="date" disabled={isPending} /></label>
         <label> Jak často? <select name="frequency" defaultValue="once" disabled={isPending}><option value="once">Jednorázová přeprava</option><option value="regular">Pravidelná přeprava</option><option value="unknown">Zatím nevím</option></select> </label>
-        <label className="form-wide"> Popis nákladu <textarea required name="cargo" rows={4} placeholder="Co se veze, počet kusů, rozměry, hmotnost, případně teplota nebo způsob nakládky." disabled={isPending} /> </label>
-        <label> Jméno a firma <input required name="name" autoComplete="name" placeholder="Vaše jméno / firma" disabled={isPending} /> </label>
-        <label> E-mail <input required name="email" type="email" autoComplete="email" placeholder="vy@firma.cz" disabled={isPending} /> </label>
+        <label className="form-wide"><span>Popis nákladu <span className="required-mark" aria-hidden="true">*</span></span><textarea required name="cargo" rows={4} placeholder="Co se veze, počet kusů, rozměry, hmotnost, případně teplota nebo způsob nakládky." disabled={isPending} /></label>
+        <label><span>Jméno a firma <span className="required-mark" aria-hidden="true">*</span></span><input required name="name" autoComplete="name" placeholder="Vaše jméno / firma" disabled={isPending} /></label>
+        <label><span>E-mail <span className="required-mark" aria-hidden="true">*</span></span><input required name="email" type="email" autoComplete="email" placeholder="vy@firma.cz" disabled={isPending} /></label>
         <label className="form-wide"> Telefon <input name="phone" type="tel" autoComplete="tel" placeholder="Pro rychlé upřesnění (volitelné)" disabled={isPending} /> </label>
       </div>
-      <div className="form-action"><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : 'Odeslat poptávku'}</button><p>Údaje použijeme pro vyřízení vaší poptávky. <Link href="/ochrana-osobnich-udaju">Jak chráníme vaše osobní údaje</Link>.</p></div>
+      <div className="form-action"><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : 'Odeslat poptávku'}</button><div className="form-privacy"><label className="privacy-confirmation"><input type="checkbox" name="privacyAcknowledged" value="yes" required disabled={isPending} /><span>Potvrzuji, že jsem se seznámil/a s <Link href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">informacemi o ochraně osobních údajů</Link>. <span className="required-mark" aria-hidden="true">*</span></span></label><p>Údaje použijeme pouze pro vyřízení vaší poptávky.</p></div></div>
       {state.message && <p className={`form-feedback form-feedback-${state.status}`} role="status" aria-live="polite">{state.message}</p>}
     </form>
   )

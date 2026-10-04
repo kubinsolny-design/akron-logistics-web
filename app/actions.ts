@@ -44,6 +44,10 @@ export async function sendInquiry(
     return { status: 'error', message: 'Zkontrolujte prosím zadaný e-mail.' }
   }
 
+  if (getField(formData, 'privacyAcknowledged') !== 'yes') {
+    return { status: 'error', message: 'Potvrďte prosím seznámení s informacemi o ochraně osobních údajů.' }
+  }
+
   if ([pickup, delivery, date, frequency, cargo, name, email, phone].some((value) => value.length > 3_000)) {
     return { status: 'error', message: 'Některý z údajů je příliš dlouhý.' }
   }
