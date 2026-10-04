@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { company } from './site'
+import { CookieSettingsButton } from './cookie-preferences'
 
 const links = [
   { href: '/preprava', label: 'Přepravy' },
@@ -49,6 +50,7 @@ export function Footer() {
       <div className="footer-links">{links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
     </div>
     <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><span>Vnitrostátní a mezinárodní silniční přeprava</span></div>
+    <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link><Link href="/cookies">Cookies</Link><CookieSettingsButton /></nav>
   </footer>
 }
 

@@ -5,6 +5,8 @@ import './brand.css'
 import './map.css'
 import './form.css'
 import './service.css'
+import './legal.css'
+import { CookiePreferences } from './cookie-preferences'
 import { Footer, Header } from './ui'
 import { getSiteUrl } from './site'
 
@@ -56,6 +58,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Header />
         <main id="obsah">{children}</main>
         <Footer />
+        <CookiePreferences />
       </body>
     </html>
   )

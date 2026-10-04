@@ -34,9 +34,8 @@ export async function sendInquiry(
   const name = getField(formData, 'name')
   const email = getField(formData, 'email')
   const phone = getField(formData, 'phone')
-  const privacyAccepted = formData.get('privacy') === 'on'
 
-  if (!pickup || !delivery || !date || !cargo || !name || !email || !privacyAccepted) {
+  if (!pickup || !delivery || !date || !cargo || !name || !email) {
     return { status: 'error', message: 'Doplňte prosím všechna povinná pole.' }
   }
 

@@ -20,8 +20,8 @@
 .czech-map .country-label { color: #152236; font-size: clamp(10px, 1.15vw, 16px); font-weight: 700; letter-spacing: -.04em; }
 .czech-map .label-germany { left: 27%; top: 45%; }
 .czech-map .label-poland { left: 69%; top: 34%; }
-.czech-map .label-austria { left: 42%; top: 82%; }
-.czech-map .label-slovakia { left: 76.5%; top: 68%; }
+.czech-map .label-austria { left: 49%; top: 84%; }
+.czech-map .label-slovakia { left: 71%; top: 66.5%; }
 .czech-map .label-czech { left: 52%; top: 58%; color: #f2f2f2; font-size: clamp(12px, 1.35vw, 19px); }
 .czech-map .label-austria,
 .czech-map .label-slovakia { font-size: clamp(9px, .9vw, 13px); }

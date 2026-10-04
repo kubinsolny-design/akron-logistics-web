@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import Link from 'next/link'
 import { sendInquiry } from './actions'
 import { initialInquiryState } from './inquiry-types'
 
@@ -20,9 +21,8 @@ export function InquiryForm() {
         <label> Jméno a firma <input required name="name" autoComplete="name" placeholder="Vaše jméno / firma" disabled={isPending} /> </label>
         <label> E-mail <input required name="email" type="email" autoComplete="email" placeholder="vy@firma.cz" disabled={isPending} /> </label>
         <label className="form-wide"> Telefon <input name="phone" type="tel" autoComplete="tel" placeholder="Pro rychlé upřesnění (volitelné)" disabled={isPending} /> </label>
-        <label className="privacy-check form-wide"><input required name="privacy" type="checkbox" disabled={isPending} /><span>Souhlasím s použitím údajů pro vyřízení této poptávky.</span></label>
       </div>
-      <div className="form-action"><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : 'Odeslat poptávku'}</button><p>Údaje použijeme pouze pro vyřízení vaší poptávky.</p></div>
+      <div className="form-action"><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : 'Odeslat poptávku'}</button><p>Údaje použijeme pro vyřízení vaší poptávky. <Link href="/ochrana-osobnich-udaju">Jak chráníme vaše osobní údaje</Link>.</p></div>
       {state.message && <p className={`form-feedback form-feedback-${state.status}`} role="status" aria-live="polite">{state.message}</p>}
     </form>
   )

@@ -9,5 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/preprava`, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${siteUrl}/moznosti`, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl}/spoluprace`, changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${siteUrl}/ochrana-osobnich-udaju`, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${siteUrl}/cookies`, changeFrequency: 'yearly', priority: 0.3 },
   ]
 }
