@@ -62,7 +62,6 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .hero-text-link { font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, .75); padding-bottom: 5px; }
 .button-light { background: #fff; color: var(--ink); min-width: 210px; }
 .button-light:hover { background: #e2eeee; }
-.arrow { font-size: 20px; line-height: 0; }
 
 .trust-strip { background: #fff; border-bottom: 1px solid var(--line); }
 .trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); }

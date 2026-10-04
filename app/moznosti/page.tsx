@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Arrow } from '../ui'
 import { Truck } from '../trucks'
 
 export const metadata: Metadata = {
@@ -16,6 +15,6 @@ export default function OptionsPage() {
       <div className="vehicle-set"><div><Truck type="van" label="Dodávka" /><strong>Dodávka</strong><span>menší náklad</span></div><div><Truck type="box" label="Sólo vozidlo" /><strong>Sólo</strong><span>střední objem</span></div><div><Truck type="trailer" label="Návěs" /><strong>Návěs</strong><span>velký náklad</span></div></div>
     </div></section>
     <section className="shell directions" id="smery"><div className="directions-copy"><p className="eyebrow">Přepravní směry</p><h2>Z Česka do Evropy a zpět.</h2><p>Trasy z Prahy a středních Čech i spolupráci s firmami na Moravě řešíme jako přirozenou součást celorepublikového záběru. Potřebujete jiný směr? Pošlete trasu a ověříme možnosti.</p></div><div className="direction-list"><span>Česká republika</span><span>Německo</span><span>Polsko</span><span>Francie</span><span>Španělsko</span><span>Maďarsko</span></div></section>
-    <section className="closing-strip"><div className="shell"><span>Nevíte, které vozidlo je pro náklad vhodné?</span><Link href="/spoluprace#poptavka">Probrat možnosti <Arrow /></Link></div></section>
+    <section className="closing-strip"><div className="shell"><span>Nevíte, které vozidlo je pro náklad vhodné?</span><Link href="/spoluprace#poptavka">Probrat možnosti</Link></div></section>
   </>
 }

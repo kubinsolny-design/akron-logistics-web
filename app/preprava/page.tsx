@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Arrow } from '../ui'
 import { Truck } from '../trucks'
 
 export const metadata: Metadata = {
@@ -18,7 +17,7 @@ const services = [
 export default function TransportPage() {
   return <>
     <section className="page-hero shell"><p className="eyebrow">Přepravy podle skutečné potřeby</p><h1>Nejdřív náklad. Potom správné auto.</h1><p className="lead">Rozhoduje objem, termín, charakter zboží a místo nakládky. Proto začínáme otázkami, které přepravu nastaví prakticky.</p></section>
-    <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/spoluprace#poptavka" aria-label={`Poptat ${service.title}`}>Poptat <Arrow /></Link></article>)}</section>
-    <section className="shell note-block"><h2>Nevíte, co přesně objednat?</h2><p>Nemusíte znát přepravní zkratky ani přesný typ auta. Popište náklad, trasu a termín. Doptáme se na to, co je pro volbu řešení důležité.</p><Link className="text-link" href="/spoluprace#poptavka">Popsat svůj náklad <Arrow /></Link></section>
+    <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/spoluprace#poptavka" aria-label={`Poptat ${service.title}`}>Poptat</Link></article>)}</section>
+    <section className="shell note-block"><h2>Nevíte, co přesně objednat?</h2><p>Nemusíte znát přepravní zkratky ani přesný typ auta. Popište náklad, trasu a termín. Doptáme se na to, co je pro volbu řešení důležité.</p><Link className="text-link" href="/spoluprace#poptavka">Popsat svůj náklad</Link></section>
   </>
 }

@@ -19,7 +19,7 @@ export function Header() {
       <nav className="desktop-nav" aria-label="Hlavní navigace">
         {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
       </nav>
-      <Link className="nav-action" href="/spoluprace#poptavka">Poptat přepravu <span aria-hidden="true">↗</span></Link>
+      <Link className="nav-action" href="/spoluprace#poptavka">Poptat přepravu</Link>
       <details className="mobile-nav">
         <summary><span className="sr-only">Otevřít navigaci</span><i></i><i></i></summary>
         <nav aria-label="Mobilní navigace">
@@ -44,7 +44,7 @@ export function Footer() {
       <div className="footer-contact">
         <span>Přepravu s vámi řeší</span>
         <strong>{company.contactName}</strong>
-        <Link className="footer-action" href="/spoluprace#poptavka">Poslat poptávku <Arrow /></Link>
+        <Link className="footer-action" href="/spoluprace#poptavka">Poslat poptávku</Link>
       </div>
       <div className="footer-links">{links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
     </div>
@@ -52,7 +52,6 @@ export function Footer() {
   </footer>
 }
 
-export function Arrow() { return <span className="arrow" aria-hidden="true">↗</span> }
 
 export function RouteJourney() {
   return <div className="route-journey" aria-hidden="true">
