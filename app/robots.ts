@@ -1,8 +1,8 @@
 import type { MetadataRoute } from 'next'
-import { getSiteUrl } from './site'
+import { getSiteUrl, isIndexingAllowed } from './site'
 
 export default function robots(): MetadataRoute.Robots {
-  const allowIndexing = process.env.ALLOW_INDEXING === 'true' || process.env.VERCEL_ENV === 'production'
+  const allowIndexing = isIndexingAllowed()
 
   return {
     rules: allowIndexing

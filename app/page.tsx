@@ -4,6 +4,9 @@ import { RouteJourney } from './ui'
 import { Truck } from './trucks'
 import { EuropeMap } from './europe-map'
 import { company } from './site'
+import { pageMetadata } from './seo'
+
+export const metadata = pageMetadata('Silniční přeprava a spedice', 'Vnitrostátní a mezinárodní silniční přeprava a spedice. Najdeme vhodné vozidlo a koordinujeme zakázku od poptávky po doručení.', '/')
 
 export default function Home() {
   return <>

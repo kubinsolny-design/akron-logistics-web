@@ -1,11 +1,8 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '../seo'
 import { InquiryForm } from '../inquiry-form'
 import { company } from '../site'
 
-export const metadata: Metadata = {
-  title: 'Poptávka přepravy a průběh spolupráce',
-  description: 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.',
-}
+export const metadata = pageMetadata('Poptávka přepravy a průběh spolupráce', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/spoluprace')
 
 export default function CooperationPage() {
   return <>

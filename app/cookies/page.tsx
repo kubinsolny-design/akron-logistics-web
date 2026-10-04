@@ -1,12 +1,8 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '../seo'
 import Link from 'next/link'
 import { CookieSettingsButton } from '../cookie-preferences'
 
-export const metadata: Metadata = {
-  title: 'Cookies',
-  description: 'Jak AKRON Logistics používá nezbytné technologie a jak spravovat nastavení soukromí v prohlížeči.',
-  alternates: { canonical: '/cookies' },
-}
+export const metadata = pageMetadata('Cookies', 'Jak AKRON Logistics používá nezbytné technologie a jak spravovat nastavení soukromí v prohlížeči.', '/cookies')
 
 export default function CookiesPage() {
   return <article className="shell legal-page">

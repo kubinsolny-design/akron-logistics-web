@@ -16,3 +16,9 @@ export function getSiteUrl() {
 
   return rawUrl.replace(/\/$/, '')
 }
+
+export function isIndexingAllowed() {
+  if (process.env.VERCEL_ENV === 'preview') return false
+  if (process.env.ALLOW_INDEXING === 'false') return false
+  return process.env.ALLOW_INDEXING === 'true' || process.env.VERCEL_ENV === 'production'
+}

@@ -1,12 +1,8 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '../seo'
 import Link from 'next/link'
 import { company } from '../site'
 
-export const metadata: Metadata = {
-  title: 'Ochrana osobních údajů',
-  description: 'Informace o zpracování osobních údajů při návštěvě webu a poptávce přepravy u AKRON Logistics.',
-  alternates: { canonical: '/ochrana-osobnich-udaju' },
-}
+export const metadata = pageMetadata('Ochrana osobních údajů', 'Informace o zpracování osobních údajů při návštěvě webu a poptávce přepravy u AKRON Logistics.', '/ochrana-osobnich-udaju')
 
 export default function PrivacyPage() {
   return <article className="shell legal-page">

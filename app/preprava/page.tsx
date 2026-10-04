@@ -1,11 +1,8 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '../seo'
 import Link from 'next/link'
 import { Truck } from '../trucks'
 
-export const metadata: Metadata = {
-  title: 'Silniční přeprava podle typu nákladu',
-  description: 'Celovozová, sběrná, expresní i pravidelná silniční přeprava po Česku a do zahraničí. Vhodné vozidlo vybereme podle vašeho nákladu.',
-}
+export const metadata = pageMetadata('Silniční přeprava podle typu nákladu', 'Celovozová, sběrná, expresní i pravidelná silniční přeprava po Česku a do zahraničí. Vhodné vozidlo vybereme podle vašeho nákladu.', '/preprava')
 
 const services = [
   { id: 'celovozova', type: 'trailer' as const, title: 'Celovozová přeprava', text: 'Pokud náklad vyplní vozidlo nebo má jet přímo na jedno místo, hledáme odpovídající sestavu a domluvíme její průběh.' },

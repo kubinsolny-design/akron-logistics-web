@@ -1,11 +1,8 @@
-import type { Metadata } from 'next'
+import { pageMetadata } from '../seo'
 import Link from 'next/link'
 import { Truck } from '../trucks'
 
-export const metadata: Metadata = {
-  title: 'Vozidla a přepravní směry',
-  description: 'Dodávka, sólo vozidlo nebo návěs v plachtovém, skříňovém či chladírenském provedení pro přepravy po Česku a Evropě.',
-}
+export const metadata = pageMetadata('Vozidla a přepravní směry', 'Dodávka, sólo vozidlo nebo návěs v plachtovém, skříňovém či chladírenském provedení pro přepravy po Česku a Evropě.', '/moznosti')
 
 export default function OptionsPage() {
   return <>
