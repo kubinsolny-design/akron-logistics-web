@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { company } from './site'
 import { CookieSettingsButton } from './cookie-preferences'
+import { MobileNavigation } from './mobile-navigation'
 
 const links = [
   { href: '/preprava', label: 'Přepravy' },
@@ -21,13 +22,7 @@ export function Header() {
         {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
       </nav>
       <Link className="nav-action" href="/spoluprace#poptavka">Poptat přepravu</Link>
-      <details className="mobile-nav">
-        <summary><span className="sr-only">Otevřít navigaci</span><i></i><i></i></summary>
-        <nav aria-label="Mobilní navigace">
-          {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
-          <Link href="/spoluprace#poptavka">Poptat přepravu</Link>
-        </nav>
-      </details>
+      <MobileNavigation links={links} />
     </div>
   </header>
 }

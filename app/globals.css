@@ -208,10 +208,13 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .nav-wrap { height: 68px; gap: 0; }
   .desktop-nav, .nav-action { display: none; }
   .mobile-nav { display: block; margin-left: auto; position: relative; }
-  .mobile-nav summary { list-style: none; display: grid; gap: 5px; width: 38px; padding: 10px 0; cursor: pointer; }
-  .mobile-nav summary::-webkit-details-marker { display: none; }
-  .mobile-nav summary i { display: block; background: var(--ink); height: 2px; width: 28px; }
+  .mobile-nav-toggle { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+  .mobile-nav-toggle span { display: block; background: currentColor; height: 2px; width: 26px; transition: transform .2s ease; }
+  .mobile-nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(4px) rotate(45deg); }
+  .mobile-nav-toggle[aria-expanded="true"] span:last-child { transform: translateY(-4px) rotate(-45deg); }
   .mobile-nav nav { position: absolute; right: -18px; top: 49px; background: var(--ink); color: #fff; width: 240px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+  .mobile-nav nav[hidden] { display: none; }
+  .mobile-nav nav a { padding: 6px 0; }
   .hero { padding-top: 18px; }
   .hero-topline { font-size: 9px; }
   .hero h1 { font-size: 46px; margin: 58px 0 50px; }
