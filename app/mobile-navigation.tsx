@@ -45,7 +45,7 @@ function MobileMenu({ links }: { links: NavigationLink[] }) {
     </button>
     <nav id="mobile-navigation" aria-label="Mobilní navigace" hidden={!open}>
       {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>{link.label}</Link>)}
-      <Link href="/spoluprace#poptavka" onClick={() => setOpen(false)}>Poptat přepravu</Link>
+      <Link className="mobile-nav-cta" href="/spoluprace#poptavka" onClick={() => setOpen(false)}>Poptat přepravu</Link>
     </nav>
   </div>
 }

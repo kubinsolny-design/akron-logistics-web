@@ -215,6 +215,8 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .mobile-nav nav { position: absolute; right: -18px; top: 49px; background: var(--ink); color: #fff; width: 240px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
   .mobile-nav nav[hidden] { display: none; }
   .mobile-nav nav a { padding: 6px 0; }
+  .mobile-nav nav .mobile-nav-cta { display: flex; align-items: center; justify-content: center; min-height: 56px; margin-top: 8px; padding: 14px 12px; background: var(--orange); color: #fff; font-size: 17px; font-weight: 700; text-align: center; }
+  .mobile-nav nav .mobile-nav-cta:hover { background: #d94d00; }
   .hero { padding-top: 18px; }
   .hero-topline { font-size: 9px; }
   .hero h1 { font-size: 46px; margin: 58px 0 50px; }
