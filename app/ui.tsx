@@ -5,8 +5,9 @@ import { CookieSettingsButton } from './cookie-preferences'
 import { MobileNavigation } from './mobile-navigation'
 
 const links = [
+  { href: '/', label: 'Úvod' },
   { href: '/preprava', label: 'Přepravy' },
-  { href: '/moznosti', label: 'Vozidla a směry' },
+  { href: '/moznosti', label: 'Vozidla a možnosti' },
   { href: '/spoluprace', label: 'Spolupráce' },
 ]
 

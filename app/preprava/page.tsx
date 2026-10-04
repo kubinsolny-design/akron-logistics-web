@@ -2,19 +2,20 @@ import { pageMetadata } from '../seo'
 import Link from 'next/link'
 import { Truck } from '../trucks'
 
-export const metadata = pageMetadata('Silniční přeprava podle typu nákladu', 'Celovozová, sběrná, expresní i pravidelná silniční přeprava po Česku a do zahraničí. Vhodné vozidlo vybereme podle vašeho nákladu.', '/preprava')
+export const metadata = pageMetadata('Silniční přeprava podle vašich požadavků', 'Celovozová, sběrná, expresní i pravidelná přeprava po Česku a Evropě. Zajišťujeme také přepravu sypkých materiálů sklápěčkami a návěsy s posuvnou podlahou.', '/preprava')
 
 const services = [
-  { id: 'celovozova', type: 'trailer' as const, title: 'Celovozová přeprava', text: 'Pokud náklad vyplní vozidlo nebo má jet přímo na jedno místo, hledáme odpovídající sestavu a domluvíme její průběh.' },
-  { id: 'mensi', type: 'box' as const, title: 'Menší zásilka a sběrná přeprava', text: 'Když nevyužijete celý návěs, hledáme prostor odpovídající objemu a termínu. Sběrná přeprava umožní spojit zásilku s dalšími náklady na podobné trase.' },
-  { id: 'expres', type: 'van' as const, title: 'Expresní přeprava', text: 'Pro náklad, kde je potřeba rozhodnout rychle. Společně ověříme trasu, čas i možnosti vhodného vozidla.' },
-  { id: 'pravidelna', type: 'trailer' as const, title: 'Pravidelná přeprava', text: 'Pro opakující se nakládky nastavíme trasu, četnost a způsob komunikace. Při změně podmínek řešíte vše se stejným kontaktem.' },
+  { id: 'celovozova', type: 'trailer' as const, title: 'Celovozová přeprava', text: 'Vozidlo vyhrazené pro váš náklad. Zajistíme přímou přepravu z místa nakládky do cíle podle dohodnutých podmínek.' },
+  { id: 'mensi', type: 'box' as const, title: 'Částečné náklady a sběrná přeprava', text: 'Nepotřebujete celý vůz? Zajistíme přepravu jedné palety i větší zásilky a navrhneme vhodné řešení s ohledem na cenu a termín doručení.' },
+  { id: 'expres', type: 'van' as const, title: 'Expresní přeprava', text: 'Když rozhoduje čas. Zajistíme přímou přepravu vhodným vozidlem podle velikosti zásilky a požadovaného termínu.' },
+  { id: 'pravidelna', type: 'trailer' as const, title: 'Pravidelné přepravy', text: 'Potřebujete dopravu opakovaně? Domluvíme trasy, četnost a termíny podle provozu vaší firmy a postaráme se o průběžné zajištění přeprav.' },
+  { id: 'sypke', type: 'tipper' as const, title: 'Přeprava sypkých materiálů', text: 'Zajistíme sklápěčky a návěsy s posuvnou podlahou (walking floor) podle druhu materiálu, množství a podmínek nakládky i vykládky.' },
 ]
 
 export default function TransportPage() {
   return <>
-    <section className="page-hero shell"><p className="eyebrow">Přepravy podle skutečné potřeby</p><h1>Nejdřív náklad. Potom správné auto.</h1><p className="lead">Rozhoduje objem, termín, charakter zboží a místo nakládky. Proto začínáme otázkami, které přepravu nastaví prakticky.</p></section>
+    <section className="page-hero shell"><p className="eyebrow">Přepravy podle skutečné potřeby</p><h1>Přeprava podle vašich požadavků.</h1><p className="lead">Jednorázová zásilka, pravidelné přepravy nebo urgentní doručení. Zajistíme řešení podle vašeho nákladu, termínu a trasy.</p></section>
     <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/spoluprace#poptavka" aria-label={`Poptat ${service.title}`}>Poptat</Link></article>)}</section>
-    <section className="shell note-block"><h2>Nevíte, co přesně objednat?</h2><p>Nemusíte znát přepravní zkratky ani přesný typ auta. Popište náklad, trasu a termín. Doptáme se na to, co je pro volbu řešení důležité.</p><Link className="text-link" href="/spoluprace#poptavka">Popsat svůj náklad</Link></section>
+    <section className="shell note-block"><h2>Potřebujete přepravu? Postaráme se o ni.</h2><p>Pošlete nám trasu, termín a informace o nákladu. Připravíme vám nabídku a vše potřebné domluvíme společně.</p><Link className="text-link" href="/spoluprace#poptavka">Získat nabídku přepravy</Link></section>
   </>
 }

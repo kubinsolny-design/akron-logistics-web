@@ -15,7 +15,9 @@ Proměnné jsou popsané v `.env.example`. Pro ostré nasazení je nutné nastav
 
 - `NEXT_PUBLIC_SITE_URL` na finální doménu;
 - `ALLOW_INDEXING=true` mimo Vercel; Vercel produkční nasazení se indexuje automaticky, pokud není nastaveno `ALLOW_INDEXING=false`. Preview se neindexuje ani při `ALLOW_INDEXING=true`;
-- `RESEND_API_KEY`, `INQUIRY_TO_EMAIL` a ověřenou adresu `INQUIRY_FROM_EMAIL` pro doručování poptávek.
+- `RESEND_API_KEY` a ověřenou adresu `INQUIRY_FROM_EMAIL` pro doručování poptávek. Příjemce je ve výchozím nastavení `info@akronlogistics.cz`; `INQUIRY_TO_EMAIL` slouží jako případné přepsání.
+
+Bez přístupu k DNS nelze ověřit odesílací doménu. Dokud není odesílání nastavené, formulář nehlásí přijetí poptávky a nabídne přímý e-mail a telefon. Test serverové akce bez skutečného odesílání: `node scripts/check-inquiry.mjs`.
 
 Telefon, e-mail a údaje firmy jsou centrálně v `app/site.ts`.
 

@@ -1,6 +1,7 @@
 'use server'
 
 import type { InquiryState } from './inquiry-types'
+import { company } from './site'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -48,14 +49,14 @@ export async function sendInquiry(
   }
 
   const apiKey = process.env.RESEND_API_KEY
-  const recipient = process.env.INQUIRY_TO_EMAIL
-  const sender = process.env.INQUIRY_FROM_EMAIL ?? 'AKRON Logistics <onboarding@resend.dev>'
+  const recipient = process.env.INQUIRY_TO_EMAIL || company.email
+  const sender = process.env.INQUIRY_FROM_EMAIL
 
-  if (!apiKey || !recipient) {
+  if (!apiKey || !sender) {
     console.error('Inquiry delivery is not configured.')
     return {
       status: 'error',
-      message: 'Poptávku se nyní nepodařilo odeslat. Zkuste to prosím znovu později.',
+      message: `Poptávku se nyní nepodařilo odeslat. Napište nám prosím na ${company.email} nebo zavolejte ${company.phone}.`,
     }
   }
 
