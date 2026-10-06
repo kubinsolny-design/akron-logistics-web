@@ -42,3 +42,7 @@ TypeScript prošel. ESLint nemá chyby, jen dvě původní upozornění u genero
 Otevřete /studio a přihlaste se vlastním účtem. V „Firma, kontakty a vzhled“ měníte společné údaje; v „Stránky webu“ konkrétní stránku. Sekce přetáhnete, přidáte nebo skryjete. Změny se ukládají jako koncept. Zkontrolujte „Náhled webu“ a poté použijte „Publikovat“. Historie je dostupná v editoru dokumentu.
 
 Přepnutím pracovního prostoru na „AKRON — Poptávky“ otevřete přijaté poptávky. Údaje jsou pouze pro čtení; měníte stav a interní poznámky. Dodržujte firemní lhůty uchovávání osobních údajů. Údaje zákazníků nepatří do veřejných sekcí webu.
+# Import obrázků a současného obsahu
+
+Nástroj „První spuštění a návod“ importuje aktuální stránky a nastavení a nahraje obě loga, fotografie a mapu do knihovny Sanity. Sekce používají skutečné odkazy na CMS obrázky, které lze následně v editoru vyměnit. Import vytváří jen chybějící dokumenty; u existujících doplňuje pouze chybějící obrázky a používá kontrolu revize, aby nepřepsal souběžné změny. Poptávkový dataset ani tarif při importu nemění. Samotné spuštění importu vyžaduje přihlášený účet s oprávněním zápisu.
+
