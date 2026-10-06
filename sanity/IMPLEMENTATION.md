@@ -46,7 +46,7 @@ Přepnutím pracovního prostoru na „AKRON — Poptávky“ otevřete přijat�
 
 ## Dočasná ukázka pro kolegu
 
-Projekt Vercel `akron-admin-demo` byl vytvořen odděleně od ostrého webu, bez Resendu a bez serverových klíčů. Sleduje větev `codex/akron-administrace`. Na adresu jirka.fusek@email.cz byla na výslovný souhlas vlastníka odeslána Sanity pozvánka s rolí Viewer; přijetí pozvánky zatím nebylo ověřeno. Přístup je určen k pozdějšímu odebrání vlastníkem, nemá automatickou expiraci. Před předáním odkazu zbývá povolit přesný origin pro přihlášení a ověřit nasazení. Tento projekt není určen k přijímání poptávek.
+Projekt Vercel `akron-admin-demo` byl vytvořen odděleně od ostrého webu, bez Resendu a bez serverových klíčů. Sleduje větev `codex/akron-administrace`. Na výslovný souhlas vlastníka byla kolegovi odeslána Sanity pozvánka s rolí Viewer; přijetí pozvánky zatím nebylo ověřeno. Přístup je určen k pozdějšímu odebrání vlastníkem, nemá automatickou expiraci. Před předáním odkazu zbývá povolit přesný origin pro přihlášení a ověřit nasazení. Tento projekt není určen k přijímání poptávek.
 
 Nástroj „První spuštění a návod“ importuje aktuální stránky a nastavení a nahraje obě loga, fotografie a mapu do knihovny Sanity. Sekce používají skutečné odkazy na CMS obrázky, které lze následně v editoru vyměnit. Import vytváří jen chybějící dokumenty; u existujících doplňuje pouze chybějící obrázky a používá kontrolu revize, aby nepřepsal souběžné změny. Poptávkový dataset ani tarif při importu nemění. Samotné spuštění importu vyžaduje přihlášený účet s oprávněním zápisu.
 
