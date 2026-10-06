@@ -6,9 +6,14 @@ import './map.css'
 import './form.css'
 import './service.css'
 import './legal.css'
+import './cms.css'
+import { getSettings } from '../sanity/content'
+import { draftMode } from 'next/headers'
+import { VisualEditing } from 'next-sanity/visual-editing'
 import { CookiePreferences } from './cookie-preferences'
 import { Footer, Header } from './ui'
-import { company, getSiteUrl, isIndexingAllowed } from './site'
+import { PublicChrome } from './public-chrome'
+import { getSiteUrl, isIndexingAllowed } from './site'
 
 const poppins = localFont({
   src: [
@@ -21,6 +26,7 @@ const poppins = localFont({
   variable: '--font-poppins',
   display: 'swap',
 })
+const orbitron = localFont({ src: './fonts/Orbitron-VariableFont_wght.ttf', variable: '--font-orbitron', display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -51,7 +57,10 @@ export const viewport: Viewport = {
   themeColor: '#152236',
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const [company, { isEnabled }] = await Promise.all([getSettings(), draftMode()])
+  const color = (value: string | undefined, fallback: string) => /^#[0-9a-fA-F]{6}$/.test(value || '') ? value : fallback
+  const theme = { '--ink': color(company.darkColor, '#152236'), '--orange': color(company.accentColor, '#ff5a00'), '--paper': color(company.backgroundColor, '#f2f2f2'), '--sand': color(company.backgroundColor, '#f2f2f2'), '--black': color(company.textColor, '#0d1117'), '--site-font': company.font === 'orbitron' ? 'var(--font-orbitron)' : 'var(--font-poppins)' } as React.CSSProperties
   const siteUrl = getSiteUrl()
   const structuredData = {
     '@context': 'https://schema.org',
@@ -67,14 +76,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     ],
   }
   return (
-    <html lang="cs">
-      <body className={poppins.variable}>
+    <html lang="cs" style={theme}>
+      <body className={`${poppins.variable} ${orbitron.variable}`}>
+        {/* A full navigation is required to clear the preview cookie. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        {isEnabled && <div className="preview-banner">Náhled nepublikovaných změn <a href="/api/draft-mode/disable">Ukončit náhled</a></div>}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
-        <a className="skip-link" href="#obsah">Přeskočit na obsah</a>
-        <Header />
+        <PublicChrome><a className="skip-link" href="#obsah">Přeskočit na obsah</a><Header /></PublicChrome>
         <main id="obsah">{children}</main>
-        <Footer />
-        <CookiePreferences />
+        <PublicChrome><Footer /><CookiePreferences /></PublicChrome>
+        {isEnabled && <VisualEditing />}
       </body>
     </html>
   )

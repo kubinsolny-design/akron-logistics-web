@@ -9,9 +9,16 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@portabletext/react": "^8.0.1",
+    "@sanity/client": "^8.9.0",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/locale-cs-cz": "^1.1.36",
     "next": "16.2.6",
+    "next-sanity": "^13.3.4",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "sanity": "^6.17.0",
+    "styled-components": "^6.5.3"
   },
   "devDependencies": {
     "@types/node": "22.19.19",

@@ -4,13 +4,14 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { sendInquiry } from './actions'
 import { initialInquiryState } from './inquiry-types'
+import type { Settings } from '../sanity/types'
 
-export function InquiryForm() {
+export function InquiryForm({ labels }: { labels?: Pick<Settings, 'formHeading' | 'formDescription' | 'submitLabel'> }) {
   const [state, formAction, isPending] = useActionState(sendInquiry, initialInquiryState)
 
   return (
     <form className="inquiry-form" action={formAction}>
-      <div className="form-heading"><h3>Krátká poptávka</h3><p>Stačí základní údaje. Co bude potřeba, společně upřesníme. Hvězdičkou (*) jsou označené povinné údaje.</p></div>
+      <div className="form-heading"><h3>{labels?.formHeading || 'Krátká poptávka'}</h3><p>{labels?.formDescription || 'Stačí základní údaje. Co bude potřeba, společně upřesníme. Hvězdičkou (*) jsou označené povinné údaje.'}</p></div>
       <label className="form-honeypot" aria-hidden="true">Web<input name="website" tabIndex={-1} autoComplete="off" /></label>
       <div className="form-grid">
         <label><span>Místo nakládky <span className="required-mark" aria-hidden="true">*</span></span><input required name="pickup" autoComplete="address-level2" placeholder="Např. Praha 10" disabled={isPending} /></label>
@@ -22,7 +23,7 @@ export function InquiryForm() {
         <label><span>E-mail <span className="required-mark" aria-hidden="true">*</span></span><input required name="email" type="email" autoComplete="email" placeholder="vy@firma.cz" disabled={isPending} /></label>
         <label className="form-wide"> Telefon <input name="phone" type="tel" autoComplete="tel" placeholder="Pro rychlé upřesnění (volitelné)" disabled={isPending} /> </label>
       </div>
-      <div className="form-action"><div className="form-privacy"><label className="privacy-confirmation"><input type="checkbox" name="privacyAcknowledged" value="yes" required disabled={isPending} /><span>Potvrzuji, že jsem se seznámil/a s <Link href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">informacemi o ochraně osobních údajů</Link>. <span className="required-mark" aria-hidden="true">*</span></span></label></div><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : 'Odeslat poptávku'}</button></div>
+      <div className="form-action"><div className="form-privacy"><label className="privacy-confirmation"><input type="checkbox" name="privacyAcknowledged" value="yes" required disabled={isPending} /><span>Potvrzuji, že jsem se seznámil/a s <Link href="/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer">informacemi o ochraně osobních údajů</Link>. <span className="required-mark" aria-hidden="true">*</span></span></label></div><button className="button" type="submit" disabled={isPending}>{isPending ? 'Odesílám…' : labels?.submitLabel || 'Odeslat poptávku'}</button></div>
       {state.message && <p className={`form-feedback form-feedback-${state.status}`} role="status" aria-live="polite">{state.message}</p>}
     </form>
   )

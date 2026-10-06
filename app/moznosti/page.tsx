@@ -1,10 +1,13 @@
-import { pageMetadata } from '../seo'
+import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { CmsPage } from '../cms-page'
 import Link from 'next/link'
 import { Truck } from '../trucks'
 
-export const metadata = pageMetadata('Vozidla a přepravní možnosti', 'Kamiony, sóla i dodávky, plachtové, skříňové a chladírenské vozy. Pro sypké materiály zajistíme sklápěčky a návěsy s posuvnou podlahou po Česku i Evropě.', '/moznosti')
+export async function generateMetadata() { return contentMetadata('moznosti', 'Vozidla a přepravní možnosti', 'Kamiony, sóla i dodávky, plachtové, skříňové a chladírenské vozy. Pro sypké materiály zajistíme sklápěčky a návěsy s posuvnou podlahou po Česku i Evropě.', '/moznosti') }
 
-export default function OptionsPage() {
+export default async function OptionsPage() {
+  const [content, settings] = await Promise.all([getPage('moznosti'), getSettings()])
+  if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="page-hero shell"><p className="eyebrow">Vozidlo odpovídá nákladu</p><h1>Kamiony, sóla i dodávky. Podle vašich potřeb.</h1><p className="lead">Od jedné palety po celý kamion, včetně přeprav sypkých materiálů. Zajistíme přepravu podle vašich požadavků a postaráme se o její průběh od nakládky až po doručení.</p></section>
     <section className="vehicle-stage"><div className="shell vehicle-grid">

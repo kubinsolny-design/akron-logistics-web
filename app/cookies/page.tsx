@@ -1,10 +1,13 @@
-import { pageMetadata } from '../seo'
+import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { CmsPage } from '../cms-page'
 import Link from 'next/link'
 import { CookieSettingsButton } from '../cookie-preferences'
 
-export const metadata = pageMetadata('Cookies', 'Jak AKRON Logistics používá nezbytné technologie a jak spravovat nastavení soukromí v prohlížeči.', '/cookies')
+export async function generateMetadata() { return contentMetadata('cookies', 'Cookies', 'Jak AKRON Logistics používá nezbytné technologie a jak spravovat nastavení soukromí v prohlížeči.', '/cookies') }
 
-export default function CookiesPage() {
+export default async function CookiesPage() {
+  const [content, settings] = await Promise.all([getPage('cookies'), getSettings()])
+  if (content) return <CmsPage page={content} settings={settings} />
   return <article className="shell legal-page">
     <p className="eyebrow">Nastavení soukromí</p>
     <h1>Cookies a úložiště prohlížeče</h1>

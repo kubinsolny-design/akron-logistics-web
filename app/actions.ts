@@ -1,7 +1,9 @@
 'use server'
 
 import type { InquiryState } from './inquiry-types'
-import { company } from './site'
+import { getSettings } from '../sanity/content'
+import { storeInquiry, markInquiryEmail } from '../sanity/inquiries'
+import { draftMode } from 'next/headers'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -22,6 +24,7 @@ export async function sendInquiry(
   _previousState: InquiryState,
   formData: FormData,
 ): Promise<InquiryState> {
+  if ((await draftMode()).isEnabled) return { status: 'error', message: 'Formulář v náhledu neodesílá poptávky. Pro odeslání nejdříve ukončete náhled.' }
   const website = getField(formData, 'website')
   if (website) {
     return { status: 'success', message: 'Děkujeme. Poptávku jsme přijali.' }
@@ -53,10 +56,21 @@ export async function sendInquiry(
   }
 
   const apiKey = process.env.RESEND_API_KEY
-  const recipient = process.env.INQUIRY_TO_EMAIL || company.email
+  const company = await getSettings()
+  const recipient = company.inquiryEmail || process.env.INQUIRY_TO_EMAIL || company.email
   const sender = process.env.INQUIRY_FROM_EMAIL
+  let inquiryId: string | null = null
+  try { inquiryId = await storeInquiry({ pickup, delivery, date, frequency, cargo, name, email, phone }) }
+  catch (error) {
+    console.error('Could not securely store inquiry.')
+    if (error instanceof Error && error.message.startsWith('Příliš mnoho')) return { status: 'error', message: error.message }
+    return { status: 'error', message: `Poptávku nyní nelze přijmout. Napište prosím na ${company.email} nebo zavolejte ${company.phone}.` }
+  }
+  const accepted: InquiryState = { status: 'success', message: company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
 
   if (!apiKey || !sender) {
+    await markInquiryEmail(inquiryId, 'failed')
+    if (inquiryId) return accepted
     console.error('Inquiry delivery is not configured.')
     return {
       status: 'error',
@@ -88,6 +102,7 @@ export async function sendInquiry(
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        ...(inquiryId ? { 'Idempotency-Key': inquiryId } : {}),
       },
       body: JSON.stringify({
         from: sender,
@@ -104,6 +119,8 @@ export async function sendInquiry(
       signal: AbortSignal.timeout(10_000),
     })
   } catch {
+    await markInquiryEmail(inquiryId, 'failed')
+    if (inquiryId) return accepted
     console.error('Inquiry delivery request failed.')
     return {
       status: 'error',
@@ -112,6 +129,8 @@ export async function sendInquiry(
   }
 
   if (!response.ok) {
+    await markInquiryEmail(inquiryId, 'failed')
+    if (inquiryId) return accepted
     console.error('Inquiry delivery failed with status:', response.status)
     return {
       status: 'error',
@@ -119,8 +138,6 @@ export async function sendInquiry(
     }
   }
 
-  return {
-    status: 'success',
-    message: 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.',
-  }
+  await markInquiryEmail(inquiryId, 'sent')
+  return accepted
 }

@@ -1,10 +1,13 @@
-import { pageMetadata } from '../seo'
+import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { CmsPage } from '../cms-page'
 import { InquiryForm } from '../inquiry-form'
 import { company } from '../site'
 
-export const metadata = pageMetadata('Poptávka přepravy a průběh spolupráce', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/spoluprace')
+export async function generateMetadata() { return contentMetadata('spoluprace', 'Poptávka přepravy a průběh spolupráce', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/spoluprace') }
 
-export default function CooperationPage() {
+export default async function CooperationPage() {
+  const [content, settings] = await Promise.all([getPage('spoluprace'), getSettings()])
+  if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="page-hero shell"><p className="eyebrow">Od první zprávy po doručení</p><h1>Zakázku koordinujeme.<br />Vy víte, na čem jste.</h1><p className="lead">Od první domluvy až po doručení víte, na koho se obrátit. Zajistíme vozidlo, koordinujeme termíny a případné změny řešíme přímo s vámi.</p></section>
     <section className="shell process-layout"><div className="process-lead"><h2>Co nám stačí pro začátek?</h2><p>Napište nám, co potřebujete přepravit, odkud, kam a v jakém termínu. Přidejte kontakt na sebe a další podrobnosti už doladíme společně.</p></div><div className="process-flow"><article><h3>Poptávka</h3><p>Řeknete nám, co potřebujete přepravit, odkud, kam a kdy. Další podrobnosti doladíme společně.</p></article><article><h3>Nalezení řešení</h3><p>Zajistíme vhodné vozidlo a postaráme se o vše potřebné pro vaši přepravu.</p></article><article><h3>Průběh přepravy</h3><p>Jsme v kontaktu a hlídáme návaznost až do doručení.</p></article></div></section>

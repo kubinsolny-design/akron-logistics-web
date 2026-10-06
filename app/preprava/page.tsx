@@ -1,8 +1,9 @@
-import { pageMetadata } from '../seo'
+import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { CmsPage } from '../cms-page'
 import Link from 'next/link'
 import { Truck } from '../trucks'
 
-export const metadata = pageMetadata('Silniční přeprava podle vašich požadavků', 'Celovozová, sběrná, expresní i pravidelná přeprava po Česku a Evropě. Zajišťujeme také přepravu sypkých materiálů sklápěčkami a návěsy s posuvnou podlahou.', '/preprava')
+export async function generateMetadata() { return contentMetadata('preprava', 'Silniční přeprava podle vašich požadavků', 'Celovozová, sběrná, expresní i pravidelná přeprava po Česku a Evropě. Zajišťujeme také přepravu sypkých materiálů sklápěčkami a návěsy s posuvnou podlahou.', '/preprava') }
 
 const services = [
   { id: 'celovozova', type: 'trailer' as const, title: 'Celovozová přeprava', text: 'Vozidlo vyhrazené pro váš náklad. Zajistíme přímou přepravu z místa nakládky do cíle podle dohodnutých podmínek.' },
@@ -12,7 +13,9 @@ const services = [
   { id: 'sypke', type: 'tipper' as const, title: 'Přeprava sypkých materiálů', text: 'Zajistíme sklápěčky a návěsy s posuvnou podlahou (walking floor) podle druhu materiálu, množství a podmínek nakládky i vykládky.' },
 ]
 
-export default function TransportPage() {
+export default async function TransportPage() {
+  const [content, settings] = await Promise.all([getPage('preprava'), getSettings()])
+  if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="page-hero shell"><p className="eyebrow">Přepravy podle skutečné potřeby</p><h1>Přeprava podle vašich požadavků.</h1><p className="lead">Jednorázová zásilka, pravidelné přepravy nebo urgentní doručení. Zajistíme řešení podle vašeho nákladu, termínu a trasy.</p></section>
     <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/spoluprace#poptavka" aria-label={`Poptat ${service.title}`}>Poptat</Link></article>)}</section>

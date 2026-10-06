@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
 
   return {
     rules: allowIndexing
-      ? { userAgent: '*', allow: '/' }
+      ? { userAgent: '*', allow: '/', disallow: ['/studio', '/api/'] }
       : { userAgent: '*', disallow: '/' },
     sitemap: `${getSiteUrl()}/sitemap.xml`,
   }

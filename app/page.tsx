@@ -4,11 +4,14 @@ import { RouteJourney } from './ui'
 import { Truck } from './trucks'
 import { EuropeMap } from './europe-map'
 import { company } from './site'
-import { pageMetadata } from './seo'
+import { contentMetadata, getPage, getSettings } from '../sanity/content'
+import { CmsPage } from './cms-page'
 
-export const metadata = pageMetadata('Silniční přeprava a spedice', 'Vnitrostátní a mezinárodní silniční přeprava a spedice. Najdeme vhodné vozidlo a koordinujeme zakázku od poptávky po doručení.', '/')
+export async function generateMetadata() { return contentMetadata('home', 'Silniční přeprava a spedice', 'Vnitrostátní a mezinárodní silniční přeprava a spedice. Najdeme vhodné vozidlo a koordinujeme zakázku od poptávky po doručení.', '/') }
 
-export default function Home() {
+export default async function Home() {
+  const [content, settings] = await Promise.all([getPage('home'), getSettings()])
+  if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="hero hero-with-trucks hero-compact">
       <div className="hero-photo" aria-hidden="true"><Image src="/images/trucks-highway.png" alt="" fill priority sizes="100vw" /></div>

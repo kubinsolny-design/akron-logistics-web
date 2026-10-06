@@ -1,0 +1,16 @@
+.cms-paragraph { white-space: pre-line; }
+body { font-family: var(--site-font, var(--font-poppins)), Arial, sans-serif; }
+.truck-focus, .site-footer { background: var(--black); }
+.service-band, .page-hero, .introduction, .area-section, .directions, .inquiry { background: var(--paper); }
+.vehicle-stage { background: var(--ink); }
+.closing-strip, .person-monogram, .nav-action, .button, .truck-focus figcaption span { background: var(--orange); }
+.hero-compact h1 em { color: var(--orange); }
+.cms-card-grid { grid-template-columns: repeat(var(--cms-columns, 3), minmax(0, 1fr)); }
+.cms-card-grid .rail-icon img { width: 100%; height: 150px; object-fit: cover; }
+.cms-text-image { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; }
+.cms-text-image > img { width: 100%; height: auto; }
+.cms-portrait { width: 100%; height: auto; max-height: 440px; object-fit: cover; }
+.studio-shell { position: fixed; inset: 0; z-index: 1000; background: white; color: #152236; }
+.preview-banner { background: #152236; color: white; padding: 12px 20px; text-align: center; position: sticky; top: 0; z-index: 100; }
+.preview-banner a { color: white; text-decoration: underline; margin-left: 20px; }
+@media (max-width: 750px) { .cms-card-grid, .cms-text-image { grid-template-columns: 1fr; } }

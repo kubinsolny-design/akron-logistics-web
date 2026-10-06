@@ -1,37 +1,34 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { company } from './site'
+import { getSettings } from '../sanity/content'
+import { imageUrl, safeHref } from '../sanity/client'
 import { CookieSettingsButton } from './cookie-preferences'
 import { MobileNavigation } from './mobile-navigation'
 
-const links = [
-  { href: '/', label: 'Úvod' },
-  { href: '/preprava', label: 'Přepravy' },
-  { href: '/moznosti', label: 'Vozidla a možnosti' },
-  { href: '/spoluprace', label: 'Spolupráce' },
-]
-
-export function Logo({ light = false }: { light?: boolean }) {
-  return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><Image src={`/images/akron-${light ? 'white' : 'black'}.svg`} alt="AKRON Logistics" width={875} height={280} priority={!light} /></Link>
+export function Logo({ light = false, src }: { light?: boolean; src?: string }) {
+  return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><Image src={src || `/images/akron-${light ? 'white' : 'black'}.svg`} alt="AKRON Logistics" width={875} height={280} priority={!light} /></Link>
 }
 
-export function Header() {
+export async function Header() {
+  const settings = await getSettings()
+  const navigation = settings.navigation.map(link => ({ label: link.label || '', href: safeHref(link.href) }))
   return <header className="site-header">
     <div className="shell nav-wrap">
-      <Logo />
+      <Logo src={imageUrl(settings.logo, 900)} />
       <nav className="desktop-nav" aria-label="Hlavní navigace">
-        {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
+        {navigation.map((link, i) => <Link key={`${link.href}-${i}`} href={link.href}>{link.label}</Link>)}
       </nav>
-      <Link className="nav-action" href="/spoluprace#poptavka">Poptat přepravu</Link>
-      <MobileNavigation links={links} />
+      <Link className="nav-action" href={safeHref(settings.headerAction?.href)}>{settings.headerAction?.label}</Link>
+      <MobileNavigation links={navigation} />
     </div>
   </header>
 }
 
-export function Footer() {
+export async function Footer() {
+  const company = await getSettings()
   return <footer className="site-footer" id="kontakt">
     <div className="shell footer-grid">
-      <div><Logo light /><p>Silniční přeprava a spedice<br />v Česku i za hranicemi.</p></div>
+      <div><Logo light src={imageUrl(company.lightLogo, 900)} /><p className="cms-paragraph">{company.footerText}</p></div>
       <div className="footer-address">
         <strong>{company.name}</strong>
         <span>{company.street}</span>
@@ -39,15 +36,15 @@ export function Footer() {
         <span>IČO {company.registrationNumber}</span>
       </div>
       <div className="footer-contact">
-        <span>Přepravu s vámi řeší</span>
+        <span>{company.footerContactLabel}</span>
         <strong>{company.contactName}</strong>
         <a href={company.phoneHref}>{company.phone}</a>
         <a href={`mailto:${company.email}`}>{company.email}</a>
-        <Link className="footer-action" href="/spoluprace#poptavka">Poslat poptávku</Link>
+        <Link className="footer-action" href={safeHref(company.footerAction?.href)}>{company.footerAction?.label}</Link>
       </div>
-      <div className="footer-links">{links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}</div>
+      <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{link.label}</Link>)}</div>
     </div>
-    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">Vytvořili <a href="https://webaci.cz" target="_blank" rel="noopener noreferrer">Webáci</a></p><span>Vnitrostátní a mezinárodní silniční přeprava</span></div>
+    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">Vytvořili <a href="https://webaci.cz" target="_blank" rel="noopener noreferrer">Webáci</a></p><span>{company.footerTagline}</span></div>
     <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link><Link href="/cookies">Cookies</Link><CookieSettingsButton /></nav>
   </footer>
 }
