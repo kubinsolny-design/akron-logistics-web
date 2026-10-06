@@ -9,6 +9,14 @@ export const client = createClient({
 })
 
 export function imageUrl(image?: CmsImage, width = 1600) {
+  if (image?.url) {
+    try {
+      const url = new URL(image.url)
+      const allowedHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://htgwzjcdxbknzvobwioa.supabase.co').hostname
+      if (url.protocol === 'https:' && url.hostname === allowedHost
+        && url.pathname.startsWith('/storage/v1/object/public/site-media/')) return url.href
+    } catch { return undefined }
+  }
   if (!image?.asset?._ref) return undefined
   try { return imageUrlBuilder(client).image(image).width(width).auto('format').url() }
   catch { return undefined }

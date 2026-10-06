@@ -1,0 +1,31 @@
+.akron-admin { min-height: 100vh; max-width: 1300px; margin: auto; padding: 40px 24px; color: #152236; background: #f2f2f2; font-family: Arial, sans-serif; }
+.akron-admin *, .akron-admin *::before, .akron-admin *::after { box-sizing: border-box; }
+.akron-admin h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.15; letter-spacing: normal; }
+.akron-admin h2 { font-size: 24px; line-height: 1.3; letter-spacing: normal; margin: 24px 0 16px; }
+.akron-admin p { font-size: 16px; line-height: 1.6; overflow-wrap: anywhere; }
+.admin-kicker { color: #b84000; font-weight: 700; letter-spacing: .12em; }
+.admin-login { max-width: 470px; margin: 60px auto; background: white; padding: 32px; border: 1px solid #ccd2da; border-radius: 12px; }
+.akron-admin label { display: grid; gap: 7px; margin: 12px 0; font-size: 14px; font-weight: 600; }
+.akron-admin input, .akron-admin textarea, .akron-admin select { width: 100%; padding: 12px; font: inherit; color: #152236; border: 1px solid #9aa5b3; border-radius: 6px; background: white; }
+.akron-admin textarea { resize: vertical; }
+.akron-admin button { padding: 11px 16px; background: #152236; color: white; border: 1px solid #152236; border-radius: 6px; font: inherit; cursor: pointer; }
+.akron-admin button:disabled { opacity: .55; cursor: default; }
+.akron-admin button[aria-pressed="true"] { background: #ff5a00; color: #0d1117; }
+.akron-admin :focus-visible { outline: 3px solid #ff5a00; outline-offset: 3px; }
+.admin-header { display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.admin-header form { margin-top: 14px; }
+.admin-tabs { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
+.admin-status { min-height: 30px; white-space: pre-wrap; }
+.admin-workspace { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; }
+.admin-workspace aside { display: flex; flex-direction: column; gap: 10px; align-self: start; }
+.admin-workspace section { background: white; padding: 24px; border: 1px solid #ccd2da; border-radius: 10px; }
+.akron-admin fieldset { min-width: 0; margin: 20px 0; padding: 16px; border: 1px solid #ccd2da; border-radius: 6px; }
+.akron-admin legend { font-weight: 700; padding: 0 8px; }
+.admin-item { border: 1px solid #d4dae1; padding: 16px; border-radius: 6px; margin: 14px 0; background: #f8f9fb; }
+.admin-item-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-item-tools span { flex: 1; }
+.akron-admin .admin-check { display: flex; align-items: center; }
+.admin-check input { width: 20px; height: 20px; }
+.admin-save { display: flex; gap: 12px; flex-wrap: wrap; position: sticky; bottom: 0; background: white; padding: 16px 0; border-top: 1px solid #ccd2da; }
+.admin-save label { width: 100%; }
+@media (max-width: 750px) { .admin-workspace { grid-template-columns: 1fr; } .admin-header { align-items: start; flex-direction: column; } .admin-login { margin: 20px auto; padding: 20px; } .akron-admin { padding: 24px 16px; } }

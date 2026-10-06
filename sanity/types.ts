@@ -1,6 +1,6 @@
 import type { PortableTextBlock } from 'sanity'
 
-export type CmsImage = { asset?: { _ref?: string }; alt?: string }
+export type CmsImage = { asset?: { _ref?: string }; alt?: string; url?: string }
 export type Action = { _key?: string; label?: string; href?: string }
 export type Card = { _key?: string; anchor?: string; title?: string; description?: string; vehicle?: string; image?: CmsImage; action?: Action }
 export type Section = {
