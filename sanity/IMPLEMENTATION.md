@@ -19,11 +19,11 @@ V záložce „Uživatelé a přístupy“ admin načte členy a čekající poz
 
 **Oprava informace o Free:** Role Editor a privátní datasety vyžadují Growth nebo aktivní Growth Trial. Free nabízí jen Administrator/Viewer a veřejné datasety. Poptávky s osobními údaji se nikdy nesmějí převést do veřejného datasetu. Po skončení trialu je nutné zvolit odpovídající tarif nebo migrovat privátní úložiště a přístupy; placený plán nebyl automaticky zapnut.
 
-Lokální testovací editor je na http://localhost:3333/studio/obsah a nevyžaduje ověřenou Resend doménu. Pozvánky odesílá Sanity nezávisle na Resendu. Obsah dosud není inicializovaný: vlastník použije návod ve Studiu. Testovat lze i vytvořením konceptu bez publikace. Publikace do CMS neaktualizuje starou produkční verzi, dokud se nenasadí nová CMS aplikace.
+Lokální testovací editor je na http://localhost:3333/studio/obsah a nevyžaduje ověřenou Resend doménu. Pozvánky odesílá Sanity nezávisle na Resendu. Dne 6. 10. 2026 byl se souhlasem vlastníka importován obsah: šest publikovaných stránek, nastavení firmy a pět obrázků (dvě loga, dvě fotografie, mapa). Testovat lze i vytvořením konceptu bez publikace. Publikace do CMS neaktualizuje starou produkční verzi, dokud se nenasadí nová CMS aplikace.
 
 1. Povolit přesné CORS adresy s credentials pro web a testovací nasazení; nepoužívat wildcard. Localhost:3333 je již povolený.
 2. Přihlásit vlastníka do Studia. GitHub přihlášení je propojené.
-3. „První spuštění a návod“ → „Připravit současný obsah webu“ vytvoří privátní inquiries a vloží aktuální obsah pomocí createIfNotExists; existující dokumenty nepřepisuje.
+3. Import obsahu je dokončen. Před spuštěním formuláře samostatně vytvořit dataset inquiries s nastavením Private a ověřit oprávnění serverového write tokenu. Import veřejného obsahu dataset poptávek nevytváří.
 4. Ověřit koncept, náhled, publikování, obrázky a privátní přístup. Před tím nepřepínat produkci na nový formulář.
 5. Zákazníka přidat přes Sanity Members jeho vlastním účtem s nejnižším dostupným oprávněním. Nesdílet hesla ani klíče.
 
@@ -35,7 +35,7 @@ Resend používá RESEND_API_KEY a INQUIRY_FROM_EMAIL. Příjemce lze změnit v 
 
 ## Ověření
 
-TypeScript prošel. ESLint nemá chyby, jen dvě původní upozornění u generovaných obrázků. Lokální přihlášení a české menu Studia i veřejná úvodní stránka byly ověřeny v prohlížeči. Naplnění CMS, publikace, privátní poptávky a produkční nasazení dosud nejsou ověřené.
+TypeScript prošel. ESLint nemá chyby, jen dvě původní upozornění u generovaných obrázků. Lokální přihlášení a české menu Studia i veřejná úvodní stránka byly ověřeny v prohlížeči. Import potvrdil úspěch; editor zobrazuje šest publikovaných stránek a nahraný obrázek v první sekci. Veřejný místní náhled načítá texty a všech pět obrázků ze Sanity (ověřeno DOM zdroji obrázků a jejich úspěšným načtením), bez chyb v konzoli. Privátní poptávky, náhled konceptů a reálné doručení e-mailu ještě vyžadují ověření. Poslední preview e690dc2 na Vercelu je Error před sestavením: selhalo provisionování integrace resend-email-charcoal-garden. Ostrá verze zůstává na původním main 35ec238.
 
 ## Návod pro zákazníka
 
