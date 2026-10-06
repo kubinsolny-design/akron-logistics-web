@@ -114,7 +114,7 @@ export const schemaTypes = [link, card, section, {
     { name: 'slug', title: 'Adresa stránky', type: 'slug', group: 'content',
       description: 'Úvod má adresu home; ostatní např. preprava, moznosti nebo spoluprace.',
       readOnly: ({ document }) => ['page-home', 'page-preprava', 'page-moznosti', 'page-spoluprace', 'page-cookies', 'page-ochrana-osobnich-udaju'].includes(document?._id?.replace(/^drafts\./, '')),
-      validation: rule => rule.required().custom(value => !value?.current || (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.current) && !['studio', 'api', 'sitemap', 'robots'].includes(value.current)) ? true : 'Použijte malá písmena bez diakritiky a pomlčky. Adresy studio a api jsou vyhrazené.') },
+      validation: rule => rule.required().custom(value => !value?.current || (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.current) && !['admin', 'studio', 'api', 'sitemap', 'robots'].includes(value.current)) ? true : 'Použijte malá písmena bez diakritiky a pomlčky. Adresy admin, studio a api jsou vyhrazené.') },
     { name: 'sections', title: 'Sekce — pořadí změníte přetažením', type: 'array', group: 'content', of: [{ type: 'pageSection' }] },
     { name: 'body', title: 'Dlouhý text (např. právní stránka)', type: 'array', group: 'content', of: [{ type: 'block' }] },
     { ...string('seoTitle', 'Titulek pro vyhledávače'), group: 'seo' },
