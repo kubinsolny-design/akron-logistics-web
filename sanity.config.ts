@@ -7,6 +7,7 @@ import { csCZLocale } from '@sanity/locale-cs-cz'
 import { schemaTypes } from './sanity/schema.mjs'
 import { inquirySchema } from './sanity/inquiry-schema'
 import { SetupTool } from './sanity/setup-tool'
+import { UsersTool } from './sanity/users-tool'
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'l802e097'
 export default defineConfig([
@@ -18,7 +19,7 @@ export default defineConfig([
       S.documentTypeListItem('page').title('Stránky webu'),
     ]) }), presentationTool({ title: 'Náhled webu', previewUrl: { origin: typeof window === 'undefined' ? 'http://localhost:3000' : window.location.origin, previewMode: { enable: '/api/draft-mode/enable' } } })],
     schema: { types: schemaTypes },
-    tools: previous => [...previous, { name: 'guide', title: 'První spuštění a návod', component: SetupTool }],
+    tools: previous => [...previous, { name: 'guide', title: 'První spuštění a návod', component: SetupTool }, { name: 'users', title: 'Uživatelé a přístupy', component: UsersTool }],
     document: { newDocumentOptions: options => options.filter(option => option.templateId !== 'siteSettings'), actions: (actions, context) => context.schemaType === 'siteSettings' ? actions.filter(action => action.action !== 'delete' && action.action !== 'duplicate') : actions },
   },
   {

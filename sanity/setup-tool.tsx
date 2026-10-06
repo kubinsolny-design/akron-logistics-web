@@ -33,6 +33,7 @@ export function SetupTool() {
     <button type="button" disabled={busy || !user} onClick={initialize} style={{ background: '#ff5a00', border: 0, padding: '14px 20px', color: 'white', borderRadius: 6, cursor: 'pointer' }}>{busy ? 'Připravuji…' : 'Připravit současný obsah webu'}</button>
     {message && <p role="status">{message}</p>}
     <h2>Běžné úpravy</h2><ol><li>Vyberte stránku nebo „Firma, kontakty a vzhled“.</li><li>Upravte text, nahrajte obrázek nebo změňte pořadí sekcí.</li><li>Zkontrolujte Náhled webu a klikněte na Publikovat.</li></ol>
-    <p>Přístup zákazníka přidá vlastník v nastavení Sanity → Members. Přihlašovací údaje se nesdílejí.</p>
+    <p>Admin zve další osoby v záložce „Uživatelé a přístupy“. Role Uživatel (Editor) mění obsah a poptávky, nikoli přístupy. Admin může i spravovat uživatele. Přihlašovací údaje se nesdílejí.</p>
+    <p><strong>Důležité:</strong> Soukromé poptávky a role Editor vyžadují tarif Growth nebo jeho zkušební verzi. Free nabízí jen Admin a Viewer (pouze čtení). Žádný placený tarif se tímto tlačítkem nezapíná. <a href="https://www.sanity.io/pricing" target="_blank" rel="noopener noreferrer">Podmínky Sanity</a></p>
   </div>
 }

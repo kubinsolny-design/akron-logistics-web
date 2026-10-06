@@ -13,6 +13,14 @@
 
 ## První spuštění
 
+### Pozvánky a role
+
+V záložce „Uživatelé a přístupy“ admin načte členy a čekající pozvánky, připraví pozvánku podle e-mailu a mění role. Změny mají samostatný potvrzovací krok. Volba Uživatel s úpravami odpovídá nativní roli Editor; Admin roli Administrator. Viewer je pouze pro čtení. API používá přihlášenou relaci daného člověka, nikoli privilegovaný serverový token. Sanity vynucuje oprávnění i mimo editor. Vlastní roli není možné v tomto panelu měnit a posledního admina chrání také Sanity API. Skutečné odeslání pozvánky a změna cizí role nebyly během implementace provedeny.
+
+**Oprava informace o Free:** Role Editor a privátní datasety vyžadují Growth nebo aktivní Growth Trial. Free nabízí jen Administrator/Viewer a veřejné datasety. Poptávky s osobními údaji se nikdy nesmějí převést do veřejného datasetu. Po skončení trialu je nutné zvolit odpovídající tarif nebo migrovat privátní úložiště a přístupy; placený plán nebyl automaticky zapnut.
+
+Lokální testovací editor je na http://localhost:3333/studio/obsah a nevyžaduje ověřenou Resend doménu. Pozvánky odesílá Sanity nezávisle na Resendu. Obsah dosud není inicializovaný: vlastník použije návod ve Studiu. Testovat lze i vytvořením konceptu bez publikace. Publikace do CMS neaktualizuje starou produkční verzi, dokud se nenasadí nová CMS aplikace.
+
 1. Povolit přesné CORS adresy s credentials pro web a testovací nasazení; nepoužívat wildcard. Localhost:3333 je již povolený.
 2. Přihlásit vlastníka do Studia. GitHub přihlášení je propojené.
 3. „První spuštění a návod“ → „Připravit současný obsah webu“ vytvoří privátní inquiries a vloží aktuální obsah pomocí createIfNotExists; existující dokumenty nepřepisuje.
