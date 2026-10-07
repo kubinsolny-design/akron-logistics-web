@@ -16,6 +16,7 @@
 .admin-header form { margin-top: 14px; }
 .admin-tabs { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0; }
 .admin-status { min-height: 30px; white-space: pre-wrap; }
+.akron-admin .admin-error { color: #b91c1c; background: #fef2f2; border: 1px solid #fca5a5; border-left: 4px solid #b91c1c; border-radius: 6px; padding: 12px 16px; font-weight: 600; }
 .admin-workspace { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; }
 .admin-workspace aside { display: flex; flex-direction: column; gap: 10px; align-self: start; }
 .admin-workspace section { background: white; padding: 24px; border: 1px solid #ccd2da; border-radius: 10px; }

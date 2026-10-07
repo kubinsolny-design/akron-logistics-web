@@ -16,8 +16,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     const { error } = await searchParams
     return <main className="akron-admin"><div className="admin-login">
       <p className="admin-kicker">AKRON LOGISTICS</p><h1>Administrace webu</h1>
-      <p>Přihlaste se e-mailem a heslem. Při prvním přihlášení použijte pozvánku ve svém e-mailu.</p>
-      {error && <p role="alert">Přihlášení se nezdařilo. Zkontrolujte údaje a přidělený přístup.</p>}
+      <p>Přihlaste se e-mailem a heslem nastaveným pro tuto administraci. Heslo z původní administrace Sanity se sem nepřenáší.</p>
+      <p>Při prvním přihlášení otevřete pozvánku v e-mailu a dokončete nastavení vlastního hesla.</p>
+      {error && <p className="admin-error" role="alert">Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo pro tuto administraci. Pokud heslo nemáte nastavené nebo ho neznáte, požádejte správce o nový odkaz pro nastavení hesla.</p>}
       <form action={signIn}><label>E-mail<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
         <label>Heslo<input name="password" type="password" autoComplete="current-password" required maxLength={1024} /></label>
         <button type="submit">Přihlásit se</button></form>
@@ -29,7 +30,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     <p className="admin-kicker">AKRON LOGISTICS</p><h1>Administrace</h1>
     <p>{member.user.email} · {({ admin: 'Admin', editor: 'Uživatel', viewer: 'Pouze náhled' })[member.role]}</p>
   </div><div><a href="/" target="_blank" rel="noreferrer">Otevřít web ↗</a><form action={signOut}><button>Odhlásit se</button></form></div></header>
-    {error ? <p role="alert">Obsah se nepodařilo načíst. Zkuste stránku obnovit.</p>
+    {error ? <p className="admin-error" role="alert">Obsah se nepodařilo načíst. Zkuste stránku obnovit.</p>
       : <AdminPanel documents={data || []} role={member.role} userId={member.user.id} />}
   </main>
 }
