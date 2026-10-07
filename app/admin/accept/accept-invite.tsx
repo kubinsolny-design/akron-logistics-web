@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { browserClient } from '../../../supabase/browser'
+import { acceptSession } from '../../../supabase/accept-session'
 
 export function AcceptInvite() {
   const [ready, setReady] = useState(false)
@@ -11,16 +12,18 @@ export function AcceptInvite() {
   const [failed, setFailed] = useState(false)
   const [busy, setBusy] = useState(false)
   const router = useRouter()
+  const initialization = useRef<Promise<boolean> | null>(null)
   useEffect(() => {
     let active = true
-    const client = browserClient()
-    // The SDK consumes the invitation URL fragment and persists the SSR session.
-    client.auth.getUser().then(({ data, error }) => {
+    // Reuse the same operation when React replays effects: codes are single-use.
+    initialization.current ??= acceptSession(browserClient().auth, window.location.href, () => {
+      window.history.replaceState(null, '', '/admin/accept')
+    })
+    initialization.current.then((valid) => {
       if (!active) return
-      setReady(Boolean(data.user) && !error)
-      setFailed(!data.user || Boolean(error))
-      setMessage(data.user && !error ? 'Nastavte a uložte vlastní heslo pro tuto administraci. Teprve potom ho můžete použít při přihlášení.' : 'Odkaz není platný nebo už vypršel. Požádejte správce o nový odkaz pro nastavení hesla.')
-      if (data.user) window.history.replaceState(null, '', '/admin/accept')
+      setReady(valid)
+      setFailed(!valid)
+      setMessage(valid ? 'Nastavte a uložte vlastní heslo pro tuto administraci. Teprve potom ho můžete použít při přihlášení.' : 'Odkaz není platný nebo už vypršel. Požádejte správce o nový odkaz pro nastavení hesla.')
     }).catch(() => {
       if (!active) return
       setFailed(true)
