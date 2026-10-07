@@ -6,7 +6,7 @@ import { currentMember, serviceClient, sessionClient, type MemberRole } from '..
 import { supabaseEnabled } from '../../supabase/config'
 
 export async function signIn(form: FormData) {
-  if (!supabaseEnabled()) redirect('/studio/obsah')
+  if (!supabaseEnabled()) redirect('/admin?error=unavailable')
   const email = String(form.get('email') || '').trim()
   const password = String(form.get('password') || '')
   if (email.length > 254 || password.length > 1024) redirect('/admin?error=login')

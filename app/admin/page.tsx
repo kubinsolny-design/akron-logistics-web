@@ -1,35 +1,29 @@
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { supabaseEnabled } from '../../supabase/config'
 import { currentMember } from '../../supabase/server'
-import { signIn, signOut } from './actions'
+import { signOut } from './actions'
+import { AuthShell } from './auth-shell'
+import { LoginForm } from './login-form'
 import { AdminPanel } from './panel'
 import './admin.css'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Administrace | AKRON Logistics', robots: { index: false, follow: false } }
+export const metadata = { title: 'Administrace', robots: { index: false, follow: false } }
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  if (!supabaseEnabled()) redirect('/studio/obsah')
-  const member = await currentMember()
+  const available = supabaseEnabled()
+  const member = available ? await currentMember() : null
   if (!member) {
     const { error } = await searchParams
-    return <main className="akron-admin"><div className="admin-login">
-      <p className="admin-kicker">AKRON LOGISTICS</p><h1>Administrace webu</h1>
-      <p>Přihlaste se e-mailem a heslem nastaveným pro tuto administraci. Heslo z původní administrace Sanity se sem nepřenáší.</p>
-      <p>Při prvním přihlášení otevřete pozvánku v e-mailu a dokončete nastavení vlastního hesla.</p>
-      {error && <p className="admin-error" role="alert">Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo pro tuto administraci. Pokud heslo nemáte nastavené nebo ho neznáte, požádejte správce o nový odkaz pro nastavení hesla.</p>}
-      <form action={signIn}><label>E-mail<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
-        <label>Heslo<input name="password" type="password" autoComplete="current-password" required maxLength={1024} /></label>
-        <button type="submit">Přihlásit se</button></form>
-      <Link href="/">Zpět na web</Link>
-    </div></main>
+    return <AuthShell title="Vítejte zpět" description="Přihlaste se a spravujte obsah svého webu.">
+      {!available ? <p className="admin-status" role="status">Přihlašování není momentálně dostupné. Kontaktujte správce webu.</p> : error && <p className="admin-error" role="alert">Přihlášení se nezdařilo. Zkontrolujte e-mail a heslo nebo využijte nápovědu níže.</p>}
+      <LoginForm available={available} />
+    </AuthShell>
   }
   const { data, error } = await member.client.from('cms_drafts').select('id,kind,data,revision').order('id')
   return <main className="akron-admin"><header className="admin-header"><div>
     <p className="admin-kicker">AKRON LOGISTICS</p><h1>Administrace</h1>
     <p>{member.user.email} · {({ admin: 'Admin', editor: 'Uživatel', viewer: 'Pouze náhled' })[member.role]}</p>
-  </div><div><a href="/" target="_blank" rel="noreferrer">Otevřít web ↗</a><form action={signOut}><button>Odhlásit se</button></form></div></header>
+  </div><div><a href="/" target="_blank" rel="noreferrer">Otevřít web</a><form action={signOut}><button>Odhlásit se</button></form></div></header>
     {error ? <p className="admin-error" role="alert">Obsah se nepodařilo načíst. Zkuste stránku obnovit.</p>
       : <AdminPanel documents={data || []} role={member.role} userId={member.user.id} />}
   </main>

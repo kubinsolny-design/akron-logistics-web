@@ -48,6 +48,6 @@ export function AcceptInvite() {
   return <><p className={failed ? 'admin-error' : undefined} role={failed ? 'alert' : 'status'}>{message}</p>{ready && <form action={submit}>
     <label>Nové heslo<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
     <label>Heslo ještě jednou<input name="confirm" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
-    <button disabled={busy}>{busy ? 'Ukládám…' : 'Nastavit heslo a pokračovat'}</button></form>}
+    <button className="admin-primary admin-auth-submit" disabled={busy}>{busy ? 'Ukládám…' : 'Nastavit heslo a pokračovat'}</button></form>}
     <Link href="/admin" prefetch={false}>Přejít na přihlášení</Link></>
 }
