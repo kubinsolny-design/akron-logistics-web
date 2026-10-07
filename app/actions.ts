@@ -2,7 +2,7 @@
 
 import type { InquiryState } from './inquiry-types'
 import { getSettings } from '../sanity/content'
-import { storeInquiry, markInquiryEmail } from '../sanity/inquiries'
+import { storeInquiry, markInquiryEmail } from '../supabase/inquiries'
 import { draftMode } from 'next/headers'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

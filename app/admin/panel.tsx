@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import { imageUrl } from '../../sanity/client'
+import { AdminRecords } from './records'
 import { browserClient } from '../../supabase/browser'
 import type { MemberRole } from '../../supabase/server'
-import { inviteMember } from './actions'
 
 type Value = string | number | boolean | null | Value[] | { [key: string]: Value }
 type ObjectValue = { [key: string]: Value }
@@ -28,7 +30,8 @@ const labels: Record<string, string> = {
   footerContactLabel: 'Nadpis kontaktu v patičce', footerTagline: 'Podtitulek v patičce', style: 'Styl odstavce',
 }
 const options: Record<string, string[]> = {
-  vehicle: ['large', 'medium', 'small'], theme: ['light', 'dark'], cardStyle: ['rail', 'list'],
+  layout: ['hero', 'trust', 'text', 'cards', 'map', 'faq', 'process', 'person', 'inquiry', 'cta', 'note'],
+  vehicle: ['none', 'van', 'box', 'trailer', 'tipper', 'walking-floor'], theme: ['light', 'dark'], cardStyle: ['rail', 'list'],
   font: ['orbitron', 'poppins'],
 }
 const ignored = new Set(['asset', 'phoneHref', 'markDefs', 'marks'])
@@ -36,7 +39,7 @@ const ignored = new Set(['asset', 'phoneHref', 'markDefs', 'marks'])
 function blankItem(field: string): Value {
   const key = crypto.randomUUID()
   if (field === 'sections') return { _key: key, editorLabel: 'Nová sekce', layout: 'text', visible: true, heading: '', description: '', actions: [], cards: [], questions: [], image: { url: '', alt: '' } }
-  if (field === 'cards') return { _key: key, title: '', description: '', vehicle: 'medium', action: { label: '', href: '' } }
+  if (field === 'cards') return { _key: key, title: '', description: '', vehicle: 'box', image: { url: '', alt: '' }, action: { label: '', href: '' } }
   if (field === 'questions') return { _key: key, question: '', answer: '' }
   if (field === 'body') return { _key: key, _type: 'block', style: 'normal', markDefs: [], children: [{ _key: crypto.randomUUID(), _type: 'span', text: '', marks: [] }] }
   if (field === 'children') return { _key: key, _type: 'span', text: '', marks: [] }
@@ -44,19 +47,31 @@ function blankItem(field: string): Value {
 }
 
 function Fields({ value, onChange, disabled, path = [], onUpload }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void> }) {
-  return <div className="admin-fields">{Object.entries(value).filter(([name]) => !name.startsWith('_') && !ignored.has(name)).map(([name, item]) => {
+  const editable = { ...value }
+  if (path.length === 0 && Array.isArray(value.sections)) {
+    editable.shareImage ??= { url: '', alt: '' }
+  }
+  if (typeof value.layout === 'string') editable.image ??= { url: '', alt: '' }
+  if (path.length === 0 && !value.sections && !value.body && value.name) {
+    for (const field of ['logo', 'lightLogo', 'portrait']) editable[field] ??= { url: '', alt: '' }
+  }
+  return <div className="admin-fields">{Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name)).map(([name, item]) => {
     const label = labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
     if (['image', 'portrait', 'logo', 'lightLogo', 'shareImage'].includes(name)) {
       const image = item && typeof item === 'object' && !Array.isArray(item) ? item : {}
+      const preview = imageUrl({ url: typeof image.url === 'string' ? image.url : undefined, asset: image.asset as { _ref: string } | undefined }, 600)
+        || (name === 'image' && typeof value.imagePath === 'string' && /^\/images\/[a-z0-9_./-]+$/i.test(value.imagePath) ? value.imagePath : undefined)
       return <fieldset key={name}><legend>{label}</legend>
+        {preview ? <div className="admin-image-preview"><Image unoptimized width={600} height={200} src={preview} alt={String(image.alt || label)} /></div> : <p className="admin-muted">Zatím není vybraný obrázek. Nahrajte JPEG, PNG nebo WebP do 10 MB.</p>}
         <Fields value={{ url: '', alt: '', ...image }} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} />
         {!disabled && onUpload && <label>Nahrát a použít nový obrázek<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => {
           const file = event.target.files?.[0]; if (file) void onUpload(file, [...path, name]); event.target.value = ''
         }} /></label>}
       </fieldset>
     }
-    if (Array.isArray(item)) return <fieldset key={name}><legend>{label}</legend>{item.map((entry, index) => <div className="admin-item" key={typeof entry === 'object' && entry && !Array.isArray(entry) ? String(entry._key || index) : index}>
+    if (Array.isArray(item)) return <fieldset key={name}><legend>{label} · {item.length}</legend>{item.map((entry, index) => <details className="admin-item" key={typeof entry === 'object' && entry && !Array.isArray(entry) ? String(entry._key || index) : index}>
+      <summary>{entry && typeof entry === 'object' && !Array.isArray(entry) ? String(entry.editorLabel || entry.title || entry.question || entry.label || `${label} ${index + 1}`) : `${label} ${index + 1}`}</summary>
       <div className="admin-item-tools"><span>{label} {index + 1}</span>{!disabled && <>
         <button type="button" disabled={index === 0} aria-label={`Posunout ${label} ${index + 1} nahoru`} onClick={() => { const items = [...item]; [items[index - 1], items[index]] = [items[index], items[index - 1]]; change(items) }}>↑</button>
         <button type="button" disabled={index === item.length - 1} aria-label={`Posunout ${label} ${index + 1} dolů`} onClick={() => { const items = [...item]; [items[index + 1], items[index]] = [items[index], items[index + 1]]; change(items) }}>↓</button>
@@ -65,7 +80,7 @@ function Fields({ value, onChange, disabled, path = [], onUpload }: { value: Obj
       {entry && typeof entry === 'object' && !Array.isArray(entry)
         ? <Fields value={entry} disabled={disabled} path={[...path, name, String(index)]} onUpload={onUpload} onChange={(updated) => change(item.map((it, i) => i === index ? updated : it))} />
         : <input aria-label={`${label} ${index + 1}`} value={String(entry || '')} disabled={disabled} onChange={(event) => change(item.map((it, i) => i === index ? event.target.value : it))} />}
-    </div>)}{!disabled && <button type="button" onClick={() => change([...item, blankItem(name)])}>Přidat položku</button>}</fieldset>
+    </details>)}{!disabled && <button type="button" onClick={() => change([...item, blankItem(name)])}>Přidat položku</button>}</fieldset>
     if (item && typeof item === 'object') return <fieldset key={name}><legend>{label}</legend><Fields value={item} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} /></fieldset>
     if (typeof item === 'boolean') return <label key={name} className="admin-check"><input type="checkbox" checked={item} disabled={disabled} onChange={(event) => change(event.target.checked)} />{label}</label>
     if (name === 'layout') return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={event => change(event.target.value)}>{Object.entries({ hero: 'Úvodní velký obrázek', trust: 'Přehled výhod', text: 'Text', cards: 'Karty služeb', map: 'Mapa', faq: 'Otázky a odpovědi', process: 'Postup spolupráce', person: 'Kontaktní osoba', inquiry: 'Poptávkový formulář', cta: 'Výzva s tlačítkem', note: 'Poznámka' }).map(([type, title]) => <option key={type} value={type}>{title}</option>)}</select></label>
@@ -86,17 +101,35 @@ function replaceImage(value: Value, path: string[], url: string): Value {
 
 export function AdminPanel({ documents, role, userId }: { documents: Document[]; role: MemberRole; userId: string }) {
   const [items, setItems] = useState(documents)
-  const [selected, setSelected] = useState(documents[0]?.id || '')
-  const [data, setData] = useState<ObjectValue>(documents[0]?.data || {})
+  const initial = documents.find(item => item.id === 'page-home') || documents.find(item => item.kind === 'page') || documents[0]
+  const [selected, setSelected] = useState(initial?.id || '')
+  const [data, setData] = useState<ObjectValue>(initial?.data || {})
   const [dirty, setDirty] = useState(false)
-  const [tab, setTab] = useState<'content' | 'users' | 'inquiries'>('content')
+  const [tab, setTab] = useState<'content' | 'settings' | 'users' | 'inquiries' | 'activity'>('content')
+  const [query, setQuery] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
-  const [invitationLink, setInvitationLink] = useState('')
-  const [members, setMembers] = useState<{ user_id: string; role: MemberRole }[]>([])
-  const [inquiries, setInquiries] = useState<ObjectValue[]>([])
   const current = items.find(item => item.id === selected)
   const readOnly = role === 'viewer'
+
+  useEffect(() => {
+    if (!dirty) return
+    const guard = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', guard)
+    return () => window.removeEventListener('beforeunload', guard)
+  }, [dirty])
+
+  useEffect(() => {
+    const touch = () => {
+      if (document.visibilityState !== 'visible') return
+      try { void browserClient().rpc('cms_touch_member').then(() => {}) }
+      catch { /* Missing configuration must not interrupt editing. */ }
+    }
+    touch()
+    const timer = window.setInterval(touch, 60_000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   async function operation(fn: () => Promise<void>) {
     setBusy(true); setMessage('')
@@ -106,19 +139,20 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
   async function showTab(next: typeof tab) {
     if (dirty && !window.confirm('Opustit neuložené změny?')) return
     setTab(next)
-    if (next === 'users') await operation(async () => {
-      const { data, error } = await browserClient().from('cms_members').select('user_id,role')
-      if (error) throw error
-      setMembers(data || [])
-    })
-    if (next === 'inquiries') await operation(async () => {
-      const { data, error } = await browserClient().from('cms_inquiries').select('id,created_at,loading_place,unloading_place,requested_date,cargo,contact_name,email,phone,status,notes,email_status').order('created_at', { ascending: false }).limit(100)
-      if (error) throw error
-      setInquiries(data || [])
-    })
+    setMenuOpen(false)
+    setMessage('')
+    if (next === 'settings') {
+      const settings = items.find(item => item.kind === 'settings')
+      if (settings) { setSelected(settings.id); setData(settings.data); setDirty(false) }
+    }
+    if (next === 'content' && current?.kind !== 'page') {
+      const page = items.find(item => item.kind === 'page')
+      if (page) { setSelected(page.id); setData(page.data); setDirty(false) }
+    }
   }
   async function save(publish: boolean) {
     if (!current || readOnly || busy) return
+    if (publish && !window.confirm('Zveřejnit tuto verzi na webu? Změny uvidí návštěvníci.')) return
     await operation(async () => {
       const client = browserClient()
       let revision = current.revision
@@ -126,13 +160,13 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
         const { data: next, error } = await client.rpc('cms_save_draft', { document_id: current.id, document_kind: current.kind, document_data: data, expected_revision: revision })
         if (error) { setMessage(error.code === '40001' ? 'Někdo mezitím upravil stejný obsah. Obnovte stránku a porovnejte změny.' : 'Obsah se nepodařilo uložit.'); return }
         revision = Number(next)
-        setItems(items.map(item => item.id === current.id ? { ...item, data, revision } : item)); setDirty(false)
+        setItems(previous => previous.map(item => item.id === current.id ? { ...item, data, revision } : item)); setDirty(false)
       }
       if (publish) {
         const { error } = await client.rpc('cms_publish', { document_id: current.id, expected_revision: revision })
         if (error) { setMessage('Zveřejnění se nezdařilo. Obnovte stránku a zkontrolujte aktuální verzi.'); return }
       }
-      setMessage(publish ? 'Verze je publikovaná v Supabase.' : 'Rozpracovaná verze je uložená.')
+      setMessage(publish ? 'Změny jsou zveřejněné na webu.' : 'Rozpracovaná verze je uložená. Web se zatím nezměnil.')
     })
   }
   async function upload(file: File, imagePath: string[]) {
@@ -149,34 +183,40 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
       setMessage('Nový obrázek je vybraný. Uložte nebo publikujte změny.')
     })
   }
-  return <><nav className="admin-tabs"><button onClick={() => showTab('content')} aria-pressed={tab === 'content'}>Obsah webu</button>
-    {!readOnly && <button onClick={() => showTab('inquiries')} aria-pressed={tab === 'inquiries'}>Poptávky</button>}
-    {role === 'admin' && <button onClick={() => showTab('users')} aria-pressed={tab === 'users'}>Uživatelé a přístupy</button>}</nav>
-    <p role="status" className="admin-status">{busy ? 'Pracuji…' : message}</p>
-    {tab === 'content' && <div className="admin-workspace"><aside>{items.map(item => <button key={item.id} aria-pressed={selected === item.id} onClick={() => {
-      if (dirty && !window.confirm('Opustit neuložené změny?')) return
-      setSelected(item.id); setData(item.data); setDirty(false); setMessage('')
-    }}>{String(item.data.title || (item.kind === 'settings' ? 'Nastavení webu' : item.id))}</button>)}</aside><section>
-      {!current ? <p>Obsah zatím není importovaný. Nejdříve musí správce převést stránky z původní administrace.</p>
-        : <><h2>{String(data.title || (current.kind === 'settings' ? 'Nastavení webu' : current.id))}</h2>
-          <p>{readOnly ? 'Máte přístup pouze pro čtení.' : 'Uložení nemění publikovanou verzi. Změny zveřejníte tlačítkem Publikovat.'}</p>
-          <Fields value={data} disabled={readOnly || busy} onUpload={upload} onChange={(next) => { setData(next); setDirty(true) }} />
-          {!readOnly && <div className="admin-save"><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit rozpracované</button><button disabled={busy} onClick={() => save(true)}>Publikovat</button>
-          </div>}</>}
-    </section></div>}
-    {tab === 'users' && role === 'admin' && <section><h2>Pozvat uživatele</h2><p>Pozvánka přijde e-mailem. Příjemce si nastaví vlastní heslo; nezíská přístup do technického nastavení Supabase.</p>
-      <form action={async form => operation(async () => { setInvitationLink(''); const result = await inviteMember(form); setMessage(result.message); setInvitationLink(result.invitationLink || '') })}>
-        <label>E-mail<input name="email" type="email" required maxLength={254} /></label><label>Přístup<select name="role" defaultValue="viewer"><option value="viewer">Pouze náhled</option><option value="editor">Uživatel – obsah a poptávky</option><option value="admin">Admin – včetně správy přístupů</option></select></label>
-        <label>Předání pozvánky<select name="delivery" defaultValue="link"><option value="link">Vytvořit osobní odkaz pro předání</option><option value="email">Odeslat e-mailem (vyžaduje nastavené odesílání)</option></select></label><button disabled={busy}>Vytvořit pozvánku</button>
-      </form>{invitationLink && <label>Osobní pozvánkový odkaz — neposílejte jej nikomu jinému<textarea readOnly value={invitationLink} rows={4} onFocus={event => event.target.select()} /></label>}
-      <h2>Současné přístupy</h2>{members.map(member => <label key={member.user_id}>{member.user_id === userId ? 'Vy' : member.user_id}<select value={member.role} disabled={busy || member.user_id === userId} onChange={event => operation(async () => {
-        const { error } = await browserClient().rpc('cms_set_member_role', { target_user: member.user_id, new_role: event.target.value })
-        if (error) throw error
-        setMembers(members.map(item => item.user_id === member.user_id ? { ...item, role: event.target.value as MemberRole } : item)); setMessage('Přístup je změněný.')
-      })}><option value="viewer">Pouze náhled</option><option value="editor">Uživatel</option><option value="admin">Admin</option></select></label>)}</section>}
-    {tab === 'inquiries' && !readOnly && <section><h2>Poptávky</h2>{inquiries.length === 0 && <p>Zatím žádné poptávky.</p>}{inquiries.map(inquiry => <article className="admin-item" key={String(inquiry.id)}>
-      <h3>{String(inquiry.loading_place)} → {String(inquiry.unloading_place)}</h3><p>{String(inquiry.requested_date)} · {String(inquiry.cargo)}</p>
-      <p>{String(inquiry.contact_name)} · {String(inquiry.email)} · {String(inquiry.phone)}</p><p>Stav: {String(inquiry.status)} · E-mail: {String(inquiry.email_status)}</p>
-    </article>)}</section>}
-  </>
+  function selectDocument(item: Document) {
+    if (busy || (dirty && !window.confirm('Opustit neuložené změny?'))) return
+    setSelected(item.id); setData(item.data); setDirty(false); setMessage('')
+  }
+  const pages = items.filter(item => item.kind === 'page' && String(item.data.title || '').toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs')))
+  const title = ({ content: 'Obsah webu', settings: 'Nastavení webu', inquiries: 'Poptávky', users: 'Uživatelé a oprávnění', activity: 'Aktivita administrace' })[tab]
+  return <div className="admin-shell">
+    <button className="admin-menu-toggle" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Zavřít menu' : 'Menu administrace'}</button>
+    <aside id="admin-sidebar" className={`admin-sidebar${menuOpen ? ' is-open' : ''}`}>
+      <p className="admin-nav-label">SPRÁVA WEBU</p>
+      <nav aria-label="Správa webu"><button disabled={busy} onClick={() => showTab('content')} aria-pressed={tab === 'content'}><span>▤</span> Obsah stránek</button>
+      <button disabled={busy} onClick={() => showTab('settings')} aria-pressed={tab === 'settings'}><span>⚙</span> Nastavení webu</button>
+      {!readOnly && <button disabled={busy} onClick={() => showTab('inquiries')} aria-pressed={tab === 'inquiries'}><span>▱</span> Poptávky</button>}</nav>
+      {role === 'admin' && <><p className="admin-nav-label">ADMINISTRACE</p><nav aria-label="Administrace">
+      <button disabled={busy} onClick={() => showTab('users')} aria-pressed={tab === 'users'}><span>♙</span> Uživatelé a oprávnění</button>
+      <button disabled={busy} onClick={() => showTab('activity')} aria-pressed={tab === 'activity'}><span>◷</span> Aktivita administrace</button></nav></>}
+      <div className="admin-sidebar-note"><strong>Bezpečné úpravy</strong><p>Nejdříve uložte rozpracovanou verzi. Na webu se objeví až po publikování.</p></div>
+    </aside>
+    <div className="admin-main">
+      <div className="admin-view-heading"><div><p className="admin-kicker">PRACOVNÍ PROSTOR</p><h2>{title}</h2></div><span className="admin-badge">{readOnly ? 'Pouze náhled' : role === 'admin' ? 'Administrátor' : 'Uživatel'}</span></div>
+      {(busy || message) && <p role="status" className="admin-status">{busy ? 'Pracuji…' : message}</p>}
+      {tab === 'content' && <section className="admin-page-picker" aria-label="Výběr stránky">
+        <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
+        <div className="admin-page-cards">{pages.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>{typeof item.data.slug === 'object' && item.data.slug && !Array.isArray(item.data.slug) ? '/' + (item.data.slug.current === 'home' ? '' : item.data.slug.current || '') : 'Stránka'}</span></button>)}</div>
+        {!pages.length && <p className="admin-muted">Žádná odpovídající stránka.</p>}
+      </section>}
+      {(tab === 'content' || tab === 'settings') && <section className="admin-editor">
+        {!current ? <p>Obsah zatím není importovaný. Kontaktujte správce.</p> : <>
+        <div className="admin-editor-heading"><div><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : 'Upravujte texty, obrázky a jednotlivé sekce. Kliknutím na sekci ji rozbalíte.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložená verze'} · {current.revision}</span></div>
+        <Fields value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />
+        {!readOnly && <div className="admin-save"><span>{dirty ? 'Máte neuložené změny' : 'Rozpracovaná verze je uložená'}</span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit rozpracované</button><button className="admin-primary" disabled={busy} onClick={() => save(true)}>Publikovat na web</button></div>}
+        </>}
+      </section>}
+      {((tab === 'inquiries' && !readOnly) || ((tab === 'users' || tab === 'activity') && role === 'admin')) && <AdminRecords key={tab} view={tab as 'inquiries' | 'users' | 'activity'} userId={userId} />}
+    </div>
+  </div>
 }
