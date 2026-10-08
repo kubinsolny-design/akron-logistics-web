@@ -66,6 +66,10 @@ test('account and logout live in the sidebar footer', () => {
   const html = render('admin')
   assert.match(html, /admin-sidebar-account[\s\S]*ukazka@akronlogistics.cz[\s\S]*Odhlásit se[\s\S]*<\/aside>/)
 })
+
+test('sidebar no longer contains the publishing notice', () => {
+  for (const role of ['admin', 'editor', 'viewer']) assert.doesNotMatch(render(role), /admin-sidebar-note|Změny máte pod kontrolou|Uložený koncept není veřejný/)
+})
 test('admin navigation follows the requested workspace order', () => {
   const html = render('admin')
   const labels = ['Obsah stránek', 'Poptávky', 'Soubory', 'Analytika', 'Nastavení webu', 'Aktivita', 'Administrace']

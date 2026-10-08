@@ -215,7 +215,6 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {role === 'admin' && <nav aria-label="Správa přístupů a historie">
       <button disabled={busy} onClick={() => showTab('activity')} aria-pressed={tab === 'activity'}><AdminIcon name="activity" /> Aktivita</button>
       <button disabled={busy} onClick={() => showTab('users')} aria-pressed={tab === 'users'}><AdminIcon name="users" /> Administrace</button></nav>}
-      <div className="admin-sidebar-note"><AdminIcon name="shield" /><strong>{readOnly ? 'Pouze prohlížení' : 'Změny máte pod kontrolou'}</strong><p>{readOnly ? 'Obsah si můžete prohlédnout. Úpravy a poptávky nejsou pro tento účet dostupné.' : 'Uložený koncept není veřejný. Na web se dostane až publikováním.'}</p></div>
       </div>
       <div className="admin-sidebar-account"><div className="admin-account"><span className="admin-account-avatar" aria-hidden="true">{email.slice(0, 1).toUpperCase() || 'U'}</span><div><strong>{email || 'Přihlášený uživatel'}</strong><span>{({ admin: 'Administrátor', editor: 'Uživatel', viewer: 'Pouze náhled' })[role]}</span></div></div><form action={signOut}><button><AdminIcon name="logout" /> Odhlásit se</button></form></div>
     </aside>

@@ -38,13 +38,15 @@ export const metadata: Metadata = {
   keywords: ['silniční přeprava', 'spedice', 'vnitrostátní přeprava', 'mezinárodní přeprava', 'expresní přeprava', 'sběrná přeprava'],
   alternates: { canonical: '/' },
   openGraph: {
+    url: '/',
+    images: [{ url: '/og/home', width: 1200, height: 630, alt: 'AKRON Logistics — přepravu vyřešíme od A do B' }],
     type: 'website',
     locale: 'cs_CZ',
     siteName: 'AKRON Logistics',
     title: 'AKRON Logistics | Silniční přeprava a spedice',
     description: 'Vhodné vozidlo, domluvená přeprava a osobní komunikace až do doručení.',
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: { card: 'summary_large_image', title: 'AKRON Logistics | Silniční přeprava a spedice', description: 'Vhodné vozidlo, domluvená přeprava a osobní komunikace až do doručení.', images: ['/og/home'] },
   icons: { icon: [{ url: '/favicon.png', type: 'image/png', sizes: '48x48' }], apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }] },
   robots: isIndexingAllowed()
     ? { index: true, follow: true }
@@ -69,7 +71,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         '@type': 'Organization', '@id': `${siteUrl}/#organization`,
         name: company.name, url: siteUrl, logo: `${siteUrl}/images/akron-black.svg`,
         email: company.email, telephone: company.phone, identifier: company.registrationNumber,
-        address: { '@type': 'PostalAddress', streetAddress: company.street, addressLocality: 'Ostrava', postalCode: '702 00', addressCountry: 'CZ' },
+        address: { '@type': 'PostalAddress', streetAddress: company.street, addressLocality: company.city.replace(/^\d{3}\s?\d{2}\s*/, ''), ...(company.city.match(/^\d{3}\s?\d{2}/) ? { postalCode: company.city.match(/^\d{3}\s?\d{2}/)?.[0] } : {}), addressCountry: 'CZ' },
         contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: company.phone, email: company.email, availableLanguage: 'cs' },
       },
       { '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: 'AKRON Logistics', inLanguage: 'cs-CZ', publisher: { '@id': `${siteUrl}/#organization` } },

@@ -55,7 +55,12 @@ export const getSettings = cache(async (): Promise<Settings> => {
 
 export async function contentMetadata(slug: string, title: string, description: string, path: string) {
   const page = await getPage(slug)
-  const metadata = pageMetadata(page?.seoTitle || title, page?.seoDescription || description, path)
+  const { seoPages } = await import('../app/seo-pages')
+  const fallback = seoPages[slug]
+  const bodyText = (page?.body || []).flatMap(block => block.children || []).map(child => child && typeof child === 'object' && 'text' in child && typeof child.text === 'string' ? child.text : '').join(' ').replace(/\s+/g, ' ').trim()
+  const summary = description || page?.sections?.find(section => section.visible !== false && section.description)?.description || bodyText.slice(0, 160) || `Informace na stránce ${page?.title || title} společnosti AKRON Logistics.`
+  const metadata = pageMetadata(page?.seoTitle || fallback?.title || title, page?.seoDescription || fallback?.description || summary, path)
+  if ((await draftMode()).isEnabled) metadata.robots = { index: false, follow: false }
   const image = imageUrl(page?.shareImage)
   if (image) {
     metadata.openGraph = { ...metadata.openGraph, images: [{ url: image, alt: page?.shareImage?.alt || title }] }

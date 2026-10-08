@@ -6,13 +6,15 @@ import { EuropeMap } from './europe-map'
 import { company } from './site'
 import { contentMetadata, getPage, getSettings } from '../sanity/content'
 import { CmsPage } from './cms-page'
+import { PageStructuredData } from './page-structured-data'
 
 export async function generateMetadata() { return contentMetadata('home', 'Silniční přeprava a spedice', 'Vnitrostátní a mezinárodní silniční přeprava a spedice. Najdeme vhodné vozidlo a koordinujeme zakázku od poptávky po doručení.', '/') }
 
 export default async function Home() {
   const [content, settings] = await Promise.all([getPage('home'), getSettings()])
-  if (content) return <CmsPage page={content} settings={settings} />
+  if (content) return <><PageStructuredData slug="home" /><CmsPage page={content} settings={settings} /></>
   return <>
+    <PageStructuredData slug="home" />
     <section className="hero hero-with-trucks hero-compact">
       <div className="hero-photo" aria-hidden="true"><Image src="/images/trucks-highway.png" alt="" fill priority sizes="100vw" /></div>
       <div className="shell hero-content">
