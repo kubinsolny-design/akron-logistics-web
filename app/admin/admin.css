@@ -1,4 +1,4 @@
-.akron-admin { min-height:100vh; max-width:1600px; margin:auto; padding:24px 32px; color:#152236; background:#f5f6f8; font-family:var(--font-poppins),Arial,sans-serif; font-size:14px; }
+.akron-admin { min-height:100vh; max-width:none; margin:auto; padding:0; color:#202733; background:#f4f5f6; font-family:var(--font-poppins),Arial,sans-serif; font-size:14px; }
 .akron-admin.admin-auth { max-width:none; padding:32px; display:grid; align-items:center; }
 .admin-auth-layout { width:min(1100px,100%); margin:auto; display:grid; grid-template-columns: .95fr 1.05fr; min-height:640px; border:1px solid #e0e5ec; border-radius:24px; overflow:hidden; box-shadow:0 24px 80px #1522360b; background:white; }
 .admin-auth-brand { background:#152236; color:white; padding:48px; display:flex; flex-direction:column; justify-content:space-between; gap:50px; position:relative; overflow:hidden; }
@@ -134,5 +134,130 @@
 .admin-change del { background:#fff0f0; color:#9c2e2e; text-decoration:none; white-space:pre-wrap; padding:8px; }
 .admin-change ins { background:#eaf7ef; color:#247341; text-decoration:none; white-space:pre-wrap; padding:8px; }
 .admin-empty { padding:40px 16px; text-align:center; color:#667388; }
+.admin-icon { width:20px; height:20px; flex:none; vertical-align:middle; }
+.admin-header { min-height:76px; padding:16px 28px; margin:0; background:#152236; color:#fff; border:0; }
+.admin-brand { display:flex; align-items:center; gap:12px; flex:none; }
+.admin-brand-mark { width:39px; height:39px; background:#ff5a00; border-radius:10px; display:grid; place-items:center; font-size:25px; font-weight:800; position:relative; color:#152236; }
+.admin-brand-mark > span { position:absolute; right:3px; top:0; font-size:17px; }
+.akron-admin .admin-brand h1 { font-size:17px; letter-spacing:.035em; margin:0; }
+.admin-brand h1 > span { font-weight:400; letter-spacing:0; }
+.admin-header .admin-brand p { color:#b3bece; margin:2px 0 0; font-size:10px; }
+.admin-header-actions { flex-wrap:wrap; }
+.admin-header .admin-open-site { display:flex; align-items:center; gap:8px; color:#e0e6ef; text-decoration:none; font-size:11px; }
+.admin-open-site .admin-icon { width:15px; height:15px; }
+.admin-account { display:flex; align-items:center; gap:9px; border-left:1px solid #ffffff26; padding-left:20px; }
+.admin-account-avatar { width:33px; height:33px; border-radius:50%; background:#314055; color:#fff; display:grid; place-items:center; font-size:12px; }
+.admin-account > div { display:grid; gap:3px; }
+.admin-account strong { font-size:10px; font-weight:500; overflow-wrap:anywhere; }
+.admin-account > div > span { font-size:9px; color:#b3bece; }
+.akron-admin .admin-header button { color:#dbe3ee; background:transparent; border-color:#ffffff30; min-height:34px; font-size:10px; padding:8px 12px; }
+.akron-admin .admin-header button:hover:not(:disabled) { background:#ffffff10; }
+.admin-shell { grid-template-columns:234px minmax(0,1fr); gap:0; }
+.admin-sidebar { position:sticky; top:0; min-height:calc(100vh - 76px); border-radius:0; border-right:1px solid #e0e3e6; background:#eceef0; color:#202733; padding:30px 14px; }
+.admin-nav-label { color:#737b87; font-size:9px!important; font-weight:600; margin-bottom:12px; }
+.admin-sidebar nav { gap:4px; }
+.akron-admin .admin-sidebar button { color:#505a68; font-size:11px; min-height:42px; padding:11px 12px; gap:10px; box-shadow:none; }
+.akron-admin .admin-sidebar button:hover:not(:disabled) { background:#e0e3e7; color:#202733; }
+.akron-admin .admin-sidebar button[aria-pressed=true] { background:#fff; color:#202733; box-shadow:0 1px 3px #1522360a; font-weight:700; }
+.admin-sidebar button[aria-pressed=true] > .admin-icon { color:#c74700; }
+.admin-sidebar button .admin-nav-count { margin-left:auto; background:#edf0f2; border-radius:5px; padding:2px 5px; font-size:10px; color:#606a77; width:auto; }
+.admin-sidebar-note { border-color:#d9dde2; color:#596472; margin:40px 12px 0; }
+.admin-sidebar-note > .admin-icon { display:block; margin-bottom:10px; color:#788491; }
+.admin-sidebar-note p { color:#747e8b; }
+.admin-main { padding:34px 42px 60px; width:100%; max-width:1400px; margin:auto; }
+.admin-view-heading { margin-bottom:26px; align-items:start; }
+.admin-view-heading h2 { font-size:27px; font-weight:600; }
+.admin-view-heading p:not(.admin-kicker) { color:#6b7480; margin:8px 0 0; font-size:12px; }
+.admin-view-heading > .admin-badge { margin-top:8px; border:1px solid #dce1e5; background:#fff; }
+.admin-kicker { color:#727d89; font-weight:500; font-size:9px!important; letter-spacing:.1em; }
+.akron-admin button { border-color:#d6dce2; box-shadow:0 1px 2px #15223608; min-height:38px; padding:9px 14px; }
+.akron-admin button.admin-primary { background:#152236; border-color:#152236; color:#fff; box-shadow:0 1px 3px #15223620; }
+.akron-admin button.admin-primary:hover:not(:disabled) { background:#293a50; }
+.admin-welcome { border:1px solid #e2d9d0; background:#fff9f3; border-radius:12px; padding:30px 34px; display:flex; gap:32px; align-items:center; justify-content:space-between; overflow:hidden; }
+.admin-welcome > div:first-child { max-width:510px; }
+.admin-welcome-label { font-size:9px; letter-spacing:.12em; font-weight:600; color:#a74b19; }
+.akron-admin .admin-welcome h3 { font-size:23px; font-weight:600; letter-spacing:-.035em; margin:10px 0 8px; }
+.admin-welcome p { color:#786b60; font-size:12px; margin:0 0 22px; }
+.admin-welcome button { display:flex; align-items:center; gap:12px; }
+.admin-welcome button .admin-icon { width:16px; height:16px; }
+.admin-welcome-art { width:190px; height:155px; flex:none; background:#fff; border:1px solid #e7dfd6; border-radius:10px; transform:rotate(-5deg); box-shadow:8px 12px 0 #f2e6d9; padding:19px; position:relative; }
+.admin-art-label { display:block; color:#c74700; font-size:9px; font-weight:700; letter-spacing:.08em; margin-bottom:16px; }
+.admin-art-line { display:block; height:6px; background:#e3e7eb; width:95px; border-radius:3px; margin-bottom:7px; }
+.admin-art-line.short { width:65px; }
+.admin-art-block { display:block; margin-top:16px; height:36px; background:#152236; border-radius:4px; border-left:7px solid #ff5a00; }
+.admin-art-check { display:grid; place-items:center; width:35px; height:35px; background:#e8f4ec; border:3px solid #fff; color:#2c7249; border-radius:50%; position:absolute; right:-12px; bottom:17px; }
+.admin-shortcuts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:22px 0; }
+.admin-shortcuts > button { display:flex; flex-direction:column; align-items:start; text-align:left; background:#fff; border-radius:12px; padding:22px; }
+.admin-shortcut-icon { display:grid; place-items:center; width:35px; height:35px; border:1px solid #e4e8ec; background:#f8f9fa; border-radius:8px; margin-bottom:16px; color:#687686; }
+.admin-shortcuts strong { font-size:14px; font-weight:600; }
+.admin-shortcuts > button > span:not(.admin-shortcut-icon) { color:#747e8b; font-size:11px; font-weight:400; margin-top:6px; }
+.admin-shortcuts > button > .admin-shortcut-link { display:flex; gap:9px; align-items:center; color:#374759!important; font-weight:500!important; margin-top:20px!important; }
+.admin-shortcut-link .admin-icon { width:15px; height:15px; }
+.admin-overview-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:22px; align-items:start; }
+.admin-overview-pages,.admin-howto { border:1px solid #dfe3e8; background:#fff; border-radius:12px; padding:24px; box-shadow:0 1px 2px #15223604; }
+.admin-overview-pages .admin-section-heading { gap:12px; margin-bottom:16px; }
+.admin-overview-pages .admin-section-heading h3 { font-size:14px; font-weight:600; }
+.admin-overview-pages .admin-section-heading button { border:0; background:transparent; box-shadow:none; color:#687686; font-size:10px; padding:0; }
+.akron-admin .admin-page-row { width:100%; border:0; border-top:1px solid #edf0f3; border-radius:0; box-shadow:none; padding:15px 0; display:flex; gap:12px; align-items:center; text-align:left; }
+.admin-page-row > span:nth-child(2) { display:grid; gap:4px; flex:1; min-width:0; }
+.admin-page-row strong { font-size:12px; font-weight:500; overflow-wrap:anywhere; }
+.admin-page-row small { font-size:10px; color:#87909b; font-weight:400; }
+.admin-page-row-icon { width:30px; height:34px; display:grid; place-items:center; background:#f4f6f8; border-radius:6px; color:#7b8794; flex:none; }
+.admin-page-row > .admin-icon { width:14px; color:#87909b; }
+.admin-howto h3 { font-size:16px; font-weight:600; margin-top:10px; }
+.admin-howto ol { padding:0; margin:24px 0; list-style:none; counter-reset:steps; display:grid; gap:24px; }
+.admin-howto li { counter-increment:steps; position:relative; padding-left:42px; display:grid; gap:4px; }
+.admin-howto li::before { content:counter(steps); position:absolute; left:0; top:-3px; display:grid; place-items:center; width:28px; height:28px; background:#f1f3f6; color:#657282; border-radius:50%; font-size:11px; }
+.admin-howto li strong { font-size:12px; font-weight:500; }
+.admin-howto li > span { font-size:11px; color:#7b8591; line-height:1.6; }
+.admin-howto > p:last-child { font-size:10px; color:#7b8591; border-top:1px solid #edf0f3; margin-bottom:0; padding-top:16px; }
+.admin-page-picker,.admin-editor,.admin-records { border-radius:12px; border-color:#dfe3e8; box-shadow:0 1px 2px #15223604; }
+.admin-page-cards button { min-height:78px; background:#fafbfc; }
+.admin-page-cards button[aria-pressed=true] { border-color:#afb9c6; background:#f1f4f7; box-shadow:inset 3px 0 #152236; }
+.akron-admin input,.akron-admin textarea,.akron-admin select { min-height:40px; padding:10px 12px; font-size:12px; border-color:#cdd4dc; box-shadow:0 1px 2px #15223604; }
+.akron-admin input:hover:not(:disabled),.akron-admin textarea:hover:not(:disabled),.akron-admin select:hover:not(:disabled) { border-color:#9faab8; }
+.admin-editor-heading h3 { font-size:21px; font-weight:600; }
+.admin-editor-heading .admin-kicker { margin-bottom:6px; }
+.admin-item { background:#fff; }
+.admin-item[open] > summary { background:#f7f8fa; }
+.admin-save { margin-left:-26px; margin-right:-26px; padding:16px 26px; background:#fffffff5; backdrop-filter:blur(8px); box-shadow:0 -5px 18px #15223606; }
+.admin-save > span { display:grid; gap:4px; }
+.admin-save strong { font-size:11px; font-weight:500; color:#374759; }
+.admin-save small { font-size:10px; color:#7b8591; }
+.admin-status-success { color:#24613d; background:#edf7f0; border:1px solid #bddcc9; }
+.admin-status-error { color:#a72525; background:#fff0f0; border:1px solid #f2b9b9; }
+.akron-admin .admin-record summary:hover { background:#f8f9fb; border-radius:10px; }
+.admin-record[open] > summary { background:#f8f9fb; }
+@media(min-width:751px) and (max-width:1100px) { .admin-shell { grid-template-columns:205px minmax(0,1fr); gap:0; } .admin-main { padding:28px 24px; } .admin-overview-grid { grid-template-columns:1fr; } .admin-shortcuts { gap:10px; } .admin-shortcuts > button { padding:16px; } .admin-welcome-art { width:150px; } .admin-overview-pages .admin-section-heading { flex-direction:row; align-items:center; } }
 @media(max-width:1100px) { .admin-shell { grid-template-columns:205px minmax(0,1fr); gap:20px; } .admin-page-cards { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-section-heading { align-items:start; flex-direction:column; } }
 @media(max-width:750px) { .akron-admin { padding:18px 14px; } .admin-shell { display:block; } .admin-menu-toggle { display:block; width:100%; margin-bottom:16px; } .admin-sidebar { display:none; position:static; margin-bottom:20px; } .admin-sidebar.is-open { display:block; } .admin-sidebar-note { display:none; } .admin-header { gap:14px; flex-wrap:wrap; } .admin-header > div:last-child { gap:14px; } .admin-header h1 { font-size:22px; } .admin-login { margin:20px auto; padding:22px; } .admin-main h2 { font-size:23px; } .admin-view-heading { align-items:start; } .admin-page-picker,.admin-editor,.admin-records { padding:18px; } .admin-page-cards { gap:8px; } .admin-page-cards button { padding:12px; } .admin-fields { grid-template-columns:1fr; } .admin-editor-heading { display:block; } .admin-editor-heading .admin-badge { margin-top:12px; } .admin-save { padding:14px 0 4px; } .admin-save > span { width:100%; } .admin-save button { flex:1; } .admin-record-body dl { grid-template-columns:1fr; gap:6px; } .admin-record-body dd { margin-bottom:10px; } .admin-invite form { grid-template-columns:1fr; } .admin-record summary { padding:14px; gap:8px; } .admin-pagination button { padding:8px; } .admin-member > label { width:100%; } }
+@media(max-width:750px) {
+  .akron-admin:not(.admin-auth) { padding:0; }
+  .admin-header { padding:16px; gap:16px; }
+  .admin-account { border:0; padding:0; }
+  .admin-account > div { display:none; }
+  .admin-header .admin-header-actions { gap:12px; margin-left:auto; }
+  .admin-header .admin-open-site { font-size:10px; }
+  .admin-header .admin-open-site .admin-icon { display:none; }
+  .admin-header .admin-brand h1 { font-size:14px; }
+  .admin-brand-mark { width:32px; height:32px; font-size:20px; }
+  .admin-shell { padding-top:14px; }
+  .akron-admin .admin-menu-toggle { width:calc(100% - 32px); margin:0 16px 14px; background:#fff; }
+  .admin-sidebar { min-height:0; border:1px solid #dfe3e8; border-radius:10px; margin:0 16px 10px; padding:18px 12px; }
+  .admin-main { padding:14px 16px 32px; }
+  .admin-view-heading { gap:10px; margin-bottom:20px; }
+  .admin-view-heading > .admin-badge { max-width:95px; font-size:9px; margin-top:2px; }
+  .admin-view-heading h2 { font-size:24px; }
+  .admin-welcome { padding:24px; }
+  .admin-welcome-art { display:none; }
+  .admin-welcome h3 { font-size:22px; }
+  .admin-shortcuts,.admin-overview-grid { grid-template-columns:1fr; gap:12px; }
+  .admin-shortcuts > button { padding:18px; display:grid; grid-template-columns:35px minmax(0,1fr); column-gap:14px; }
+  .admin-shortcut-icon { grid-row:1/4; margin-bottom:0; }
+  .admin-shortcuts > button > .admin-shortcut-link { margin-top:10px!important; }
+  .admin-overview-pages,.admin-howto { padding:20px; }
+  .admin-overview-pages .admin-section-heading { flex-direction:row; align-items:center; }
+  .admin-save { margin-left:-18px; margin-right:-18px; padding:14px 18px; }
+}
+@media(prefers-reduced-motion:reduce) { .akron-admin button { transition:none; } }
+@media(min-width:751px) and (max-width:1100px) { .admin-shell { gap:0; } }
