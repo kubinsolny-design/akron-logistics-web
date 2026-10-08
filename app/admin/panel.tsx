@@ -6,6 +6,8 @@ import { imageUrl } from '../../sanity/client'
 import { AdminRecords } from './records'
 import { AdminIcon } from './icons'
 import { AdminFiles } from './files'
+import { DocumentEditor } from './document-editor'
+import { supportsDocumentEditor } from './rich-text'
 import { signOut } from './actions'
 import { browserClient } from '../../supabase/browser'
 import type { MemberRole } from '../../supabase/server'
@@ -49,7 +51,7 @@ function blankItem(field: string): Value {
   return { _key: key, label: '', href: '' }
 }
 
-function Fields({ value, onChange, disabled, path = [], onUpload }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void> }) {
+export function Fields({ value, onChange, disabled, path = [], onUpload, documentBody = false }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void>; documentBody?: boolean }) {
   const editable = { ...value }
   if (path.length === 0 && Array.isArray(value.sections)) {
     editable.shareImage ??= { url: '', alt: '' }
@@ -61,6 +63,7 @@ function Fields({ value, onChange, disabled, path = [], onUpload }: { value: Obj
   return <div className="admin-fields">{Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name)).map(([name, item]) => {
     const label = labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
+    if (name === 'body' && path.length === 0 && documentBody && Array.isArray(item) && supportsDocumentEditor(item)) return <DocumentEditor key={name} value={item} onChange={change} disabled={disabled} />
     if (['image', 'portrait', 'logo', 'lightLogo', 'shareImage'].includes(name)) {
       const image = item && typeof item === 'object' && !Array.isArray(item) ? item : {}
       const preview = imageUrl({ url: typeof image.url === 'string' ? image.url : undefined, asset: image.asset as { _ref: string } | undefined }, 600)
@@ -230,7 +233,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {(tab === 'content' || tab === 'settings') && <section className="admin-editor">
         {!current ? <p>Obsah zatím není importovaný. Kontaktujte správce.</p> : <>
         <div className="admin-editor-heading"><div><p className="admin-kicker">{tab === 'content' ? 'EDITOR STRÁNKY' : 'SPOLEČNÁ NASTAVENÍ'}</p><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : 'Kliknutím rozbalte sekci, kterou chcete upravit.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložený koncept'} · {current.revision}</span></div>
-        <Fields value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />
+        <Fields key={current.id} value={data} documentBody={['page-cookies', 'page-ochrana-osobnich-udaju'].includes(current.id) || (data.slug && typeof data.slug === 'object' && !Array.isArray(data.slug) ? ['cookies', 'ochrana-osobnich-udaju'].includes(String(data.slug.current)) : false)} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />
         {!readOnly && !publishingEnabled && <p className="admin-status">Koncept můžete upravit a uložit. Publikování na hlavní web čeká na dokončení propojení obsahu.</p>}
         {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy || !publishingEnabled} onClick={() => save(true)}>Publikovat na web</button></div>}
         </>}

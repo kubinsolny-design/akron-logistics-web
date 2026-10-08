@@ -272,6 +272,23 @@
 .admin-sidebar-account .admin-account > div > span { font-size:10px; color:#737e8a; }
 .admin-sidebar-account .admin-account-avatar { flex:none; background:#dce2e9; color:#45556a; }
 .admin-sidebar-account form { margin-top:10px; }
+.admin-document-editor { grid-column:1 / -1; min-width:0; }
+.admin-document-toolbar { display:flex; flex-wrap:wrap; align-items:end; gap:6px; padding:12px; background:#f4f6f8; border:1px solid #dfe4eb; border-radius:10px 10px 0 0; }
+.admin-document-toolbar label { font-size:10px; gap:4px; }
+.akron-admin .admin-document-toolbar button { min-width:34px; padding:8px 10px; min-height:36px; font-size:11px; }
+.admin-document-toolbar select { min-height:36px; padding:6px 10px; }
+.admin-document-paper { padding:28px; background:#edf0f4; border:1px solid #dfe4eb; border-top:0; margin-bottom:12px; }
+.admin-document-content { max-width:800px; min-height:560px; margin:0 auto; padding:44px 48px; background:#fff; box-shadow:0 2px 12px #1522360a; outline:none; color:#273546; font-size:14px; line-height:1.75; overflow-wrap:anywhere; }
+.admin-document-content:focus { box-shadow:0 0 0 2px #ff5a0060; }
+.admin-document-content p { color:inherit; font-size:inherit; margin:0 0 16px; white-space:pre-wrap; }
+.admin-document-content h1,.admin-document-content h2,.admin-document-content h3,.admin-document-content h4,.admin-document-content h5,.admin-document-content h6 { margin:24px 0 12px; line-height:1.35; letter-spacing:0; }
+.admin-document-content h2 { font-size:24px; }.admin-document-content h3 { font-size:20px; }.admin-document-content h4 { font-size:17px; }
+.admin-document-content ul,.admin-document-content ol { margin:12px 0 20px; padding-left:26px; }
+.admin-document-content li { margin-bottom:8px; white-space:pre-wrap; }
+.admin-document-content a { color:#b84600; text-decoration:underline; }
+.admin-document-content blockquote { margin:16px 0; padding:8px 18px; border-left:3px solid #ff5a00; background:#faf6f2; }
+.admin-document-link { display:flex; flex-wrap:wrap; align-items:end; gap:8px; padding:14px; background:#fff8f2; }.admin-document-link label { flex:1; min-width:180px; }
+@media(max-width:750px) { .admin-document-paper { padding:10px; }.admin-document-content { padding:24px 18px; min-height:420px; }.admin-document-toolbar { padding:8px; gap:4px; } }
 .akron-admin .admin-sidebar-account button { width:100%; min-height:36px; padding:8px 4px; font-size:10px; }
 .admin-overview-placeholder { min-height:360px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border:1px dashed #d7dde4; border-radius:12px; padding:32px; background:#f8f9fa; color:#627084; }
 .admin-placeholder-icon { display:grid; place-items:center; width:48px; height:48px; margin:0 0 20px; border:1px solid #dfe4ea; border-radius:12px; background:#fff; color:#8a95a4; }
