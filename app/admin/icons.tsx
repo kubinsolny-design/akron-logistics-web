@@ -1,6 +1,10 @@
-type IconName = 'home' | 'pages' | 'settings' | 'inquiries' | 'users' | 'activity' | 'arrow' | 'check' | 'external' | 'shield'
+type IconName = 'home' | 'pages' | 'settings' | 'inquiries' | 'users' | 'activity' | 'arrow' | 'check' | 'external' | 'shield' | 'files' | 'analytics' | 'logout' | 'upload'
 
 const paths: Record<IconName, string> = {
+  files: 'M3 7V5h6l2 2h10v13H3V7Zm0 3h18',
+  analytics: 'M4 3v18h17M8 17v-5m5 5V8m5 9V4',
+  logout: 'M9 3H3v18h6m5-13 4 4-4 4m-5-4h12',
+  upload: 'M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5',
   home: 'm3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9',
   pages: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 0v6h6M8 13h8M8 17h5',
   settings: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1 1-3Z',

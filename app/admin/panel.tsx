@@ -5,6 +5,8 @@ import Image from 'next/image'
 import { imageUrl } from '../../sanity/client'
 import { AdminRecords } from './records'
 import { AdminIcon } from './icons'
+import { AdminFiles } from './files'
+import { signOut } from './actions'
 import { browserClient } from '../../supabase/browser'
 import type { MemberRole } from '../../supabase/server'
 
@@ -100,13 +102,13 @@ function replaceImage(value: Value, path: string[], url: string): Value {
   return value
 }
 
-export function AdminPanel({ documents, role, userId }: { documents: Document[]; role: MemberRole; userId: string }) {
+export function AdminPanel({ documents, role, userId, email = '', publishingEnabled = false }: { documents: Document[]; role: MemberRole; userId: string; email?: string; publishingEnabled?: boolean }) {
   const [items, setItems] = useState(documents)
   const initial = documents.find(item => item.id === 'page-home') || documents.find(item => item.kind === 'page') || documents[0]
   const [selected, setSelected] = useState(initial?.id || '')
   const [data, setData] = useState<ObjectValue>(initial?.data || {})
   const [dirty, setDirty] = useState(false)
-  const [tab, setTab] = useState<'overview' | 'content' | 'settings' | 'users' | 'inquiries' | 'activity'>('overview')
+  const [tab, setTab] = useState<'overview' | 'content' | 'settings' | 'users' | 'inquiries' | 'activity' | 'files' | 'analytics'>('overview')
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -156,6 +158,7 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
   }
   async function save(publish: boolean) {
     if (!current || readOnly || busy) return
+    if (publish && !publishingEnabled) { notify('Publikování na hlavní web bude dostupné po dokončení propojení obsahu.', 'error'); return }
     if (publish && !window.confirm('Zveřejnit tuto verzi na webu? Změny uvidí návštěvníci.')) return
     await operation(async () => {
       const client = browserClient()
@@ -193,9 +196,8 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
   }
   const pages = items.filter(item => item.kind === 'page' && String(item.data.title || '').toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs')))
   const allPages = items.filter(item => item.kind === 'page')
-  const sectionCount = allPages.reduce((count, item) => count + (Array.isArray(item.data.sections) ? item.data.sections.length : 0), 0)
-  const title = ({ overview: 'Váš web pod kontrolou', content: 'Obsah stránek', settings: 'Nastavení webu', inquiries: 'Poptávky', users: 'Uživatelé a přístupy', activity: 'Historie změn' })[tab]
-  const descriptions = { overview: 'Texty, obrázky i poptávky. Vše přehledně na jednom místě.', content: 'Vyberte stránku a upravte její obsah. Změny zveřejníte až publikováním.', settings: 'Kontakty, vzhled a společné prvky celého webu.', inquiries: 'Přehled poptávek a jejich zpracování.', users: 'Pozvánky a oprávnění lidí, kteří s vámi spravují web.', activity: 'Přehled uložených změn a jejich autorů.' }
+  const title = ({ overview: 'Přehled', content: 'Obsah stránek', settings: 'Nastavení webu', inquiries: 'Poptávky', users: 'Administrace', activity: 'Aktivita', files: 'Soubory', analytics: 'Analytika' })[tab]
+  const descriptions = { overview: 'Váš pracovní prostor pro správu webu.', content: 'Všechny stránky, jejich texty, obrázky a sekce.', settings: 'Kontakty, vzhled a společné prvky celého webu.', inquiries: 'Přehled poptávek a jejich zpracování.', users: 'Uživatelé, pozvánky a jejich oprávnění.', activity: 'Kdo, kdy a co na webu změnil.', files: 'Veřejné obrázky a dokumenty pro váš web.', analytics: 'Návštěvnost a výsledky vašeho webu.' }
   return <div className="admin-shell">
     <button className="admin-menu-toggle" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Zavřít menu' : 'Menu administrace'}</button>
     <aside id="admin-sidebar" className={`admin-sidebar${menuOpen ? ' is-open' : ''}`}>
@@ -203,25 +205,21 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
       <nav aria-label="Správa webu"><button disabled={busy} onClick={() => showTab('overview')} aria-pressed={tab === 'overview'}><AdminIcon name="home" /> Přehled</button>
       <button disabled={busy} onClick={() => showTab('content')} aria-pressed={tab === 'content'}><AdminIcon name="pages" /> Obsah stránek <span className="admin-nav-count">{allPages.length}</span></button>
       {!readOnly && <button disabled={busy} onClick={() => showTab('inquiries')} aria-pressed={tab === 'inquiries'}><AdminIcon name="inquiries" /> Poptávky</button>}
+      <button disabled={busy} onClick={() => showTab('files')} aria-pressed={tab === 'files'}><AdminIcon name="files" /> Soubory</button>
+      <button disabled={busy} onClick={() => showTab('analytics')} aria-pressed={tab === 'analytics'}><AdminIcon name="analytics" /> Analytika</button>
       <button disabled={busy} onClick={() => showTab('settings')} aria-pressed={tab === 'settings'}><AdminIcon name="settings" /> Nastavení webu</button></nav>
-      {role === 'admin' && <><p className="admin-nav-label">ADMINISTRACE</p><nav aria-label="Administrace">
-      <button disabled={busy} onClick={() => showTab('users')} aria-pressed={tab === 'users'}><AdminIcon name="users" /> Uživatelé a přístupy</button>
-      <button disabled={busy} onClick={() => showTab('activity')} aria-pressed={tab === 'activity'}><AdminIcon name="activity" /> Historie změn</button></nav></>}
+      {role === 'admin' && <nav aria-label="Správa přístupů a historie">
+      <button disabled={busy} onClick={() => showTab('activity')} aria-pressed={tab === 'activity'}><AdminIcon name="activity" /> Aktivita</button>
+      <button disabled={busy} onClick={() => showTab('users')} aria-pressed={tab === 'users'}><AdminIcon name="users" /> Administrace</button></nav>}
       <div className="admin-sidebar-note"><AdminIcon name="shield" /><strong>{readOnly ? 'Pouze prohlížení' : 'Změny máte pod kontrolou'}</strong><p>{readOnly ? 'Obsah si můžete prohlédnout. Úpravy a poptávky nejsou pro tento účet dostupné.' : 'Uložený koncept není veřejný. Na web se dostane až publikováním.'}</p></div>
+      <div className="admin-sidebar-account"><div className="admin-account"><span className="admin-account-avatar" aria-hidden="true">{email.slice(0, 1).toUpperCase() || 'U'}</span><div><strong>{email || 'Přihlášený uživatel'}</strong><span>{({ admin: 'Administrátor', editor: 'Uživatel', viewer: 'Pouze náhled' })[role]}</span></div></div><form action={signOut}><button><AdminIcon name="logout" /> Odhlásit se</button></form></div>
     </aside>
     <div className="admin-main">
       <div className="admin-view-heading"><div><p className="admin-kicker">AKRON / {tab === 'overview' ? 'PŘEHLED' : 'SPRÁVA WEBU'}</p><h2>{title}</h2><p>{descriptions[tab]}</p></div><span className="admin-badge">{readOnly ? 'Pouze náhled' : role === 'admin' ? 'Administrátor' : 'Uživatel'}</span></div>
       {(busy || message) && <p role={!busy && messageTone === 'error' ? 'alert' : 'status'} className={busy ? 'admin-status' : `admin-status admin-status-${messageTone}`}>{busy ? 'Pracuji…' : message}</p>}
-      {tab === 'overview' && <>
-        <section className="admin-welcome"><div><span className="admin-welcome-label">VÁŠ PRACOVNÍ PROSTOR</span><h3>{readOnly ? 'Prohlédněte si obsah webu.' : 'Co dnes na webu vylepšíme?'}</h3><p>{readOnly ? 'Vyberte stránku a podívejte se na její uložený obsah.' : 'Začněte stránkou, kterou chcete upravit. Koncept můžete v klidu připravit a zveřejnit, až bude hotový.'}</p><button className="admin-primary" onClick={() => showTab('content')}>{readOnly ? 'Prohlédnout stránky' : 'Upravit obsah webu'} <AdminIcon name="arrow" /></button></div><div className="admin-welcome-art" aria-hidden="true"><span className="admin-art-label">AKRON LOGISTICS</span><span className="admin-art-line" /><span className="admin-art-line short" /><span className="admin-art-block" /><span className="admin-art-check"><AdminIcon name="check" /></span></div></section>
-        <section className="admin-shortcuts" aria-label="Rychlý přístup">
-          <button onClick={() => showTab('content')}><span className="admin-shortcut-icon"><AdminIcon name="pages" /></span><strong>Obsah stránek</strong><span>{allPages.length} stránek · {sectionCount} sekcí</span><span className="admin-shortcut-link">Texty a obrázky <AdminIcon name="arrow" /></span></button>
-          <button onClick={() => showTab('settings')}><span className="admin-shortcut-icon"><AdminIcon name="settings" /></span><strong>Nastavení webu</strong><span>Kontakty, značka a navigace</span><span className="admin-shortcut-link">Otevřít nastavení <AdminIcon name="arrow" /></span></button>
-          {!readOnly && <button onClick={() => showTab('inquiries')}><span className="admin-shortcut-icon"><AdminIcon name="inquiries" /></span><strong>Poptávky</strong><span>Trasy, náklady a kontakty</span><span className="admin-shortcut-link">Přejít k poptávkám <AdminIcon name="arrow" /></span></button>}
-        </section>
-        <div className="admin-overview-grid"><section className="admin-overview-pages"><div className="admin-section-heading"><h3>Vaše stránky</h3><button onClick={() => showTab('content')}>Zobrazit všechny</button></div>{allPages.slice(0, 6).map(item => <button className="admin-page-row" key={item.id} onClick={() => { selectDocument(item); setTab('content') }}><span className="admin-page-row-icon"><AdminIcon name="pages" /></span><span><strong>{String(item.data.title || item.id)}</strong><small>Uložený koncept · verze {item.revision}</small></span><AdminIcon name="arrow" /></button>)}{!allPages.length && <p className="admin-muted">Zatím nejsou dostupné žádné stránky.</p>}</section>
-        <section className="admin-howto"><p className="admin-kicker">JEDNODUŠE A BEZPEČNĚ</p><h3>Od nápadu k hotovému webu</h3><ol><li><strong>Upravte obsah</strong><span>Změňte text, obrázek nebo sekci.</span></li><li><strong>Uložte koncept</strong><span>Vaše práce zůstane v administraci.</span></li><li><strong>Publikujte na web</strong><span>Teprve tím změny uvidí návštěvníci.</span></li></ol><p>Samotné uložení konceptu veřejný web nemění.</p></section></div>
-      </>}
+      {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
+      {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} />}
+      {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics připojíme později</h3><p>Sem doplníme návštěvnost, nejnavštěvovanější stránky a další skutečné výsledky webu.</p><span className="admin-badge">Zatím nepřipojeno</span></section>}
       {tab === 'content' && <section className="admin-page-picker" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
         <div className="admin-page-cards">{pages.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>{typeof item.data.slug === 'object' && item.data.slug && !Array.isArray(item.data.slug) ? '/' + (item.data.slug.current === 'home' ? '' : item.data.slug.current || '') : 'Stránka'}</span></button>)}</div>
@@ -231,7 +229,8 @@ export function AdminPanel({ documents, role, userId }: { documents: Document[];
         {!current ? <p>Obsah zatím není importovaný. Kontaktujte správce.</p> : <>
         <div className="admin-editor-heading"><div><p className="admin-kicker">{tab === 'content' ? 'EDITOR STRÁNKY' : 'SPOLEČNÁ NASTAVENÍ'}</p><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : 'Kliknutím rozbalte sekci, kterou chcete upravit.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložený koncept'} · {current.revision}</span></div>
         <Fields value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />
-        {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy} onClick={() => save(true)}>Publikovat na web</button></div>}
+        {!readOnly && !publishingEnabled && <p className="admin-status">Koncept můžete upravit a uložit. Publikování na hlavní web čeká na dokončení propojení obsahu.</p>}
+        {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy || !publishingEnabled} onClick={() => save(true)}>Publikovat na web</button></div>}
         </>}
       </section>}
       {((tab === 'inquiries' && !readOnly) || ((tab === 'users' || tab === 'activity') && role === 'admin')) && <AdminRecords key={tab} view={tab as 'inquiries' | 'users' | 'activity'} userId={userId} />}

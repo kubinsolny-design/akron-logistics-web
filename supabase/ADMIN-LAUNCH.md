@@ -1,5 +1,13 @@
 # Administrace AKRON — dokončení nasazení
 
+## Stav pracovního prostoru po úpravách 8. října
+
+Vlastník odložil plnou databázovou migraci a přepnutí veřejného obsahu do doby předání. Hlavní projekt má aktivní přihlášení ke stávajícímu Supabase přes veřejnou konfiguraci, ale `CMS_PROVIDER` není přepnutý a serverový tajný klíč nebyl do hlavního projektu doplněn. Editor proto umožňuje koncepty; tlačítko publikování je na hlavním webu zablokované, dokud není propojení skutečně dokončené. Připravené položky Aktivita a Administrace potřebují novou migraci; pozvánky navíc serverové připojení a povolený Auth redirect. Tyto blokace nepovažovat za dokončené funkce.
+
+Menu obsahuje Obsah stránek, Poptávky, Soubory, Analytika, Nastavení webu a pro admina také Aktivita a Administrace. Přehled zůstává rezervovaný pro pozdější obsah. Analytika nemá napojené Google Analytics ani ukázkové hodnoty.
+
+Soubory načítají všechny složky a stránky seznamu `site-media` a navíc podklady odkazované v konceptech (včetně původních Sanity obrázků). Nejde o úplný inventář nepoužívaných assetů původního CMS nebo všech statických souborů repozitáře. Odkaz se kopíruje pro ruční vložení do editoru. Nové uploady nepřepisují existující objekty, SVG/HTML nejsou přijímány. V existujícím veřejném bucketu byl pouze rozšířen seznam MIME typů o `application/pdf`; zůstal limit 10 MB a stávající RLS i veřejnost. Základní migrace se znovu nespouštěla. Novou workspace migraci neaplikovat bez zálohy. Výslovně odsouhlasený účet kolegy byl změněn z viewer na admin; ostatní členové nebyli měněni.
+
 Kód administrace je připraven pro hlavní web. Živá databáze není v této změně migrovaná: připojený Supabase účet odmítl přístup k projektu `htgwzjcdxbknzvobwioa`. Existující uživatelé a jejich oprávnění nebyli měněni.
 
 ## Co musí udělat vlastník projektu

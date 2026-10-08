@@ -31,34 +31,54 @@ function load(file) {
     if (request === '../../sanity/client') return { imageUrl: () => undefined }
     if (request === 'next/image') return { __esModule: true, default: props => React.createElement('img', props) }
     if (request.endsWith('.css')) return {}
-    if (request.startsWith('./')) return load(path.resolve(path.dirname(file), request + '.tsx'))
+    if (request.startsWith('./')) { const base = path.resolve(path.dirname(file), request); return load(base + (fs.existsSync(base + '.tsx') ? '.tsx' : '.ts')) }
     return normalRequire(request)
   }
-  mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file)
+  mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file)
   return mod.exports
 }
 const { AdminPanel } = load(path.join(root, 'app/admin/panel.tsx'))
-const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture' }))
+const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture', email: 'ukazka@akronlogistics.cz' }))
 
-test('overview displays real fixture counts and no invented inquiry metrics', () => {
+test('overview is reserved for later and contains no content or settings cards', () => {
   const html = render('admin')
-  assert.match(html, /Váš web pod kontrolou/)
-  assert.match(html, /6 stránek · 6 sekcí/)
-  assert.match(html, /Historie změn/)
-  assert.match(html, /Uložený koncept/)
+  assert.match(html, /Obsah tohoto přehledu doplníme později/)
+  assert.doesNotMatch(html, /admin-shortcuts|admin-overview-pages|admin-howto/)
+  assert.match(html, /Soubory/)
+  assert.match(html, /Analytika/)
+  assert.match(html, /Aktivita/)
+  assert.match(html, /Administrace/)
   assert.doesNotMatch(html, /Nové poptávky: \d/)
 })
 test('viewer has no inquiries, user management, audit, or publish actions', () => {
   const html = render('viewer')
   assert.doesNotMatch(html, /> Poptávky</)
-  assert.doesNotMatch(html, /Uživatelé a přístupy|Historie změn/)
+  assert.doesNotMatch(html, /> Administrace<|> Aktivita</)
   assert.doesNotMatch(html, /onClick|<button[^>]*>Publikovat na web/)
   assert.match(html, /Pouze náhled/)
 })
 test('editor sees inquiry entry but no role management or audit', () => {
   const html = render('editor')
   assert.match(html, /> Poptávky</)
-  assert.doesNotMatch(html, /Uživatelé a přístupy|Historie změn/)
+  assert.doesNotMatch(html, /> Administrace<|> Aktivita</)
+})
+test('account and logout live in the sidebar footer', () => {
+  const html = render('admin')
+  assert.match(html, /admin-sidebar-account[\s\S]*ukazka@akronlogistics.cz[\s\S]*Odhlásit se[\s\S]*<\/aside>/)
+})
+test('admin navigation follows the requested workspace order', () => {
+  const html = render('admin')
+  const labels = ['Obsah stránek', 'Poptávky', 'Soubory', 'Analytika', 'Nastavení webu', 'Aktivita', 'Administrace']
+  let previous = -1
+  for (const label of labels) { const index = html.indexOf(` ${label}`); assert.ok(index > previous, label); previous = index }
+})
+test('public media references are deduplicated and unsafe links omitted', () => {
+  const { referencedMedia, mediaUploadPath } = load(path.join(root, 'app/admin/media.ts'))
+  const files = referencedMedia([{ data: { image: { url: 'https://example.com/photo.png' }, imagePath: '/images/map.svg', action: { href: 'https://example.com/brochure.pdf' }, bad: { href: 'javascript:alert(1).pdf' } } }])
+  assert.equal(files.length, 3)
+  assert.ok(files.some(file => file.url.endsWith('brochure.pdf')))
+  assert.equal(mediaUploadPath({ name: '../Český obrázek.jpeg', type: 'image/jpeg' }, 'fixture'), 'fixture--Cesky-obrazek.jpg')
+  assert.throws(() => mediaUploadPath({ name: 'script.svg', type: 'image/svg+xml' }, 'fixture'))
 })
 
 if (process.argv.includes('--preview')) {
