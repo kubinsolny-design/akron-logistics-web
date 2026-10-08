@@ -201,6 +201,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
   return <div className="admin-shell">
     <button className="admin-menu-toggle" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Zavřít menu' : 'Menu administrace'}</button>
     <aside id="admin-sidebar" className={`admin-sidebar${menuOpen ? ' is-open' : ''}`}>
+      <div className="admin-sidebar-scroll">
       <p className="admin-nav-label">PRACOVNÍ PROSTOR</p>
       <nav aria-label="Správa webu"><button disabled={busy} onClick={() => showTab('overview')} aria-pressed={tab === 'overview'}><AdminIcon name="home" /> Přehled</button>
       <button disabled={busy} onClick={() => showTab('content')} aria-pressed={tab === 'content'}><AdminIcon name="pages" /> Obsah stránek <span className="admin-nav-count">{allPages.length}</span></button>
@@ -212,6 +213,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       <button disabled={busy} onClick={() => showTab('activity')} aria-pressed={tab === 'activity'}><AdminIcon name="activity" /> Aktivita</button>
       <button disabled={busy} onClick={() => showTab('users')} aria-pressed={tab === 'users'}><AdminIcon name="users" /> Administrace</button></nav>}
       <div className="admin-sidebar-note"><AdminIcon name="shield" /><strong>{readOnly ? 'Pouze prohlížení' : 'Změny máte pod kontrolou'}</strong><p>{readOnly ? 'Obsah si můžete prohlédnout. Úpravy a poptávky nejsou pro tento účet dostupné.' : 'Uložený koncept není veřejný. Na web se dostane až publikováním.'}</p></div>
+      </div>
       <div className="admin-sidebar-account"><div className="admin-account"><span className="admin-account-avatar" aria-hidden="true">{email.slice(0, 1).toUpperCase() || 'U'}</span><div><strong>{email || 'Přihlášený uživatel'}</strong><span>{({ admin: 'Administrátor', editor: 'Uživatel', viewer: 'Pouze náhled' })[role]}</span></div></div><form action={signOut}><button><AdminIcon name="logout" /> Odhlásit se</button></form></div>
     </aside>
     <div className="admin-main">
