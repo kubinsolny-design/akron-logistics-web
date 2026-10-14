@@ -4,6 +4,7 @@ import type { InquiryState } from './inquiry-types'
 import { getSettings } from '../sanity/content'
 import { storeInquiry, markInquiryEmail } from '../supabase/inquiries'
 import { draftMode } from 'next/headers'
+import { preparing } from './preparing'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -24,6 +25,7 @@ export async function sendInquiry(
   _previousState: InquiryState,
   formData: FormData,
 ): Promise<InquiryState> {
+  if (preparing) return { status: 'error', message: 'Web připravujeme. Poptávkový formulář zatím není dostupný.' }
   if ((await draftMode()).isEnabled) return { status: 'error', message: 'Formulář v náhledu neodesílá poptávky. Pro odeslání nejdříve ukončete náhled.' }
   const website = getField(formData, 'website')
   if (website) {

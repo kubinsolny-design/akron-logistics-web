@@ -2,8 +2,10 @@ import type { MetadataRoute } from 'next'
 import { getSiteUrl } from './site'
 import { getPublishedSlugs } from '../sanity/content'
 import { reservedSlugs } from './seo-pages'
+import { preparing } from './preparing'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (preparing) return []
   const siteUrl = getSiteUrl()
   const customSlugs = [...new Set(await getPublishedSlugs())].filter(slug => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && !reservedSlugs.has(slug))
 

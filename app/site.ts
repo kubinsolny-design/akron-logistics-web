@@ -1,3 +1,5 @@
+import { preparing } from './preparing'
+
 export const company = {
   name: 'AKRON Logistics s.r.o.',
   contactName: 'Adam Bartusek',
@@ -18,6 +20,7 @@ export function getSiteUrl() {
 }
 
 export function isIndexingAllowed() {
+  if (preparing) return false
   if (process.env.VERCEL_ENV === 'preview') return false
   if (process.env.ALLOW_INDEXING === 'false') return false
   return process.env.ALLOW_INDEXING === 'true' || process.env.VERCEL_ENV === 'production'
