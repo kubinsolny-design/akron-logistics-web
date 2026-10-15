@@ -54,6 +54,30 @@ export async function sendTestInquiry(): Promise<InquiryState> {
   }
 }
 
+/** Isolated transport check, never a replacement for private inquiry storage. */
+export async function sendTestEmail(): Promise<InquiryState> {
+  try {
+    const member = await currentMember()
+    if (!member || member.role !== 'admin') return { status: 'error', message: 'Test může spustit pouze přihlášený administrátor.' }
+    if ((await draftMode()).isEnabled) return { status: 'error', message: 'Test nelze spustit v náhledu konceptu.' }
+    const apiKey = process.env.RESEND_API_KEY?.trim()
+    const sender = process.env.INQUIRY_FROM_EMAIL?.trim() || defaultInquirySender
+    const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
+    if (!apiKey || !validInquirySender(sender) || recipient.toLowerCase() !== inquiryRecipient) return { status: 'error', message: 'Ověřte nastavení Resendu a správné adresy.' }
+    // Identical payload + fixed per-admin ten-minute bucket: repeated clicks or
+    // requests across server instances do not send duplicate test messages.
+    const idempotencyKey = `akron-email-test-${member.user.id}-${Math.floor(Date.now() / 600_000)}`
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
+      body: JSON.stringify({ from: sender, to: [inquiryRecipient], subject: '[TECHNICKÝ TEST AKRON] Kontrola odesílání e-mailů',
+        html: '<h1>Technický test webu AKRON Logistics</h1><p>Tato zpráva ověřuje pouze odesílání e-mailů ze serveru webu přes Resend. Nejde o objednávku ani poptávku přepravy a není nutné na ni odpovídat.</p><p>Ukládání poptávek do administrace se ověřuje samostatně; tento test žádnou poptávku nevytváří.</p>' }),
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) return { status: 'error', message: 'Resend testovací e-mail odmítl. Ověřte platnost klíče, odesílací doménu a záznamy Resendu.' }
+    return { status: 'success', message: 'Resend přijal testovací e-mail pro info@akronlogistics.cz. Ověřte doručení. Tento test nepotvrzuje ukládání poptávek do administrace.' }
+  } catch { return { status: 'error', message: 'Test e-mailu se nepodařilo dokončit. Zkuste to později nebo ověřte serverové propojení.' } }
+}
+
 async function acceptInquiry(formData: FormData, test = false): Promise<InquiryState> {
   const website = getField(formData, 'website')
   if (website) {

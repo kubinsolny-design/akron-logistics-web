@@ -21,7 +21,7 @@ function fixture(options = {}) {
       if (name === './inquiry-validation') return validation
       if (name === './inquiry-config') return config
       if (name === './site') return { company }
-      if (name === '../supabase/server') return { currentMember: async () => options.role ? { role: options.role } : null }
+      if (name === '../supabase/server') return { currentMember: async () => options.role ? { role: options.role, user: { id: 'fixture-admin' } } : null }
       if (name === './preparing') return { preparing: options.preparing || false }
       if (name === 'next/headers') return { draftMode: async () => ({ isEnabled: options.preview || false }) }
       if (name === '../sanity/content') return { getSettings: async () => company }
@@ -40,7 +40,7 @@ function fixture(options = {}) {
   })
   const form = new FormData()
   for (const [key, value] of Object.entries({ pickup: 'Praha', delivery: 'Brno', date: '2026-11-01', frequency: 'once', cargo: '<script>test</script>', name: 'Fixture', phone: '+420 606 123 456', email: 'fixture@example.com', privacyAcknowledged: 'yes' })) form.set(key, value)
-  return { form, events, requests, send: (data = form) => exports.sendInquiry({ status: 'idle', message: '' }, data), sendTest: () => exports.sendTestInquiry({ status: 'idle', message: '' }) }
+  return { form, events, requests, send: (data = form) => exports.sendInquiry({ status: 'idle', message: '' }, data), sendTest: () => exports.sendTestInquiry(), sendEmailTest: () => exports.sendTestEmail() }
 }
 
 test('stored inquiry is sent only to the explicit server recipient, never the old CMS/test address', async () => {
@@ -111,6 +111,24 @@ test('approved sender and recipient defaults work without changing content setti
 for (const role of [null, 'viewer', 'editor']) test(`protected test rejects ${role} before storage or mail`, async () => {
   const f = fixture({ role, preparing: true })
   assert.equal((await f.sendTest()).status, 'error')
+  assert.deepEqual(f.events, [])
+  assert.equal((await f.sendEmailTest()).status, 'error')
+  assert.deepEqual(f.events, [])
+})
+test('isolated admin transport test uses fixed recipient, no storage, and repeat-safe idempotency', async () => {
+  const f = fixture({ role: 'admin', preparing: true })
+  assert.equal((await f.sendEmailTest()).status, 'success')
+  assert.equal((await f.sendEmailTest()).status, 'success')
+  assert.deepEqual(f.events, ['send', 'send'])
+  assert.deepEqual(f.requests[0].to, ['info@akronlogistics.cz'])
+  assert.match(f.requests[0].subject, /TECHNICKÝ TEST AKRON/)
+  assert.equal(f.requests[0].headers['Idempotency-Key'], f.requests[1].headers['Idempotency-Key'])
+  assert.equal(f.requests[0].html, f.requests[1].html)
+  assert.match((await f.sendEmailTest()).message, /nepotvrzuje ukládání/)
+})
+for (const options of [{ role: 'admin', preview: true }, { role: 'admin', env: { RESEND_API_KEY: '' } }, { role: 'admin', env: { INQUIRY_TO_EMAIL: 'other@example.com' } }, { role: 'admin', env: { INQUIRY_FROM_EMAIL: 'other@example.com' } }]) test(`transport test blocks unsafe configuration ${JSON.stringify(options)}`, async () => {
+  const f = fixture(options)
+  assert.equal((await f.sendEmailTest()).status, 'error')
   assert.deepEqual(f.events, [])
 })
 test('only admin may run an explicitly marked phone-only test while public launch remains closed', async () => {
