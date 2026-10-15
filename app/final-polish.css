@@ -1,6 +1,6 @@
 /* Public CTA treatment, shared by CMS content and static fallbacks. */
 .text-link, .hero-text-link, .service-rail article > a, .transport-row > a,
-.service-note > a, .closing-strip a, .footer-action {
+.service-note > a, .closing-strip a, .footer-action, .personal-contact a {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 46px; max-width: 100%; padding: 13px 22px;
   border: 1px solid var(--ink); border-radius: 5px;
@@ -8,7 +8,7 @@
   font-size: 14px; font-weight: 600; line-height: 1.5; text-align: center;
   transition: background .18s ease, color .18s ease;
 }
-.text-link:hover, .service-rail article > a:hover, .transport-row > a:hover {
+.text-link:hover, .service-rail article > a:hover, .transport-row > a:hover, .personal-contact a:hover {
   background: #293b54; color: #fff;
 }
 .button, .nav-action, .mobile-nav-cta { color: var(--ink); border-radius: 5px; }
@@ -28,6 +28,12 @@
 .footer-credit a { border: 0; text-decoration: none; }
 .privacy-confirmation a { text-decoration: none; font-weight: 700; }
 .personal-contact a { overflow-wrap: anywhere; }
+.legal-page a, .cookie-notice a, .cookie-dialog a {
+  display: inline-flex; align-items: center; min-height: 40px; max-width: 100%;
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px;
+  background: #e6ebf2; color: var(--ink); font-size: 14px; font-weight: 600;
+  text-decoration: none; overflow-wrap: anywhere;
+}
 .page-hero-visual {
   display: grid; grid-template-columns: 1fr 1fr; align-items: center;
   gap: clamp(28px, 5vw, 80px); padding-top: 64px; padding-bottom: 64px;
