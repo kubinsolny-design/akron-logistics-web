@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { supabaseEnabled } from '../../supabase/config'
 import { currentMember } from '../../supabase/server'
 import { AuthShell } from './auth-shell'
@@ -21,7 +22,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   }
   const { data, error } = await member.client.from('cms_drafts').select('id,kind,data,revision').order('id')
   return <main className="akron-admin"><header className="admin-header">
-    <div className="admin-brand"><span className="admin-brand-mark" aria-hidden="true">A<span>↗</span></span><div><h1>AKRON <span>Logistics</span></h1><p>Administrace webu</p></div></div>
+    <div className="admin-brand"><Image className="admin-brand-mark" src="/icon.svg" width={39} height={39} alt="" aria-hidden="true" /><div><h1>AKRON <span>Logistics</span></h1><p>Administrace webu</p></div></div>
     <div className="admin-header-actions"><a className="admin-open-site" href="/" target="_blank" rel="noreferrer">Otevřít web <AdminIcon name="external" /></a></div></header>
     {error ? <p className="admin-error" role="alert">Obsah se nepodařilo načíst. Zkuste stránku obnovit.</p>
       : <AdminPanel documents={data || []} role={member.role} userId={member.user.id} email={member.user.email || ''} publishingEnabled={process.env.CMS_PROVIDER === 'supabase'} />}

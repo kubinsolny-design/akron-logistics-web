@@ -137,8 +137,7 @@
 .admin-icon { width:20px; height:20px; flex:none; vertical-align:middle; }
 .admin-header { min-height:76px; padding:16px 28px; margin:0; background:#152236; color:#fff; border:0; }
 .admin-brand { display:flex; align-items:center; gap:12px; flex:none; }
-.admin-brand-mark { width:39px; height:39px; background:#ff5a00; border-radius:10px; display:grid; place-items:center; font-size:25px; font-weight:800; position:relative; color:#152236; }
-.admin-brand-mark > span { position:absolute; right:3px; top:0; font-size:17px; }
+.admin-brand-mark { width:39px; height:39px; display:block; flex:none; }
 .akron-admin .admin-brand h1 { font-size:17px; letter-spacing:.035em; margin:0; }
 .admin-brand h1 > span { font-weight:400; letter-spacing:0; }
 .admin-header .admin-brand p { color:#b3bece; margin:2px 0 0; font-size:10px; }
@@ -240,7 +239,7 @@
   .admin-header .admin-open-site { font-size:10px; }
   .admin-header .admin-open-site .admin-icon { display:none; }
   .admin-header .admin-brand h1 { font-size:14px; }
-  .admin-brand-mark { width:32px; height:32px; font-size:20px; }
+  .admin-brand-mark { width:32px; height:32px; }
   .admin-shell { padding-top:14px; }
   .akron-admin .admin-menu-toggle { width:calc(100% - 32px); margin:0 16px 14px; background:#fff; }
   .admin-sidebar { min-height:0; border:1px solid #dfe3e8; border-radius:10px; margin:0 16px 10px; padding:18px 12px; }

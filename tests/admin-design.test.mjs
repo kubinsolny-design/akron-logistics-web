@@ -40,6 +40,13 @@ function load(file) {
 const { AdminPanel, Fields, PageEditor } = load(path.join(root, 'app/admin/panel.tsx'))
 const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture', email: 'ukazka@akronlogistics.cz' }))
 
+test('admin header uses the exact shared favicon asset instead of a font glyph', async () => {
+  const { default: AdminPage } = load(path.join(root, 'app/admin/page.tsx'))
+  const html = renderToStaticMarkup(await AdminPage({ searchParams: Promise.resolve({}) }))
+  assert.match(html, /<img[^>]*class="admin-brand-mark"[^>]*src="\/icon\.svg"/)
+  assert.doesNotMatch(html, /↗|admin-brand-mark[^>]*>A/)
+})
+
 test('page editor opens the first section and keeps technical options out of everyday fields', () => {
   const value = { title: 'Úvod', slug: { current: 'home' }, seoTitle: 'SEO title', sections: [{ _key: 'hero', layout: 'hero', heading: 'První nadpis', description: 'Popis', imagePath: '/images/trucks-highway.png', actions: [{ _key: 'action', label: 'Poptat', href: '/spoluprace' }] }, { _key: 'second', layout: 'text', heading: 'Druhá sekce' }] }
   const before = JSON.stringify(value)
