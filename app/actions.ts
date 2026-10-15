@@ -59,7 +59,8 @@ export async function sendInquiry(
 
   const apiKey = process.env.RESEND_API_KEY
   const company = await getSettings()
-  const recipient = company.inquiryEmail || process.env.INQUIRY_TO_EMAIL || company.email
+  // The production delivery address is authoritative, not an old CMS/test value.
+  const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || company.inquiryEmail || company.email
   const sender = process.env.INQUIRY_FROM_EMAIL
   let inquiryId: string | null = null
   try { inquiryId = await storeInquiry({ pickup, delivery, date, frequency, cargo, name, email, phone }) }

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { currentMember, serviceClient, sessionClient, type MemberRole } from '../../supabase/server'
 import { supabaseEnabled } from '../../supabase/config'
+import { adminOrigin } from '../../supabase/admin-origin'
 
 export async function signIn(form: FormData) {
   if (!supabaseEnabled()) redirect('/admin?error=unavailable')
@@ -33,16 +34,22 @@ export async function inviteMember(form: FormData): Promise<{ ok: boolean; messa
     return { ok: false, message: 'Zkontrolujte e-mail a zvolený přístup.' }
   }
   // Fixed deployment origin: never build invitation links from untrusted Host headers.
-  const origin = process.env.ADMIN_SITE_URL
-  if (!origin || new URL(origin).protocol !== 'https:') {
+  const origin = adminOrigin(process.env.ADMIN_SITE_URL)
+  if (!origin) {
     return { ok: false, message: 'Nejdříve je nutné nastavit adresu administrace.' }
   }
-  const service = serviceClient()
+  // Missing server credentials or a transport outage must not crash the UI.
+  let invitation
   const linkOnly = form.get('delivery') === 'link'
   const redirectTo = new URL('/admin/accept', origin).href
-  const invitation = linkOnly
-    ? await service.auth.admin.generateLink({ type: 'invite', email, options: { redirectTo } })
-    : await service.auth.admin.inviteUserByEmail(email, { redirectTo })
+  try {
+    const service = serviceClient()
+    invitation = linkOnly
+      ? await service.auth.admin.generateLink({ type: 'invite', email, options: { redirectTo } })
+      : await service.auth.admin.inviteUserByEmail(email, { redirectTo })
+  } catch {
+    return { ok: false, message: 'Pozvánky nejsou momentálně dostupné. Správce musí ověřit serverové propojení a nastavení přihlašování.' }
+  }
   const { data, error } = invitation
   const properties = 'properties' in data ? data.properties : undefined
   const invitationLink = properties && typeof properties === 'object'

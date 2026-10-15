@@ -1,5 +1,9 @@
 # Administrace AKRON — dokončení nasazení
 
+## Aktuální doplnění 15. října
+
+Aktuální stav a rozdělení úkolů zákazník / technický tým je v `../LAUNCH-STATUS.md`. Web je v režimu Připravujeme. Supabase Auth a veřejné URL produkce jsou nyní nastavené na ostrou doménu, včetně přesných callbacků pro ostrý web i hlavní Vercel adresu; demo callback zůstal zachovaný. Serverový příjemce i odesílací adresa byly nastavené na zákazníkovu doménu. Záloha, workspace migrace, přepnutí veřejného CMS, serverové klíče a skutečné doručení stále nejsou dokončené. Následující stav z 8. října je historický, nikoliv potvrzení dnešní kompletní funkčnosti.
+
 ## Stav pracovního prostoru po úpravách 8. října
 
 Vlastník odložil plnou databázovou migraci a přepnutí veřejného obsahu do doby předání. Hlavní projekt má aktivní přihlášení ke stávajícímu Supabase přes veřejnou konfiguraci, ale `CMS_PROVIDER` není přepnutý a serverový tajný klíč nebyl do hlavního projektu doplněn. Editor proto umožňuje koncepty; tlačítko publikování je na hlavním webu zablokované, dokud není propojení skutečně dokončené. Připravené položky Aktivita a Administrace potřebují novou migraci; pozvánky navíc serverové připojení a povolený Auth redirect. Tyto blokace nepovažovat za dokončené funkce.

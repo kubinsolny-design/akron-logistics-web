@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check:launch-config": "node scripts/check-launch-config.mjs",
     "dev": "next dev",
     "build": "next build",
     "build:admin-preview": "node scripts/import-supabase.mjs --apply && next build",
