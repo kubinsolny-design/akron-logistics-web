@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { imageUrl } from '../../sanity/client'
 import { AdminRecords } from './records'
 import { InquiryConnectionPanel } from './inquiry-connection'
+import { InquirySettingsPanel } from './inquiry-settings'
 import { AdminIcon } from './icons'
 import { AdminFiles } from './files'
 import { DocumentEditor } from './document-editor'
@@ -64,7 +65,7 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
   if (path.length === 0 && !value.sections && !value.body && value.name) {
     for (const field of ['logo', 'lightLogo', 'portrait']) editable[field] ??= { url: '', alt: '' }
   }
-  const entries = Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name))
+  const entries = Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name) && !(path.length === 0 && value.name && ['email', 'inquiryEmail'].includes(name)))
   const advanced = Object.fromEntries(entries.filter(([name]) => advancedFields.has(name)))
   const order = ['eyebrow', 'title', 'heading', 'highlight', 'description', 'question', 'answer', 'text', 'label', 'href', 'caption', 'image', 'actions', 'cards', 'questions']
   const shown = entries.filter(([name]) => !simple || !advancedFields.has(name))
@@ -256,7 +257,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
       {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} />}
       {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics připojíme později</h3><p>Sem doplníme návštěvnost, nejnavštěvovanější stránky a další skutečné výsledky webu.</p><span className="admin-badge">Zatím nepřipojeno</span></section>}
-      {tab === 'settings' && role === 'admin' && <InquiryConnectionPanel />}
+      {tab === 'settings' && role === 'admin' && <><InquirySettingsPanel /><InquiryConnectionPanel /></>}
       {tab === 'content' && <section className="admin-page-picker admin-page-picker-compact" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
         {[false, true].map(legal => { const group = pages.filter(item => isLegalPage(item) === legal); return group.length > 0 && <div key={String(legal)} className={legal ? 'admin-legal-pages' : undefined}>{legal && <p className="admin-muted">Právní informace</p>}<div className="admin-page-cards">{group.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>/{pageSlug(item) === 'home' ? '' : pageSlug(item)}</span></button>)}</div></div> })}

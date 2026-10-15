@@ -3,7 +3,7 @@ import { preparing } from './preparing'
 export const company = {
   name: 'AKRON Logistics s.r.o.',
   contactName: 'Adam Bartusek',
-  email: 'info@akronlogistics.cz',
+  email: 'adam.bartusek@akronlogistics.cz',
   phone: '+420 606 187 648',
   phoneHref: 'tel:+420606187648',
   registrationNumber: '29858895',

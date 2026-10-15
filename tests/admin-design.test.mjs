@@ -23,6 +23,7 @@ function load(file) {
   mod.require = request => {
     if (request === './records') return { AdminRecords: () => null }
     if (request === './inquiry-connection') return { InquiryConnectionPanel: () => null }
+    if (request === './inquiry-settings') return { InquirySettingsPanel: () => null }
     if (request === './actions') return { signOut: () => {} }
     if (request === './auth-shell') return { AuthShell: () => null }
     if (request === './login-form') return { LoginForm: () => null }

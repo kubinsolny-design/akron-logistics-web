@@ -12,8 +12,9 @@ export function launchConfigChecks(env) {
     ['Publishable key configured', present('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')],
     ['Server-only Supabase key configured', present('SUPABASE_SECRET_KEY') || present('SUPABASE_SERVICE_ROLE_KEY')],
     ['Server-only Resend key configured', present('RESEND_API_KEY')],
-    ['Recipient is the customer mailbox', env.INQUIRY_TO_EMAIL?.trim().toLowerCase() === 'info@akronlogistics.cz'],
-    ['Sender uses the customer domain', /^[^@\s<>]+@akronlogistics\.cz$/.test(senderEmail)],
+    // The current recipient is verified separately through the protected admin
+    // connection check; a legacy env var must never override the admin setting.
+    ['Sender is the verified web mailbox', senderEmail === 'web@akronlogistics.cz'],
     ['No privileged keys exposed with NEXT_PUBLIC_', !Object.keys(env).some(key => key.startsWith('NEXT_PUBLIC_') && /SECRET|SERVICE_ROLE|RESEND_API_KEY/.test(key) && env[key])],
   ].map(([check, ok]) => ({ check, ok: Boolean(ok) }))
 }

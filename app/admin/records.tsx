@@ -8,7 +8,7 @@ type Row = Record<string, unknown>
 type View = 'users' | 'inquiries' | 'activity'
 const roleLabels: Record<string, string> = { admin: 'Admin', editor: 'Uživatel', viewer: 'Pouze náhled' }
 const statusLabels: Record<string, string> = { new: 'Nová', processing: 'V řešení', done: 'Vyřízená' }
-const auditLabels: Record<string, string> = { draft: 'Uložení rozpracované verze', publish: 'Publikování na web', member: 'Změna přístupu', inquiry: 'Úprava poptávky', media: 'Nahrání obrázku' }
+const auditLabels: Record<string, string> = { draft: 'Uložení rozpracované verze', publish: 'Publikování na web', member: 'Změna přístupu', inquiry: 'Úprava poptávky', media: 'Nahrání obrázku', inquiry_settings: 'Změna kontaktního e-mailu / doručování' }
 function timestamp(value: unknown) { return value ? new Date(String(value)).toLocaleString('cs-CZ') : 'Zatím nezaznamenáno' }
 function text(value: unknown) { return typeof value === 'string' ? value : '' }
 

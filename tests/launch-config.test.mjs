@@ -17,7 +17,7 @@ test('configuration audit reports booleans, never credential values', () => {
 })
 test('an old recipient, demo origin, incomplete migration switch and public secrets do not pass', () => {
   const checks = launchConfigChecks({ ...env, ADMIN_SITE_URL: 'https://akron-admin-demo.vercel.app', INQUIRY_TO_EMAIL: 'old@example.com', CMS_PROVIDER: 'sanity', NEXT_PUBLIC_SUPABASE_SECRET_KEY: 'example-not-a-real-secret' })
-  assert.equal(checks.filter(check => !check.ok).length, 4)
+  assert.equal(checks.filter(check => !check.ok).length, 3)
 })
 test('empty and placeholder configuration is not a ready launch', () => {
   assert.ok(launchConfigChecks({}).some(check => !check.ok))

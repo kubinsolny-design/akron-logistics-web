@@ -7,8 +7,9 @@ import { draftMode } from 'next/headers'
 import { preparing } from './preparing'
 import { inquiryValidation } from './inquiry-validation'
 import { currentMember } from '../supabase/server'
-import { defaultInquirySender, inquiryRecipient, inquiryStorageProvider, validInquirySender } from './inquiry-config'
+import { defaultInquirySender, inquiryStorageProvider, validContactEmail, validInquirySender } from './inquiry-config'
 import { company as defaultCompany } from './site'
+import { readInquirySettings } from '../supabase/inquiry-settings'
 
 function getField(formData: FormData, name: string) {
   return String(formData.get(name) ?? '').trim()
@@ -33,14 +34,14 @@ export async function sendInquiry(
 }
 
 /** Explicit admin-only test: same validation, private storage, quota and delivery. */
-export async function sendTestInquiry(): Promise<InquiryState> {
+export async function sendTestInquiry(_previous?: InquiryState, formData?: FormData): Promise<InquiryState> {
   try {
     const member = await currentMember()
     if (!member || member.role !== 'admin') return { status: 'error', message: 'Test může spustit pouze přihlášený administrátor.' }
     if ((await draftMode()).isEnabled) return { status: 'error', message: 'Test nelze spustit v náhledu konceptu.' }
     if (inquiryStorageProvider() !== 'supabase' || !process.env.RESEND_API_KEY?.trim()) return { status: 'error', message: 'Nejdříve dokončete propojení Supabase a Resendu.' }
-    const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
-    if (recipient.toLowerCase() !== inquiryRecipient) return { status: 'error', message: 'Cílová adresa testu musí být info@akronlogistics.cz. Ověřte INQUIRY_TO_EMAIL.' }
+    const testCopy = String(formData?.get('testCopy') || '').trim().toLowerCase()
+    if (testCopy && !validContactEmail(testCopy)) return { status: 'error', message: 'Zadejte platný e-mail pro kopii technického testu.' }
     const data = new FormData()
     for (const [key, value] of Object.entries({
       pickup: 'TECHNICKÝ TEST – bez skutečné nakládky', delivery: 'TECHNICKÝ TEST – bez skutečné vykládky',
@@ -48,7 +49,7 @@ export async function sendTestInquiry(): Promise<InquiryState> {
       cargo: `Test propojení formuláře, administrace a e-mailu (${new Date().toISOString()}). Nejde o objednávku přepravy. Není třeba zajišťovat vozidlo ani kontaktovat zákazníka.`,
       name: 'Technická kontrola webu AKRON', phone: defaultCompany.phone, email: '', privacyAcknowledged: 'yes',
     })) data.set(key, value)
-    return acceptInquiry(data, true)
+    return acceptInquiry(data, true, testCopy)
   } catch {
     return { status: 'error', message: 'Test nelze bezpečně spustit. Ověřte přihlášení a serverové propojení.' }
   }
@@ -62,23 +63,23 @@ export async function sendTestEmail(): Promise<InquiryState> {
     if ((await draftMode()).isEnabled) return { status: 'error', message: 'Test nelze spustit v náhledu konceptu.' }
     const apiKey = process.env.RESEND_API_KEY?.trim()
     const sender = process.env.INQUIRY_FROM_EMAIL?.trim() || defaultInquirySender
-    const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
-    if (!apiKey || !validInquirySender(sender) || recipient.toLowerCase() !== inquiryRecipient) return { status: 'error', message: 'Ověřte nastavení Resendu a správné adresy.' }
+    const { recipientEmail: recipient, revision } = await readInquirySettings()
+    if (!apiKey || !validInquirySender(sender)) return { status: 'error', message: 'Ověřte nastavení Resendu a správné adresy.' }
     // Identical payload + fixed per-admin ten-minute bucket: repeated clicks or
     // requests across server instances do not send duplicate test messages.
-    const idempotencyKey = `akron-email-test-${member.user.id}-${Math.floor(Date.now() / 600_000)}`
+    const idempotencyKey = `akron-email-test-${member.user.id}-${revision}-${Math.floor(Date.now() / 600_000)}`
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
-      body: JSON.stringify({ from: sender, to: [inquiryRecipient], subject: '[TECHNICKÝ TEST AKRON] Kontrola odesílání e-mailů',
+      body: JSON.stringify({ from: sender, to: [recipient], subject: '[TECHNICKÝ TEST AKRON] Kontrola odesílání e-mailů',
         html: '<h1>Technický test webu AKRON Logistics</h1><p>Tato zpráva ověřuje pouze odesílání e-mailů ze serveru webu přes Resend. Nejde o objednávku ani poptávku přepravy a není nutné na ni odpovídat.</p><p>Ukládání poptávek do administrace se ověřuje samostatně; tento test žádnou poptávku nevytváří.</p>' }),
       signal: AbortSignal.timeout(10_000),
     })
     if (!response.ok) return { status: 'error', message: 'Resend testovací e-mail odmítl. Ověřte platnost klíče, odesílací doménu a záznamy Resendu.' }
-    return { status: 'success', message: 'Resend přijal testovací e-mail pro info@akronlogistics.cz. Ověřte doručení. Tento test nepotvrzuje ukládání poptávek do administrace.' }
+    return { status: 'success', message: `Resend přijal testovací e-mail pro ${recipient}. Ověřte doručení. Tento test nepotvrzuje ukládání poptávek do administrace.` }
   } catch { return { status: 'error', message: 'Test e-mailu se nepodařilo dokončit. Zkuste to později nebo ověřte serverové propojení.' } }
 }
 
-async function acceptInquiry(formData: FormData, test = false): Promise<InquiryState> {
+async function acceptInquiry(formData: FormData, test = false, testCopy = ''): Promise<InquiryState> {
   const website = getField(formData, 'website')
   if (website) {
     return { status: 'success', message: 'Děkujeme. Poptávku jsme přijali.' }
@@ -106,8 +107,11 @@ async function acceptInquiry(formData: FormData, test = false): Promise<InquiryS
 
   const apiKey = process.env.RESEND_API_KEY
   const company = await getSettings()
-  // The production delivery address is authoritative, not an old CMS/test value.
-  const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
+  // Admin-only live setting is authoritative. Ignore legacy environment/CMS values.
+  let recipient: string
+  try { recipient = (await readInquirySettings()).recipientEmail }
+  catch { return { status: 'error', message: `Poptávku nyní nelze přijmout. Napište prosím na ${company.email} nebo zavolejte ${company.phone}.` } }
+  const recipients = Array.from(new Set([recipient, ...(test && testCopy ? [testCopy] : [])]))
   const sender = process.env.INQUIRY_FROM_EMAIL?.trim() || defaultInquirySender
   if (!validInquirySender(sender)) return { status: 'error', message: 'Odesílání není správně nastavené. Kontaktujte nás prosím přímo.' }
   let inquiryId: string | null = null
@@ -121,7 +125,7 @@ async function acceptInquiry(formData: FormData, test = false): Promise<InquiryS
     if (error instanceof Error && error.message.startsWith('Příliš mnoho')) return { status: 'error', message: error.message }
     return { status: 'error', message: `Poptávku nyní nelze přijmout. Napište prosím na ${company.email} nebo zavolejte ${company.phone}.` }
   }
-  const accepted: InquiryState = { status: 'success', message: test ? 'Testovací poptávka je uložená v administraci a Resend přijal e-mail pro info@akronlogistics.cz. Doručení ještě ověřte ve schránce nebo v Resendu.' : company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
+  const accepted: InquiryState = { status: 'success', message: test ? `Testovací poptávka je uložená v administraci a Resend přijal e-mail pro ${recipients.join(', ')}. Doručení ještě ověřte ve schránce nebo v Resendu.` : company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
   const savedButNotSent: InquiryState = test ? { status: 'error', message: 'Testovací poptávka je uložená, ale e-mail se nepodařilo odeslat. Ověřte klíč, odesílací doménu a záznamy Resendu.' } : accepted
 
   if (!apiKey || !sender) {
@@ -162,7 +166,7 @@ async function acceptInquiry(formData: FormData, test = false): Promise<InquiryS
       },
       body: JSON.stringify({
         from: sender,
-        to: [recipient],
+        to: recipients,
         ...(email ? { reply_to: email } : {}),
         subject: `${test ? '[TEST WEBU – NEOBJEDNÁVAT PŘEPRAVU] ' : ''}Nová poptávka: ${pickup} → ${delivery}`,
         html: `

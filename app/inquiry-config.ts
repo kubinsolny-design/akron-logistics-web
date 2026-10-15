@@ -5,9 +5,13 @@ export function inquiryStorageProvider(env: Record<string, string | undefined> =
   return env.CMS_PROVIDER === 'supabase' || env.NEXT_PUBLIC_ADMIN_PROVIDER === 'supabase' ? 'supabase' : 'sanity'
 }
 
-export const inquiryRecipient = 'info@akronlogistics.cz'
+export const inquiryRecipient = 'adam.bartusek@akronlogistics.cz'
 export const defaultInquirySender = 'AKRON Logistics <web@akronlogistics.cz>'
 
+export function validContactEmail(value: string) {
+  return value.length <= 254 && /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(value)
+}
+
 export function validInquirySender(sender: string) {
-  return /^(?:[^<>\r\n]*<[^<>\s@]+@akronlogistics\.cz>|[^<>\s@]+@akronlogistics\.cz)$/i.test(sender.trim())
+  return /^(?:[^<>\r\n]*<web@akronlogistics\.cz>|web@akronlogistics\.cz)$/i.test(sender.trim())
 }

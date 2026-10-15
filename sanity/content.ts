@@ -6,6 +6,7 @@ import { company } from '../app/site'
 import { pageMetadata } from '../app/seo'
 import type { CmsPage, Settings } from './types'
 import { contentEnabled, readDocument, publishedSlugs } from '../supabase/content'
+import { publicContactEmail } from '../supabase/inquiry-settings'
 
 export const defaultSettings: Settings = {
   ...company,
@@ -49,6 +50,9 @@ export const getSettings = cache(async (): Promise<Settings> => {
     ? await readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled)
     : await fetchContent<Partial<Settings>>('*[_id == "siteSettings"][0]')
   const settings = { ...defaultSettings, ...Object.fromEntries(Object.entries(stored || {}).filter(([, value]) => value != null)) } as Settings
+  // Shared live contact setting is independent of the unfinished CMS migration.
+  settings.email = await publicContactEmail()
+  delete settings.inquiryEmail
   settings.phoneHref = `tel:${settings.phone.replace(/[^+\d]/g, '')}`
   return settings
 })

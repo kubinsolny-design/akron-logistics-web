@@ -29,6 +29,7 @@ function connectionFixture(options = {}) {
       }
       if (name === '../../supabase/server-key') return { hasServiceKey: () => Boolean(env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY) }
       if (name === '../inquiry-config') return config(env)
+      if (name === '../../supabase/inquiry-settings') return { readInquirySettings: async () => ({ recipientEmail: 'adam.bartusek@akronlogistics.cz', revision: 1 }) }
       if (name === '../preparing') return { preparing: true }
       throw new Error(name)
     },
