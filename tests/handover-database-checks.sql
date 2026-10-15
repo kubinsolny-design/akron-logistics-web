@@ -37,11 +37,13 @@ do $$ begin
     raise exception 'Trashed media referenced'; exception when raise_exception then if sqlerrm<>'Image is in trash; restore it before using it' then raise; end if; end;
 end; $$;
 select public.cms_admin_manage('media_cancel',(select id::text from public.cms_media_trash where path='fixture.jpg'),false);
+select public.cms_save_draft('page-home','page','{"title":"Unpublished customer concept"}',(select revision from public.cms_drafts where id='page-home'));
 select public.cms_handover_content('[{"id":"site-settings","kind":"settings","data":{"name":"Test"}},{"id":"page-a","kind":"page","data":{"title":"A"}},{"id":"page-b","kind":"page","data":{"title":"B"}},{"id":"page-c","kind":"page","data":{"title":"C"}},{"id":"page-d","kind":"page","data":{"title":"D"}},{"id":"page-e","kind":"page","data":{"title":"E"}},{"id":"page-home","kind":"page","data":{"title":"Published from authoritative source"}}]');
 do $$ begin
   if not (select enabled from public.cms_site_state) then raise exception 'Not activated'; end if;
   if not exists(select from public.cms_content_backups) then raise exception 'Missing backup'; end if;
   if (select data->>'title' from public.cms_published where id='page-home') <> 'Published from authoritative source' then raise exception 'Wrong published content'; end if;
+  if (select data->>'title' from public.cms_drafts where id='page-home') <> 'Unpublished customer concept' then raise exception 'Customer draft overwritten'; end if;
   begin perform public.cms_handover_content('[]'); raise exception 'Second activation allowed'; exception when raise_exception then if sqlerrm not in ('Invalid content','Handover already completed') then raise; end if; end;
 end; $$;
 reset role;

@@ -36,7 +36,7 @@ function load(file) {
     if (request === '../../sanity/client') return { imageUrl: () => undefined }
     if (request === 'next/image') return { __esModule: true, default: props => React.createElement('img', props) }
     if (request.endsWith('.css')) return {}
-    if (request.startsWith('./')) { const base = path.resolve(path.dirname(file), request); return load(base + (fs.existsSync(base + '.tsx') ? '.tsx' : '.ts')) }
+    if (request.startsWith('./') || request.startsWith('../')) { const base = path.resolve(path.dirname(file), request); return load(base + (fs.existsSync(base + '.tsx') ? '.tsx' : '.ts')) }
     return normalRequire(request)
   }
   mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file)

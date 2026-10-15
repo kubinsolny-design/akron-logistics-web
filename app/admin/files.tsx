@@ -6,11 +6,13 @@ import { browserClient } from '../../supabase/browser'
 import { AdminIcon } from './icons'
 import { maxFileSize, mediaUploadPath, referencedMedia, uploadTypes, type MediaFile } from './media'
 import { trashMedia, restoreMedia } from './manage-actions'
+import { useConfirmation } from './confirmation'
 
 function fileSize(value?: number) { return value == null ? 'Velikost neuvedena' : value < 1024 * 1024 ? `${Math.ceil(value / 1024)} kB` : `${(value / (1024 * 1024)).toFixed(1)} MB` }
 function isImage(file: MediaFile) { return file.mime?.startsWith('image/') || /\.(jpe?g|png|webp|gif|svg)(?:\?|$)/i.test(file.url) }
 
 export function AdminFiles({ documents, readOnly, admin=false }: { documents: { data: unknown }[]; readOnly: boolean; admin?:boolean }) {
+  const { confirm, confirmation } = useConfirmation()
   const [files, setFiles] = useState<MediaFile[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -63,7 +65,7 @@ export function AdminFiles({ documents, readOnly, admin=false }: { documents: { 
   }, [documents, reload, admin])
 
   async function remove(path:string) {
-    if(!admin || !window.confirm('Přesunout tento nepoužívaný soubor do soukromého koše? Použité soubory nelze smazat.'))return
+    if(!admin || !(await confirm('Přesunout tento nepoužívaný soubor do soukromého koše? Použité soubory nelze smazat.')))return
     setUploading(true);setError('');setNotice('')
     try{const result=await trashMedia(path);if(!result.ok)setError(result.message);else{setNotice(result.message);setReload(value=>value+1)}}finally{setUploading(false)}
   }
@@ -96,6 +98,7 @@ export function AdminFiles({ documents, readOnly, admin=false }: { documents: { 
   const visible = files.filter(file => `${file.name} ${file.path}`.toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs')) && (filter === 'all' || (filter === 'images' ? isImage(file) : !isImage(file))))
   const shown = visible.slice(page * 24, (page + 1) * 24)
   return <section className="admin-records admin-files">
+    {confirmation}
     <div className="admin-files-intro"><div><h3>Knihovna souborů</h3><p>Nahrané soubory i podklady použité v obsahu webu. Odkaz můžete použít na libovolné stránce.</p></div>{!readOnly && <label className="admin-file-upload"><AdminIcon name="upload" /> {uploading ? 'Nahrávám…' : 'Nahrát soubor'}<input type="file" aria-label="Nahrát veřejný soubor" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={loading || uploading} onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void upload(file) }} /></label>}</div>
     <p className="admin-files-warning">JPEG, PNG, WebP a PDF · do 10 MB. Aktivní soubory jsou veřejné — nenahrávejte osobní údaje ani soukromé dokumenty. Administrátor může nepoužívané nahrané soubory přesunout do soukromého koše. Obrázky dodané se šablonou nahraďte v obsahu stránky.</p>
     <div className="admin-record-toolbar"><label>Vyhledat soubor<input type="search" value={query} placeholder="Název souboru…" onChange={event => { setQuery(event.target.value); setPage(0) }} /></label><label>Typ souboru<select value={filter} onChange={event => { setFilter(event.target.value); setPage(0) }}><option value="all">Všechny soubory</option><option value="images">Obrázky</option><option value="documents">Dokumenty a ostatní</option></select></label><button disabled={loading || uploading} onClick={() => setReload(value => value + 1)}>Obnovit</button></div>

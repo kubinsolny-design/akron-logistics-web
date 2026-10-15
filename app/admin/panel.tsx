@@ -7,6 +7,8 @@ import { AdminRecords } from './records'
 import { InquiryConnectionPanel } from './inquiry-connection'
 import { InquirySettingsPanel } from './inquiry-settings'
 import { activateContentHandover } from './handover-actions'
+import { useConfirmation } from './confirmation'
+import { publicHref } from '../public-links'
 import { AdminIcon } from './icons'
 import { AdminFiles } from './files'
 import { DocumentEditor } from './document-editor'
@@ -80,6 +82,7 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
   return <div className={`admin-fields${simple ? ' admin-fields-simple' : ''}`}>{shown.map(([name, item]) => {
     const label = path.includes('formText') && name==='name' ? 'Jméno a firma' : labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
+    if (name === 'slug' && item && typeof item === 'object' && !Array.isArray(item)) return <label key={name}>{label}<input readOnly value={publicHref(`/${String(item.current || '')}`)} /><small>Adresa této stránky je pevná. Text navigace lze změnit v Nastavení webu.</small></label>
     if (name === 'body' && path.length === 0 && documentBody && Array.isArray(item) && supportsDocumentEditor(item)) return <DocumentEditor key={name} value={item} onChange={change} disabled={disabled} />
     if (['image', 'portrait', 'logo', 'lightLogo', 'shareImage'].includes(name)) {
       const image = item && typeof item === 'object' && !Array.isArray(item) ? item : {}
@@ -149,6 +152,7 @@ function replaceImage(value: Value, path: string[], url: string): Value {
 }
 
 export function AdminPanel({ documents, role, userId, email = '', publishingEnabled = false }: { documents: Document[]; role: MemberRole; userId: string; email?: string; publishingEnabled?: boolean }) {
+  const {confirm,confirmation}=useConfirmation()
   const [items, setItems] = useState(documents)
   const initial = sortContentPages(documents.filter(item => item.kind === 'page'))[0] || documents[0]
   const [selected, setSelected] = useState(initial?.id || '')
@@ -188,7 +192,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
     finally { setBusy(false) }
   }
   async function showTab(next: typeof tab) {
-    if (dirty && !window.confirm('Opustit neuložené změny?')) return
+    if (dirty && !(await confirm('Opustit neuložené změny?'))) return
     setTab(next)
     setMenuOpen(false)
     setMessage('')
@@ -205,7 +209,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
   async function save(publish: boolean) {
     if (!current || readOnly || busy) return
     if (publish && !publishingEnabled) { notify('Publikování na hlavní web bude dostupné po dokončení propojení obsahu.', 'error'); return }
-    if (publish && !window.confirm('Zveřejnit tuto verzi na webu? Změny uvidí návštěvníci.')) return
+    if (publish && !(await confirm('Zveřejnit tuto verzi na webu? Změny uvidí návštěvníci.'))) return
     await operation(async () => {
       const client = browserClient()
       let revision = current.revision
@@ -236,15 +240,15 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       notify('Nový obrázek je vybraný. Uložte nebo publikujte změny.')
     })
   }
-  function selectDocument(item: Document) {
-    if (busy || (dirty && !window.confirm('Opustit neuložené změny?'))) return
+  async function selectDocument(item: Document) {
+    if (busy || (dirty && !(await confirm('Opustit neuložené změny?')))) return
     setSelected(item.id); setData(item.data); setDirty(false); setMessage('')
   }
   const pages = sortContentPages(items.filter(item => item.kind === 'page' && String(item.data.title || '').toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs'))))
   const allPages = items.filter(item => item.kind === 'page')
   const title = ({ overview: 'Přehled', content: 'Obsah stránek', settings: 'Nastavení webu', inquiries: 'Poptávky', users: 'Administrace', activity: 'Aktivita', files: 'Soubory', analytics: 'Analytika' })[tab]
   const descriptions = { overview: 'Váš pracovní prostor pro správu webu.', content: 'Všechny stránky, jejich texty, obrázky a sekce.', settings: 'Kontakty, vzhled a společné prvky celého webu.', inquiries: 'Přehled poptávek a jejich zpracování.', users: 'Uživatelé, pozvánky a jejich oprávnění.', activity: 'Kdo, kdy a co na webu změnil.', files: 'Veřejné obrázky a dokumenty pro váš web.', analytics: 'Návštěvnost a výsledky vašeho webu.' }
-  return <div className="admin-shell">
+  return <div className="admin-shell">{confirmation}
     <button className="admin-menu-toggle" aria-expanded={menuOpen} aria-controls="admin-sidebar" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Zavřít menu' : 'Menu administrace'}</button>
     <aside id="admin-sidebar" className={`admin-sidebar${menuOpen ? ' is-open' : ''}`}>
       <div className="admin-sidebar-scroll">
@@ -268,10 +272,10 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} admin={role==='admin'} />}
       {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics připojíme později</h3><p>Sem doplníme návštěvnost, nejnavštěvovanější stránky a další skutečné výsledky webu.</p><span className="admin-badge">Zatím nepřipojeno</span></section>}
       {tab === 'settings' && role === 'admin' && <><InquirySettingsPanel /><InquiryConnectionPanel /></>}
-      {tab==='settings' && role==='admin' && !publishingEnabled && <section className="admin-records"><h3>Dokončit propojení obsahu</h3><p>Přenese aktuálně zveřejněné dokumenty ze Sanity. Předchozí obsah uloží do zálohy a odlišné koncepty zachová. Režim Připravujeme nemění.</p><button disabled={busy} onClick={()=>{if(window.confirm('Provést odsouhlasený převod aktuálně zveřejněného obsahu do Supabase a zapojit publikování? Koncepty nebudou automaticky zveřejněné.'))void operation(async()=>{const result=await activateContentHandover();notify(result.message,result.ok?'success':'error')})}}>Zálohovat a propojit zveřejněný obsah</button></section>}
+      {tab==='settings' && role==='admin' && !publishingEnabled && <section className="admin-records"><h3>Dokončit propojení obsahu</h3><p>Přenese aktuálně zveřejněné dokumenty ze Sanity. Předchozí obsah uloží do zálohy a odlišné koncepty zachová. Režim Připravujeme nemění.</p><button disabled={busy} onClick={async()=>{if(await confirm('Provést odsouhlasený převod aktuálně zveřejněného obsahu do Supabase a zapojit publikování? Koncepty nebudou automaticky zveřejněné.'))void operation(async()=>{const result=await activateContentHandover();notify(result.message,result.ok?'success':'error')})}}>Zálohovat a propojit zveřejněný obsah</button></section>}
       {tab === 'content' && <section className="admin-page-picker admin-page-picker-compact" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
-        {[false, true].map(legal => { const group = pages.filter(item => isLegalPage(item) === legal); return group.length > 0 && <div key={String(legal)} className={legal ? 'admin-legal-pages' : undefined}>{legal && <p className="admin-muted">Právní informace</p>}<div className="admin-page-cards">{group.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>/{pageSlug(item) === 'home' ? '' : pageSlug(item)}</span></button>)}</div></div> })}
+        {[false, true].map(legal => { const group = pages.filter(item => isLegalPage(item) === legal); return group.length > 0 && <div key={String(legal)} className={legal ? 'admin-legal-pages' : undefined}>{legal && <p className="admin-muted">Právní informace</p>}<div className="admin-page-cards">{group.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>{publicHref(`/${pageSlug(item) === 'home' ? '' : pageSlug(item)}`)}</span></button>)}</div></div> })}
         {!pages.length && <p className="admin-muted">Žádná odpovídající stránka.</p>}
       </section>}
       {(tab === 'content' || tab === 'settings') && <section className="admin-editor">

@@ -327,6 +327,10 @@
 .admin-file-path { display:block; font-size:10px; overflow-wrap:anywhere; margin:8px 0; color:#647184; }
 .akron-admin button.admin-danger { color:#9d2424; border-color:#e6bdbd; background:#fff7f7; }
 .admin-bin-note { padding:12px; border:1px solid #e0e5ec; border-radius:8px; font-size:12px; }
+.admin-confirmation { width:min(480px,calc(100% - 32px)); padding:28px; border:1px solid #dfe4e9; border-radius:16px; color:#202733; box-shadow:0 24px 80px #15223633; }
+.admin-confirmation::backdrop { background:#15223680; }
+.admin-confirmation p { line-height:1.7; overflow-wrap:anywhere; }
+.admin-confirmation > div { display:flex; justify-content:flex-end; gap:12px; margin-top:22px; }
 .admin-file-info button { font-size:10px; padding:7px 9px; min-height:32px; }
 .admin-file-info a { display:grid; place-items:center; min-width:36px; min-height:36px; color:#6f7e90; }
 @media(min-width:751px) and (max-width:1100px) { .admin-file-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
