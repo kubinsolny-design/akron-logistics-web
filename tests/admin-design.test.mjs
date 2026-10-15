@@ -23,8 +23,8 @@ function load(file) {
   const normalRequire = mod.require.bind(mod)
   mod.require = request => {
     if (request === './records') return { AdminRecords: () => null }
-    if (request === './inquiry-connection') return { InquiryConnectionPanel: () => null }
-    if (request === './inquiry-settings') return { InquirySettingsPanel: () => null }
+    if (request === './inquiry-connection') return { InquiryConnectionPanel: () => React.createElement('section', null, 'Propojení poptávkového formuláře') }
+    if (request === './inquiry-settings') return { InquirySettingsPanel: () => React.createElement('section', { 'aria-label': 'Kontaktní e-mail a doručování' }, 'Kontaktní e-mail a doručování') }
     if (request === './manage-actions') return {}
     if (request === '../../supabase/content') return { contentEnabled: async () => true }
     if (request === './actions') return { signOut: () => {} }
@@ -44,6 +44,25 @@ function load(file) {
 }
 const { AdminPanel, Fields, PageEditor } = load(path.join(root, 'app/admin/panel.tsx'))
 const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture', email: 'ukazka@akronlogistics.cz' }))
+
+test('client-facing settings retain contact editing but omit technical connection and test tools',async()=>{
+  const dom=new JSDOM('<div id="root"></div>')
+  const originals={document:globalThis.document,window:globalThis.window,IS_REACT_ACT_ENVIRONMENT:globalThis.IS_REACT_ACT_ENVIRONMENT}
+  Object.assign(globalThis,{document:dom.window.document,window:dom.window,IS_REACT_ACT_ENVIRONMENT:true})
+  let mounted
+  try{
+    const {createRoot}=await import('react-dom/client')
+    const container=document.getElementById('root');mounted=createRoot(container)
+    await act(async()=>mounted.render(React.createElement(AdminPanel,{documents:fixture,role:'admin',userId:'fixture'})))
+    const settings=[...container.querySelectorAll('button')].find(button=>button.textContent.trim()==='Nastavení webu')
+    await act(async()=>settings.click())
+    assert.ok(container.querySelector('[aria-label="Kontaktní e-mail a doručování"]'))
+    assert.doesNotMatch(container.textContent,/Propojení poptávkového formuláře|Prověřit propojení|Odeslat testovací poptávku|Ověřit pouze odesílání/)
+  }finally{
+    if(mounted)await act(async()=>mounted.unmount())
+    Object.assign(globalThis,originals);dom.window.close()
+  }
+})
 
 test('admin header uses the exact shared favicon asset instead of a font glyph', async () => {
   const { default: AdminPage } = load(path.join(root, 'app/admin/page.tsx'))
