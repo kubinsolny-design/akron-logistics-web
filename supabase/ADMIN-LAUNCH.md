@@ -2,6 +2,16 @@
 
 ## Živé propojení formuláře — doplnění 15. října
 
+### Výsledek skutečného chráněného testu
+
+15. října byl z produkčního `/admin` jednou spuštěn oddělený e-mailový test. **Produkční Resend klíč je funkční**: poskytovatel přijal zprávu z `AKRON Logistics <web@akronlogistics.cz>` na `info@akronlogistics.cz`. Testovací předmět je `[TECHNICKÝ TEST AKRON] Kontrola odesílání e-mailů`.
+
+**Zpráva ale nebyla úspěšně doručená do klientovy schránky.** V následných událostech Resend zaznamenal permanentní bounce se skutečnou SMTP odpovědí: `550 5.1.10 RESOLVER.ADR.RecipientNotFound; Recipient info@akronlogistics.cz not found by SMTP address lookup`. Veřejný MX domény míří na `akronlogistics-cz.mail.protection.outlook.com`. Správce příjmu pošty má proto ověřit existenci/aktivaci schránky nebo aliasu této adresy a případné směrování v Microsoft 365. Samotné ověření odesílací domény v Resendu nezakládá přijímací schránku.
+
+Resend adresu po permanentním vrácení zařadil do suppression listu. **Blokace nebyla odstraněna a žádný další test nebyl odeslán.** Teprve po opravě a potvrzení funkční přijímací adresy může správce posoudit odstranění této konkrétní blokace a provést nový test. Detaily jsou v [záznamu testu v Resendu](https://resend.com/emails/01a13ef5-b156-7687-8227-9d077e2e64ee); vyžaduje správný přihlášený účet. [Microsoft – diagnostika chyby RecipientNotFound](https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/recipientnotfound-ndr).
+
+Transportní test nevytvořil žádnou poptávku; po něm bylo v `cms_inquiries` stále 0 záznamů. Celý formulář není end-to-end ověřený: vedle opravy příjmu pošty chybí i serverový Supabase klíč popsaný níže. Veřejný režim Připravujeme nebyl vypnutý. Kód prošel 93 testy, lintem a produkčním buildem; oba Vercel projekty dokončily nasazení změny `254f3e0`.
+
 **Aktuální blokace potvrzená z běžícího webu:** `RESEND_API_KEY` v produkci existuje, ale není nastavený privátní serverový klíč Supabase. Doplňte v projektu Vercel `hehu / akron-logistics-web` pro Production proměnnou **`SUPABASE_SECRET_KEY`** ze stávajícího projektu `htgwzjcdxbknzvobwioa` (podporovaná je také integrační proměnná `SUPABASE_SERVICE_ROLE_KEY`). Nepoužívat publishable/anon key, nic neposílat do chatu/GitHubu a žádný serverový klíč nepřidávat pod `NEXT_PUBLIC_*`. Potom udělat nové nasazení a chráněný test níže. Starší odstavce o nepřístupném Supabase a neaplikované workspace migraci jsou již historické.
 
 - V Chrome je ve správném účtu Resendu doména `akronlogistics.cz` označená Verified a připravená k odesílání. Produkční kontrola potvrdila přítomnost Resend klíče, odesílací doménu a příjemce `info@akronlogistics.cz`. Samotná přítomnost klíče ještě není důkaz přijetí/doručení zprávy.
