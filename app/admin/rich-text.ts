@@ -6,7 +6,7 @@ const object = (value: TextValue): value is TextObject => !!value && typeof valu
 const escape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 
 export function safeTextLink(value: string): boolean {
-  return /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !/[\u0000-\u0020<>"']/u.test(value)
+  return /^(https?:\/\/|mailto:|tel:|\/(?!\/)|#)/i.test(value) && !/[\u0000-\u0020\u007f\\<>"']/u.test(value)
 }
 
 // Unsupported custom blocks remain in the original structured editor, never silently dropped.

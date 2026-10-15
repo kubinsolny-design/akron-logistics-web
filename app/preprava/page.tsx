@@ -18,7 +18,7 @@ export default async function TransportPage() {
   if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="page-hero shell"><p className="eyebrow">Přepravy podle skutečné potřeby</p><h1>Přeprava podle vašich požadavků.</h1><p className="lead">Jednorázová zásilka, pravidelné přepravy nebo urgentní doručení. Zajistíme řešení podle vašeho nákladu, termínu a trasy.</p></section>
-    <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/spoluprace#poptavka" aria-label={`Poptat ${service.title}`}>Poptat</Link></article>)}</section>
-    <section className="shell note-block"><h2>Potřebujete přepravu? Postaráme se o ni.</h2><p>Pošlete nám trasu, termín a informace o nákladu. Připravíme vám nabídku a vše potřebné domluvíme společně.</p><Link className="text-link" href="/spoluprace#poptavka">Získat nabídku přepravy</Link></section>
+    <section className="transport-list shell">{services.map((service) => <article id={service.id} key={service.id} className="transport-row"><div className="transport-visual"><Truck type={service.type} label={service.title} /></div><div><h2>{service.title}</h2><p>{service.text}</p></div><Link href="/kontakt#poptavka" aria-label={`Poptat ${service.title}`}>Poptat</Link></article>)}</section>
+    <section className="shell note-block"><h2>Potřebujete přepravu? Postaráme se o ni.</h2><p>Pošlete nám trasu, termín a informace o nákladu. Připravíme vám nabídku a vše potřebné domluvíme společně.</p><Link className="text-link" href="/kontakt#poptavka">Získat nabídku přepravy</Link></section>
   </>
 }

@@ -40,6 +40,7 @@ test('a stale form or direct server action cannot write inquiries while preparin
   const forbidden = () => assert.fail('Preparing must not access CMS, database or email')
   actionModule.require = name => {
     if (name === './preparing') return mod.exports
+    if (name === './inquiry-validation') return { inquiryValidation: forbidden }
     if (name === '../sanity/content') return { getSettings: forbidden }
     if (name === '../supabase/inquiries') return { storeInquiry: forbidden, markInquiryEmail: forbidden }
     if (name === 'next/headers') return { draftMode: forbidden }

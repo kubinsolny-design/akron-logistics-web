@@ -23,13 +23,21 @@ do $$ begin
 end $$;
 reset role;
 set role service_role;
-select public.cms_accept_inquiry('{"pickup":"Praha","delivery":"Brno","date":"2026-10-10","cargo":"Paleta","name":"Test","email":"test@example.invalid","phone":"","frequency":"once"}',repeat('a',64));
+do $$ declare new_id uuid; begin
+  new_id := public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Phone only","phone":"+420606123456"}',repeat('b',64));
+  if (select email from public.cms_inquiries where id=new_id) <> '' then raise exception 'Optional email failed'; end if;
+  begin
+    perform public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Test","email":"test@example.invalid"}',repeat('c',64));
+    raise exception 'Missing phone accepted';
+  exception when raise_exception then if sqlerrm <> 'Missing fields' then raise; end if; end;
+end $$;
+select public.cms_accept_inquiry('{"pickup":"Praha","delivery":"Brno","date":"2026-10-10","cargo":"Paleta","name":"Test","email":"test@example.invalid","phone":"+420606123456","frequency":"once"}',repeat('a',64));
 do $$ begin
   for i in 1..4 loop
-    perform public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Test","email":"test@example.invalid","phone":""}',repeat('a',64));
+    perform public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Test","email":"test@example.invalid","phone":"+420606123456"}',repeat('a',64));
   end loop;
   begin
-    perform public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Test","email":"test@example.invalid","phone":""}',repeat('a',64));
+    perform public.cms_accept_inquiry('{"pickup":"A","delivery":"B","date":"Soon","cargo":"Cargo","name":"Test","email":"test@example.invalid","phone":"+420606123456"}',repeat('a',64));
     raise exception 'Rate limit failed';
   exception when raise_exception then
     if sqlerrm not like 'Příliš mnoho%' then raise; end if;

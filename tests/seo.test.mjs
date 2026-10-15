@@ -16,6 +16,7 @@ const { seoPages, reservedSlugs } = load('../app/seo-pages.ts')
 test('each built-in page has its own share image, description and title', () => {
   const images = new Set(), descriptions = new Set(), titles = new Set()
   for (const [slug, entry] of Object.entries(seoPages)) {
+    if (slug === 'spoluprace') continue // Legacy OG alias; /kontakt is canonical.
     const path = slug === 'home' ? '/' : `/${slug}`
     const metadata = pageMetadata(entry.title, entry.description, path)
     assert.equal(metadata.alternates.canonical, path)

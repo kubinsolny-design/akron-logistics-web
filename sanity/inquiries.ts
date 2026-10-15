@@ -1,7 +1,8 @@
 import 'server-only'
 import { createClient } from '@sanity/client'
-import { randomUUID, createHash } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { headers } from 'next/headers'
+import { requestFingerprint } from '../app/request-fingerprint'
 
 function privateClient() {
   const token = process.env.SANITY_API_WRITE_TOKEN
@@ -16,8 +17,7 @@ export async function storeInquiry(fields: Record<string, string>) {
   const datasets = await client.datasets.list()
   if (datasets.find(d => d.name === 'inquiries')?.aclMode !== 'private') throw new Error('Private inquiry dataset is not ready.')
   const requestHeaders = await headers()
-  const ip = requestHeaders.get('x-vercel-forwarded-for') || requestHeaders.get('x-forwarded-for') || ''
-  const senderHash = createHash('sha256').update(`${ip}:${fields.email.toLowerCase()}`).digest('hex')
+  const senderHash = requestFingerprint(requestHeaders, process.env.SANITY_API_WRITE_TOKEN!, process.env.VERCEL === '1')
   const since = new Date(Date.now() - 10 * 60 * 1000).toISOString()
   const recent = await client.fetch<number>('count(*[_type == "inquiry" && senderHash == $hash && createdAt > $since])', { hash: senderHash, since })
   if (recent >= 5) throw new Error('Příliš mnoho poptávek. Počkejte prosím několik minut.')

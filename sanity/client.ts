@@ -1,6 +1,7 @@
 import { createClient } from 'next-sanity'
 import imageUrlBuilder from '@sanity/image-url'
 import type { CmsImage } from './types'
+import { safePublicHref } from '../app/public-links'
 
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'l802e097',
@@ -23,7 +24,5 @@ export function imageUrl(image?: CmsImage, width = 1600) {
 }
 
 export function safeHref(value?: string) {
-  if (!value) return '#'
-  if (/^(\/(?!\/)|#|https?:\/\/|mailto:|tel:)/i.test(value)) return value
-  return '#'
+  return safePublicHref(value)
 }

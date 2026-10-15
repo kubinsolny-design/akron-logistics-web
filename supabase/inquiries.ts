@@ -1,8 +1,8 @@
 import 'server-only'
-import { createHmac } from 'node:crypto'
 import { headers } from 'next/headers'
 import { serviceClient } from './server'
 import { storeInquiry as storeSanity, markInquiryEmail as markSanity } from '../sanity/inquiries'
+import { requestFingerprint } from '../app/request-fingerprint'
 
 const enabled = () => process.env.CMS_PROVIDER === 'supabase'
 
@@ -10,9 +10,7 @@ export async function storeInquiry(fields: Record<string, string>) {
   if (!enabled()) return storeSanity(fields)
   const client = serviceClient()
   const request = await headers()
-  const ip = request.get('x-vercel-forwarded-for') || request.get('x-forwarded-for') || ''
-  const fingerprint = createHmac('sha256', process.env.SUPABASE_SECRET_KEY!)
-    .update(`${ip}:${fields.email.toLowerCase()}`).digest('hex')
+  const fingerprint = requestFingerprint(request, process.env.SUPABASE_SECRET_KEY!, process.env.VERCEL === '1')
   const { data, error } = await client.rpc('cms_accept_inquiry', { fields, fingerprint })
   if (error) throw new Error(error.message.startsWith('Příliš mnoho') ? error.message : 'Inquiry storage unavailable')
   if (typeof data !== 'string') throw new Error('Inquiry storage unavailable')

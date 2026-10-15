@@ -5,8 +5,7 @@ import { getSettings } from '../sanity/content'
 import { storeInquiry, markInquiryEmail } from '../supabase/inquiries'
 import { draftMode } from 'next/headers'
 import { preparing } from './preparing'
-
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { inquiryValidation } from './inquiry-validation'
 
 function getField(formData: FormData, name: string) {
   return String(formData.get(name) ?? '').trim()
@@ -41,13 +40,8 @@ export async function sendInquiry(
   const email = getField(formData, 'email')
   const phone = getField(formData, 'phone')
 
-  if (!pickup || !delivery || !date || !cargo || !name || !email) {
-    return { status: 'error', message: 'Doplňte prosím všechna povinná pole.' }
-  }
-
-  if (!emailPattern.test(email)) {
-    return { status: 'error', message: 'Zkontrolujte prosím zadaný e-mail.' }
-  }
+  const validation = inquiryValidation({ pickup, delivery, date, frequency, cargo, name, email, phone })
+  if (validation) return { status: 'error', message: validation }
 
   if (getField(formData, 'privacyAcknowledged') !== 'yes') {
     return { status: 'error', message: 'Potvrďte prosím seznámení s informacemi o ochraně osobních údajů.' }
@@ -63,7 +57,11 @@ export async function sendInquiry(
   const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || company.inquiryEmail || company.email
   const sender = process.env.INQUIRY_FROM_EMAIL
   let inquiryId: string | null = null
-  try { inquiryId = await storeInquiry({ pickup, delivery, date, frequency, cargo, name, email, phone }) }
+  try {
+    inquiryId = await storeInquiry({ pickup, delivery, date, frequency, cargo, name, email, phone })
+    // Never send unthrottled mail when private storage/rate limiting is missing.
+    if (!inquiryId) throw new Error('Private inquiry storage is not configured')
+  }
   catch (error) {
     console.error('Could not securely store inquiry.')
     if (error instanceof Error && error.message.startsWith('Příliš mnoho')) return { status: 'error', message: error.message }
@@ -94,8 +92,8 @@ export async function sendInquiry(
     ['Četnost', frequencyLabels[frequency] ?? frequency],
     ['Náklad', cargo],
     ['Jméno a firma', name],
-    ['E-mail', email],
-    ['Telefon', phone || 'neuveden'],
+    ['Telefon', phone],
+    ['E-mail', email || 'neuveden'],
   ]
 
   let response: Response
@@ -110,7 +108,7 @@ export async function sendInquiry(
       body: JSON.stringify({
         from: sender,
         to: [recipient],
-        reply_to: email,
+        ...(email ? { reply_to: email } : {}),
         subject: `Nová poptávka: ${pickup} → ${delivery}`,
         html: `
           <h1>Nová poptávka přepravy</h1>

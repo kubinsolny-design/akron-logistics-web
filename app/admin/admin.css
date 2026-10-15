@@ -245,7 +245,7 @@
   .admin-sidebar { min-height:0; border:1px solid #dfe3e8; border-radius:10px; margin:0 16px 10px; padding:18px 12px; }
   .admin-main { padding:14px 16px 32px; }
   .admin-view-heading { gap:10px; margin-bottom:20px; }
-  .admin-view-heading > .admin-badge { max-width:95px; font-size:9px; margin-top:2px; }
+  .admin-view-heading > .admin-badge { flex-shrink:0; max-width:none; white-space:nowrap; font-size:9px; margin-top:2px; }
   .admin-view-heading h2 { font-size:24px; }
   .admin-welcome { padding:24px; }
   .admin-welcome-art { display:none; }

@@ -10,7 +10,7 @@ export function isLegalPage(page: Page) {
 }
 
 export function sortContentPages<T extends Page>(pages: T[]): T[] {
-  const priority: Record<string, number> = { home: 0, preprava: 1, moznosti: 2, spoluprace: 3, 'ochrana-osobnich-udaju': 100, cookies: 101 }
+  const priority: Record<string, number> = { home: 0, preprava: 1, moznosti: 2, spoluprace: 3, kontakt: 3, 'ochrana-osobnich-udaju': 100, cookies: 101 }
   return [...pages].sort((a, b) => (priority[pageSlug(a)] ?? 50) - (priority[pageSlug(b)] ?? 50)
     || String(a.data.title || a.id).localeCompare(String(b.data.title || b.id), 'cs'))
 }

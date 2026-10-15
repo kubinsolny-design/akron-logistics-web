@@ -4,6 +4,7 @@ import { getSettings } from '../sanity/content'
 import { imageUrl, safeHref } from '../sanity/client'
 import { CookieSettingsButton } from './cookie-preferences'
 import { MobileNavigation } from './mobile-navigation'
+import { publicNavigationLabel } from './public-links'
 
 export function Logo({ light = false, src }: { light?: boolean; src?: string }) {
   return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><Image src={src || `/images/akron-${light ? 'white' : 'black'}.svg`} alt="AKRON Logistics" width={875} height={280} priority={!light} /></Link>
@@ -11,7 +12,7 @@ export function Logo({ light = false, src }: { light?: boolean; src?: string }) 
 
 export async function Header() {
   const settings = await getSettings()
-  const navigation = settings.navigation.map(link => ({ label: link.label || '', href: safeHref(link.href) }))
+  const navigation = settings.navigation.map(link => ({ label: publicNavigationLabel(link.label || '', link.href || ''), href: safeHref(link.href) }))
   return <header className="site-header">
     <div className="shell nav-wrap">
       <Logo src={imageUrl(settings.logo, 900)} />
@@ -42,7 +43,7 @@ export async function Footer() {
         <a href={`mailto:${company.email}`}>{company.email}</a>
         <Link className="footer-action" href={safeHref(company.footerAction?.href)}>{company.footerAction?.label}</Link>
       </div>
-      <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{link.label}</Link>)}</div>
+      <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{publicNavigationLabel(link.label || '', link.href || '')}</Link>)}</div>
     </div>
     <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">Vytvořili <a href="https://webaci.cz" target="_blank" rel="noopener noreferrer">Webáci</a></p><span>{company.footerTagline}</span></div>
     <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link><Link href="/cookies">Cookies</Link><CookieSettingsButton /></nav>

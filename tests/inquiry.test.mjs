@@ -6,6 +6,8 @@ import ts from 'typescript'
 
 const source = readFileSync(new URL('../app/actions.ts', import.meta.url), 'utf8')
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText
+const validation = {}
+vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../app/inquiry-validation.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: validation })
 function fixture(options = {}) {
   const events = [], requests = [], exports = {}
   const env = { RESEND_API_KEY: 'fixture-not-a-real-key', INQUIRY_FROM_EMAIL: 'AKRON Logistics <web@akronlogistics.cz>', INQUIRY_TO_EMAIL: 'info@akronlogistics.cz', ...options.env }
@@ -13,6 +15,7 @@ function fixture(options = {}) {
   vm.runInNewContext(compiled, {
     exports, process: { env }, AbortSignal, Error, console: { error() {} },
     require: name => {
+      if (name === './inquiry-validation') return validation
       if (name === './preparing') return { preparing: options.preparing || false }
       if (name === 'next/headers') return { draftMode: async () => ({ isEnabled: options.preview || false }) }
       if (name === '../sanity/content') return { getSettings: async () => company }
@@ -30,7 +33,7 @@ function fixture(options = {}) {
     },
   })
   const form = new FormData()
-  for (const [key, value] of Object.entries({ pickup: 'Praha', delivery: 'Brno', date: '2026-11-01', frequency: 'once', cargo: '<script>test</script>', name: 'Fixture', email: 'fixture@example.com', privacyAcknowledged: 'yes' })) form.set(key, value)
+  for (const [key, value] of Object.entries({ pickup: 'Praha', delivery: 'Brno', date: '2026-11-01', frequency: 'once', cargo: '<script>test</script>', name: 'Fixture', phone: '+420 606 123 456', email: 'fixture@example.com', privacyAcknowledged: 'yes' })) form.set(key, value)
   return { form, events, requests, send: (data = form) => exports.sendInquiry({ status: 'idle', message: '' }, data) }
 }
 
@@ -65,12 +68,18 @@ test('without storage and delivery, the action never reports success', async () 
   assert.equal((await f.send()).status, 'error')
   assert.equal(f.requests.length, 0)
 })
+test('configured email cannot bypass missing private storage and rate limiting', async () => {
+  const f = fixture({ noStorage: true })
+  assert.equal((await f.send()).status, 'error')
+  assert.deepEqual(f.events, ['store'])
+  assert.equal(f.requests.length, 0)
+})
 for (const options of [{ preview: true }, { preparing: true }]) test(`preview/preparing performs no writes: ${JSON.stringify(options)}`, async () => {
   const f = fixture(options)
   assert.equal((await f.send()).status, 'error')
   assert.deepEqual(f.events, [])
 })
-for (const [key, value] of [['email', 'invalid'], ['pickup', ''], ['privacyAcknowledged', 'no'], ['cargo', 'x'.repeat(3001)]]) test(`invalid ${key} is rejected before storage`, async () => {
+for (const [key, value] of [['email', 'invalid'], ['phone', ''], ['phone', '++++123456789'], ['pickup', ''], ['privacyAcknowledged', 'no'], ['cargo', 'x'.repeat(3001)]]) test(`invalid ${key} ${value.slice(0, 15)} is rejected before storage`, async () => {
   const f = fixture(); f.form.set(key, value)
   assert.equal((await f.send()).status, 'error')
   assert.deepEqual(f.events, [])
@@ -79,4 +88,11 @@ test('honeypot does not store or send anything', async () => {
   const f = fixture(); f.form.set('website', 'spam')
   await f.send()
   assert.deepEqual(f.events, [])
+})
+test('phone-only inquiry is stored and sent without an invalid empty Reply-To', async () => {
+  const f = fixture(); f.form.delete('email')
+  assert.equal((await f.send()).status, 'success')
+  assert.deepEqual(f.events, ['store', 'send', 'email:fixture-inquiry:sent'])
+  assert.equal('reply_to' in f.requests[0], false)
+  assert.match(f.requests[0].html, /\+420 606 123 456/)
 })

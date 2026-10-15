@@ -8,4 +8,5 @@ export const seoPages: Record<string, { title: string; description: string; labe
   cookies: { title: 'Cookies a úložiště prohlížeče', description: 'Přehled cookies a úložiště prohlížeče na webu AKRON Logistics. Zjistěte, k čemu slouží a jak můžete změnit své nastavení a souhlas.', label: 'INFORMACE PRO VÁS', card: 'Cookies. Přehledně a transparentně.' },
 }
 
+seoPages.kontakt = { ...seoPages.spoluprace, title: 'Kontakt a poptávka přepravy' }
 export const reservedSlugs = new Set(['home', ...Object.keys(seoPages), 'admin', 'studio', 'api', 'og', 'opengraph-image', 'icon', 'apple-icon', 'robots', 'sitemap'])

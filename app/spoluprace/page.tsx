@@ -3,7 +3,7 @@ import { CmsPage } from '../cms-page'
 import { InquiryForm } from '../inquiry-form'
 import { company } from '../site'
 
-export async function generateMetadata() { return contentMetadata('spoluprace', 'Poptávka přepravy a průběh spolupráce', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/spoluprace') }
+export async function generateMetadata() { return contentMetadata('spoluprace', 'Kontakt a poptávka přepravy', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/kontakt') }
 
 export default async function CooperationPage() {
   const [content, settings] = await Promise.all([getPage('spoluprace'), getSettings()])
