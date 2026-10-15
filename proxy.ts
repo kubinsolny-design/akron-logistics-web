@@ -1,11 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { supabaseConfig, supabaseEnabled } from './supabase/config'
-import { preparing, hidePublicPage, preparingHtml } from './app/preparing'
+import { showPreparingPage, preparingHtml } from './app/preparing'
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname
-  if (preparing && hidePublicPage(path)) return new NextResponse(preparingHtml, {
+  if (showPreparingPage(path, request.nextUrl.hostname)) return new NextResponse(preparingHtml, {
     status: 200,
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store, max-age=0', 'X-Robots-Tag': 'noindex, nofollow' },
   })

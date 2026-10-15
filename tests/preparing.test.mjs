@@ -7,7 +7,19 @@ import ts from 'typescript'
 const file = new URL('../app/preparing.ts', import.meta.url)
 const mod = new Module(file.pathname)
 mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, file.pathname)
-const { preparing, hidePublicPage, preparingHtml } = mod.exports
+const { preparing, hidePublicPage, showPreparingPage, preparingHtml } = mod.exports
+
+test('only the exact approved review hostname shows the full website', () => {
+  for (const path of ['/', '/preprava', '/cookies', '/og/home', '/nova-stranka']) {
+    assert.equal(showPreparingPage(path, 'akron-logistics-web.vercel.app'), false)
+    for (const host of ['akronlogistics.cz', 'www.akronlogistics.cz', 'other.vercel.app', '', 'akron-logistics-web.vercel.app.evil.test']) {
+      assert.equal(showPreparingPage(path, host), true, `${host}${path}`)
+    }
+  }
+  for (const host of ['akronlogistics.cz', 'akron-logistics-web.vercel.app']) {
+    assert.equal(showPreparingPage('/admin/accept', host), false)
+  }
+})
 
 test('preparing gate covers every public page, unknown routes and form submissions', () => {
   assert.equal(preparing, true)

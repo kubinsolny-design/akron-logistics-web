@@ -2,7 +2,7 @@
 
 ## Hotové změny v této přípravě
 
-- Veřejný web zůstává v režimu Připravujeme, bez formuláře a s noindex. `/admin` a `/admin/accept` jsou dostupné. Publikovaný obsah, koncepty, role a databáze nebyly přepisovány ani migrovány.
+- Ostrá doména zůstává v režimu Připravujeme. Přesná kontrolní adresa `akron-logistics-web.vercel.app` zobrazuje celý web; indexace a odesílání poptávek zůstávají do dokončení propojení vypnuté. `/admin` a `/admin/accept` jsou dostupné na obou adresách. Publikovaný obsah, koncepty, role a databáze nebyly touto změnou přepisovány ani migrovány.
 - Supabase Auth má Site URL `https://akronlogistics.cz`. Přesný allowlist obsahuje `/admin/accept` na ostré doméně, hlavní Vercel adrese a dosavadním demu. Bez wildcard; žádné navýšení rolí. Změna byla výslovně odsouhlasená a ověřená po obnovení nastavení.
 - Production ve Vercelu: `ADMIN_SITE_URL` a `NEXT_PUBLIC_SITE_URL` jsou `https://akronlogistics.cz`; `INQUIRY_TO_EMAIL` je `info@akronlogistics.cz`; `INQUIRY_FROM_EMAIL` je `AKRON Logistics <web@akronlogistics.cz>`. Proměnné nabývají účinku novým nasazením. Odesílání není tímto samo o sobě zprovozněné.
 - Výslovný serverový příjemce má v kódu přednost před starou hodnotou v CMS. Osobní účet použitý k přihlášení do Resendu není příjemcem poptávek.

@@ -2,6 +2,13 @@
 // This does not modify any published content, accounts, or database records.
 export const preparing = true
 
+// Only the explicitly approved review address may show the unfinished website.
+// Unknown deployment hosts remain closed; neither query strings nor forwarded
+// host headers are used as an override.
+export function showPreparingPage(path: string, hostname: string) {
+  return preparing && hostname.toLowerCase() !== 'akron-logistics-web.vercel.app' && hidePublicPage(path)
+}
+
 export function hidePublicPage(path: string) {
   const operational = ['/admin', '/api/admin', '/studio', '/_next', '/images']
   if (operational.some(prefix => path === prefix || path.startsWith(`${prefix}/`))) return false
