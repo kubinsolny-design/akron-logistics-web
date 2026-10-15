@@ -10,7 +10,7 @@ export function launchConfigChecks(env) {
     ['Published content uses Supabase (only after migration)', env.CMS_PROVIDER === 'supabase'],
     ['Existing Supabase project selected', env.NEXT_PUBLIC_SUPABASE_URL === 'https://htgwzjcdxbknzvobwioa.supabase.co'],
     ['Publishable key configured', present('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')],
-    ['Server-only Supabase key configured', present('SUPABASE_SECRET_KEY')],
+    ['Server-only Supabase key configured', present('SUPABASE_SECRET_KEY') || present('SUPABASE_SERVICE_ROLE_KEY')],
     ['Server-only Resend key configured', present('RESEND_API_KEY')],
     ['Recipient is the customer mailbox', env.INQUIRY_TO_EMAIL?.trim().toLowerCase() === 'info@akronlogistics.cz'],
     ['Sender uses the customer domain', /^[^@\s<>]+@akronlogistics\.cz$/.test(senderEmail)],

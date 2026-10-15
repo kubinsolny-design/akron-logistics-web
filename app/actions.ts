@@ -6,6 +6,9 @@ import { storeInquiry, markInquiryEmail } from '../supabase/inquiries'
 import { draftMode } from 'next/headers'
 import { preparing } from './preparing'
 import { inquiryValidation } from './inquiry-validation'
+import { currentMember } from '../supabase/server'
+import { defaultInquirySender, inquiryRecipient, inquiryStorageProvider, validInquirySender } from './inquiry-config'
+import { company as defaultCompany } from './site'
 
 function getField(formData: FormData, name: string) {
   return String(formData.get(name) ?? '').trim()
@@ -26,6 +29,32 @@ export async function sendInquiry(
 ): Promise<InquiryState> {
   if (preparing) return { status: 'error', message: 'Web připravujeme. Poptávkový formulář zatím není dostupný.' }
   if ((await draftMode()).isEnabled) return { status: 'error', message: 'Formulář v náhledu neodesílá poptávky. Pro odeslání nejdříve ukončete náhled.' }
+  return acceptInquiry(formData)
+}
+
+/** Explicit admin-only test: same validation, private storage, quota and delivery. */
+export async function sendTestInquiry(): Promise<InquiryState> {
+  try {
+    const member = await currentMember()
+    if (!member || member.role !== 'admin') return { status: 'error', message: 'Test může spustit pouze přihlášený administrátor.' }
+    if ((await draftMode()).isEnabled) return { status: 'error', message: 'Test nelze spustit v náhledu konceptu.' }
+    if (inquiryStorageProvider() !== 'supabase' || !process.env.RESEND_API_KEY?.trim()) return { status: 'error', message: 'Nejdříve dokončete propojení Supabase a Resendu.' }
+    const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
+    if (recipient.toLowerCase() !== inquiryRecipient) return { status: 'error', message: 'Cílová adresa testu musí být info@akronlogistics.cz. Ověřte INQUIRY_TO_EMAIL.' }
+    const data = new FormData()
+    for (const [key, value] of Object.entries({
+      pickup: 'TECHNICKÝ TEST – bez skutečné nakládky', delivery: 'TECHNICKÝ TEST – bez skutečné vykládky',
+      date: new Date().toISOString().slice(0, 10), frequency: 'unknown',
+      cargo: `Test propojení formuláře, administrace a e-mailu (${new Date().toISOString()}). Nejde o objednávku přepravy. Není třeba zajišťovat vozidlo ani kontaktovat zákazníka.`,
+      name: 'Technická kontrola webu AKRON', phone: defaultCompany.phone, email: '', privacyAcknowledged: 'yes',
+    })) data.set(key, value)
+    return acceptInquiry(data, true)
+  } catch {
+    return { status: 'error', message: 'Test nelze bezpečně spustit. Ověřte přihlášení a serverové propojení.' }
+  }
+}
+
+async function acceptInquiry(formData: FormData, test = false): Promise<InquiryState> {
   const website = getField(formData, 'website')
   if (website) {
     return { status: 'success', message: 'Děkujeme. Poptávku jsme přijali.' }
@@ -54,8 +83,9 @@ export async function sendInquiry(
   const apiKey = process.env.RESEND_API_KEY
   const company = await getSettings()
   // The production delivery address is authoritative, not an old CMS/test value.
-  const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || company.inquiryEmail || company.email
-  const sender = process.env.INQUIRY_FROM_EMAIL
+  const recipient = process.env.INQUIRY_TO_EMAIL?.trim() || inquiryRecipient
+  const sender = process.env.INQUIRY_FROM_EMAIL?.trim() || defaultInquirySender
+  if (!validInquirySender(sender)) return { status: 'error', message: 'Odesílání není správně nastavené. Kontaktujte nás prosím přímo.' }
   let inquiryId: string | null = null
   try {
     inquiryId = await storeInquiry({ pickup, delivery, date, frequency, cargo, name, email, phone })
@@ -67,11 +97,12 @@ export async function sendInquiry(
     if (error instanceof Error && error.message.startsWith('Příliš mnoho')) return { status: 'error', message: error.message }
     return { status: 'error', message: `Poptávku nyní nelze přijmout. Napište prosím na ${company.email} nebo zavolejte ${company.phone}.` }
   }
-  const accepted: InquiryState = { status: 'success', message: company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
+  const accepted: InquiryState = { status: 'success', message: test ? 'Testovací poptávka je uložená v administraci a Resend přijal e-mail pro info@akronlogistics.cz. Doručení ještě ověřte ve schránce nebo v Resendu.' : company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
+  const savedButNotSent: InquiryState = test ? { status: 'error', message: 'Testovací poptávka je uložená, ale e-mail se nepodařilo odeslat. Ověřte klíč, odesílací doménu a záznamy Resendu.' } : accepted
 
   if (!apiKey || !sender) {
     await markInquiryEmail(inquiryId, 'failed')
-    if (inquiryId) return accepted
+    if (inquiryId) return savedButNotSent
     console.error('Inquiry delivery is not configured.')
     return {
       status: 'error',
@@ -109,7 +140,7 @@ export async function sendInquiry(
         from: sender,
         to: [recipient],
         ...(email ? { reply_to: email } : {}),
-        subject: `Nová poptávka: ${pickup} → ${delivery}`,
+        subject: `${test ? '[TEST WEBU – NEOBJEDNÁVAT PŘEPRAVU] ' : ''}Nová poptávka: ${pickup} → ${delivery}`,
         html: `
           <h1>Nová poptávka přepravy</h1>
           <table cellpadding="8" cellspacing="0" style="border-collapse:collapse">
@@ -121,7 +152,7 @@ export async function sendInquiry(
     })
   } catch {
     await markInquiryEmail(inquiryId, 'failed')
-    if (inquiryId) return accepted
+    if (inquiryId) return savedButNotSent
     console.error('Inquiry delivery request failed.')
     return {
       status: 'error',
@@ -131,7 +162,7 @@ export async function sendInquiry(
 
   if (!response.ok) {
     await markInquiryEmail(inquiryId, 'failed')
-    if (inquiryId) return accepted
+    if (inquiryId) return savedButNotSent
     console.error('Inquiry delivery failed with status:', response.status)
     return {
       status: 'error',

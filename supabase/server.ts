@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { supabaseConfig } from './config'
+import { serverServiceKey } from './server-key'
 
 export type MemberRole = 'admin' | 'editor' | 'viewer'
 
@@ -34,7 +35,6 @@ export async function currentMember() {
 
 export function serviceClient() {
   const { url } = supabaseConfig()
-  const key = process.env.SUPABASE_SECRET_KEY
-  if (!key) throw new Error('Supabase server credentials are not configured')
+  const key = serverServiceKey()
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
 }

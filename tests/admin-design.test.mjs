@@ -22,6 +22,7 @@ function load(file) {
   const normalRequire = mod.require.bind(mod)
   mod.require = request => {
     if (request === './records') return { AdminRecords: () => null }
+    if (request === './inquiry-connection') return { InquiryConnectionPanel: () => null }
     if (request === './actions') return { signOut: () => {} }
     if (request === './auth-shell') return { AuthShell: () => null }
     if (request === './login-form') return { LoginForm: () => null }

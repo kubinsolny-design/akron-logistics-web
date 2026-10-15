@@ -74,6 +74,16 @@
 .admin-view-heading { margin-bottom:22px; }
 .admin-badge { display:inline-block; background:#edf0f5; color:#667388; border-radius:20px; padding:6px 10px; font-size:10px; white-space:normal; overflow-wrap:anywhere; }
 .admin-badge.is-dirty,.status-new { background:#fff0e5; color:#b84000; }
+.admin-connection { margin-bottom:24px; }
+.admin-connection .admin-section-heading { align-items:flex-start; flex-wrap:wrap; }
+.admin-connection .admin-section-heading > div { flex:1 1 260px; }
+.admin-connection .admin-section-heading p { margin-bottom:0; }
+.admin-connection-checks { list-style:none; padding:0; display:grid; gap:12px; margin:24px 0; }
+.admin-connection-checks li { display:flex; align-items:flex-start; gap:12px; overflow-wrap:anywhere; }
+.admin-connection-checks .admin-badge { flex:0 0 100px; text-align:center; }
+.connection-ok { background:#e5f4eb; color:#21613e; }
+.connection-missing { background:#fff0e5; color:#9a3a00; }
+.admin-connection form { padding-top:12px; }
 .status-processing { background:#e9efff; color:#244aaf; }
 .status-done { background:#e5f5eb; color:#267343; }
 .admin-page-picker,.admin-editor,.admin-records { background:#fff; border:1px solid #dde2e8; border-radius:14px; padding:26px; }
