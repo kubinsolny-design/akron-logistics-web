@@ -63,7 +63,14 @@ test('options presentation preserves every approved section text and adds existi
   for (const section of page.sections) for (const key of ['heading', 'description', 'eyebrow']) if (section[key]) assert.ok(html.includes(escape(section[key])), key)
   assert.match(html, /page-hero-visual/)
   assert.match(html, /logistics-coordination.jpg/)
+  assert.match(html, /cms-text-image-reversed/)
   assert.equal(JSON.stringify(page), before)
+})
+test('contact uses the exact shared brand A instead of a font initial',()=>{
+ const {CmsPage}=load('../app/cms-page.tsx')
+ const html=renderToStaticMarkup(React.createElement(CmsPage,{page:{slug:{current:'spoluprace'},sections:[{layout:'person',heading:'AKRON Logistics'}]},settings:{contactName:'Adam',email:'fixture@example.com'}}))
+ assert.match(html,/class="person-monogram"[^>]*><img[^>]*src="\/icon.svg"/)
+ assert.doesNotMatch(html,/>A<\/div>/)
 })
 test('form requires phone but not email, keeping privacy acknowledgment required', () => {
   const { InquiryForm } = load('../app/inquiry-form.tsx')

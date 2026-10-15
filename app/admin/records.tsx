@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { browserClient } from '../../supabase/browser'
-import { inviteMember } from './actions'
+import { inviteMember, sendInvitationPreview } from './actions'
 import { trashRecord } from './manage-actions'
 import { useConfirmation } from './confirmation'
 
@@ -84,7 +84,7 @@ export function AdminRecords({ view, userId, admin = false }: { view: View; user
         if (!(await confirm(`Změnit přístup uživatele ${text(row.email)} na ${roleLabels[newRole]}?`))) return
         void update(async () => { const result = await browserClient().rpc('cms_set_member_role', { target_user: row.user_id, new_role: newRole }); if (result.error) throw result.error; setNotice('Oprávnění bylo změněno.') })
       }}>{Object.entries(roleLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>{admin && row.user_id!==userId && <button className="admin-danger" disabled={busy} onClick={async()=>{if(await confirm(`${row.revoked_at?'Obnovit':'Odebrat'} přístup uživatele ${text(row.email)}? ${row.revoked_at?'Vrátí se původní oprávnění.':'Do administrace se již nedostane. Přístup lze později obnovit.'}`)) void update(async()=>{const result=await trashRecord('member',text(row.user_id),Boolean(row.revoked_at));if(!result.ok)throw new Error(result.message);setNotice(result.message)})}}>{row.revoked_at?'Obnovit přístup':'Odebrat přístup'}</button>}</article>)}</div>
-      <details className="admin-invite"><summary>Pozvat dalšího uživatele</summary><p>Admin spravuje přístupy a historii. Uživatel upravuje obsah a vyřizuje poptávky. Pouze náhled neumožňuje úpravy ani čtení poptávek.</p><form action={async form => update(async () => {
+      <details className="admin-invite"><summary>Pozvat dalšího uživatele</summary><p>Admin spravuje přístupy a historii. Uživatel upravuje obsah a vyřizuje poptávky. Pouze náhled neumožňuje úpravy ani čtení poptávek.</p><p>Pozvánka přijde česky od AKRON Logistics z web@akronlogistics.cz, s logem a vysvětlením přístupu.</p><button type="button" disabled={busy} onClick={()=>void update(async()=>{const result=await sendInvitationPreview();if(!result.ok)throw new Error(result.message);setNotice(result.message)})}>Poslat si náhled e-mailu</button><form action={async form => update(async () => {
         setInvitation(''); const result = await inviteMember(form); if (!result.ok) throw new Error(result.message); setNotice(result.message); setInvitation(result.invitationLink || '')
       })}><label>E-mail<input type="email" name="email" required maxLength={254} /></label><label>Oprávnění<select name="role" defaultValue="editor">{Object.entries(roleLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><label>Předání pozvánky<select name="delivery" defaultValue="email"><option value="link">Osobní odkaz pro předání</option><option value="email">Odeslat e-mailem</option></select></label><button disabled={busy}>Vytvořit pozvánku</button></form>{invitation && <label>Soukromý pozvánkový odkaz<textarea value={invitation} readOnly rows={4} onFocus={event => event.target.select()} /></label>}</details>
     </>}

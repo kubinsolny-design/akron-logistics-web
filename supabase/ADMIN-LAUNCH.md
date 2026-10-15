@@ -2,6 +2,12 @@
 
 ## Předání administrace — aktuální ověřený stav 15. října
 
+### Značkové pozvánky
+
+Pozvánky odesílané přes `/admin` nyní vytvářejí jednorázový odkaz pomocí Supabase `generateLink`, ale doručují jej **přes produkční Resend**, nikoliv výchozí službou Supabase Auth. Odesílatel je `AKRON Logistics <web@akronlogistics.cz>`, předmět a obsah jsou české; e-mail obsahuje PNG variantu dodaného loga, vysvětlení role, tlačítko a bezpečnostní instrukce. Role se přidělí ověřeným JWT admina ještě před odesláním. Při chybě role se žádný e-mail neposílá; chyba doručení se nehlásí jako úspěch. Token se nevrací do UI při e-mailovém doručení ani se neukládá do auditu.
+
+V Administrace → Pozvat dalšího uživatele je **Poslat si náhled e-mailu**. Posílá pouze na přihlašovací adresu aktuálního admina, nepřijímá libovolného příjemce, nevytváří účet ani token a nemění role. Je označený `[NÁHLED]`; tlačítko jen otevře `/admin`. Opakování během stejného desetiminutového intervalu je idempotentní. Osobní předání skutečné pozvánky zůstává dostupné samostatně a žádný e-mail neposílá. Změna nepřepisuje SMTP ani jiné Auth šablony v Supabase; přímé pozvánky vytvořené v Supabase Dashboardu nadále používají jeho vlastní konfiguraci. Klient má uživatele zvát z `/admin`.
+
 Tato sekce nahrazuje historické blokace níže. Produkční kontrola po zásahu kolegy již potvrzuje funkční privátní Supabase klíč, příjem poptávek i Resend. Technická poptávka je uložená v administraci; vlastník doložil doručený e-mail Adamovi a Jirkovi. Další kopie testu se při této kontrole neposílala.
 
 - Se souhlasem vlastníka proběhl převod **7 aktuálně publikovaných dokumentů** ze Sanity do Supabase. Atomická operace nejprve vytvořila admin-only snapshot `cms_content_backups`, zachovala případné odlišné koncepty (v živém převodu jich bylo 0) a nastavila `cms_site_state.enabled=true`. Tento marker zapíná společný zdroj obsahu i bez změny staré proměnné `CMS_PROVIDER`. Publikování v `/admin` je aktivní. Sanity se automaticky nemaže; původní obrázky z jeho CDN zůstávají použitelné.
