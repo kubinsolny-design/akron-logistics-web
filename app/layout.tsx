@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', title: 'AKRON Logistics | Silniční přeprava a spedice', description: 'Vhodné vozidlo, domluvená přeprava a osobní komunikace až do doručení.', images: ['/og/home'] },
   icons: { icon: [{ url: '/favicon.png', type: 'image/png', sizes: '48x48' }], apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }] },
   robots: isIndexingAllowed()
-    ? { index: true, follow: true }
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } }
     : { index: false, follow: false },
 }
 

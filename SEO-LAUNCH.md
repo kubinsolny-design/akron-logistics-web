@@ -1,27 +1,47 @@
 # SEO a ostré spuštění AKRON Logistics
 
-## Implementace 8. října 2026
+## Finální technická kontrola — 15. října 2026
 
-- Šest standardních veřejných stránek má unikátní výchozí titulek, popis, canonical, Open Graph a Twitter metadata. Publikované SEO hodnoty a vlastní sdílecí obrázky z CMS mají nadále přednost; databáze nebyla přepisována.
-- Sdílecí PNG 1200 × 630 pro každou stránku: `/og/home`, `/og/preprava`, `/og/moznosti`, `/og/spoluprace`, `/og/ochrana-osobnich-udaju`, `/og/cookies`. Nové publikované vlastní stránky mají vlastní `/og/<slug>` a popis odvozený z obsahu, pokud autor SEO pole nevyplní. Původní `/opengraph-image` zůstává dostupné.
-- JSON-LD: Organization a WebSite, každá veřejná stránka WebPage, podstránky BreadcrumbList a přepravní služby Service. Bez smyšlených recenzí, cen a tvrzení o vlastním vozovém parku.
-- Sitemap používá publikované slugy, odstraňuje duplicity a rezervované neveřejné adresy. Nevytváří nepravdivá data poslední aktualizace.
-- `/admin`, `/studio` a `/api` mají X-Robots-Tag noindex/nofollow. Administrace má také noindex metadata. Nejde o náhradu přístupových oprávnění. Náhled rozpracovaného obsahu má noindex; prostředí Preview zachovává zákaz indexace.
-- Byla odstraněna požadovaná informační hláška z bočního menu. Role a oprávnění se nemění.
+Autoritativní zdroj je aktuální main. Veřejný web stále úmyslně zůstává v režimu **Připravujeme**; tento SEO zásah jej nespouští a nemění publikovaný obsah ani koncepty v Supabase.
 
-## Opakovatelná kontrola
+### Připraveno
 
-Spustit `node scripts/check-seo.mjs <adresa-webu>`. Pokud se kontroluje Vercel adresa s canonical na vlastní doméně, nastavit `SEO_CANONICAL_ORIGIN=https://akronlogistics.cz`. Pro lokální/preview kontrolu nastavit také `SEO_EXPECT_INDEX=false` a skutečný canonical origin.
+- Šest veřejných adres: `/`, `/preprava`, `/moznosti`, `/kontakt`, `/ochrana-osobnich-udaju`, `/cookies`. Vlastní titulky, popisy, canonical URL, Open Graph a Twitter metadata. Hodnoty schválené v CMS mají přednost.
+- OG náhledy `/og/home`, `/og/preprava`, `/og/moznosti`, `/og/kontakt`, `/og/ochrana-osobnich-udaju`, `/og/cookies`: PNG 1200 × 630, vlastní dodané logo, Poppins s diakritikou a stávající fotografie webu. Žádné externí obrázkové služby. Původní OG aliasy zůstávají dostupné.
+- SVG/PDF nastavené jako vlastní sdílecí obrázek nenahrazují kompatibilní PNG fallback. Běžné rastrové obrázky z vlastního hostingu zůstávají upravitelné přes CMS.
+- JSON-LD: Organization, WebSite a WebPage; podstránky mají BreadcrumbList, přepravní služby také Service. Kontakt používá existující CMS dokument `spoluprace`, ale canonical i strukturované adresy mají výhradně `/kontakt`.
+- `/spoluprace` má permanentní 308 přesměrování na `/kontakt`. HTTP a www varianta domény byly ověřeny s 308 na `https://akronlogistics.cz/`.
+- Sitemap po spuštění obsahuje standardní veřejné adresy a platné publikované vlastní stránky bez duplicit, staré kontaktní URL, konceptů, administrace či API. Nevymýšlí data poslední změny. Pro tento malý web stačí jeden `sitemap.xml`; index sitemap není potřeba.
+- Robots po spuštění dovolí veřejný web, ne administraci/API/Studio. Privátní stránky mají navíc noindex metadata a HTTP hlavičky. Oprávnění k administraci se tím nemění.
+- Vercel review/demo adresy mají samostatné `X-Robots-Tag: noindex, nofollow` i po pozdějším spuštění hlavní domény.
+- Generování náhledů vlastních stránek čte jen publikované dokumenty, nikdy přihlášený koncept; nepublikovaná stránka vrací 404.
+- Jazyk stránky `cs`, favicon A, Apple touch ikona, jeden H1 na každé standardní stránce, interní odkazy a skutečná 404 pro neexistující stránku.
 
-Kontrola prochází všechny stránky ze sitemapy, titulky a popisy, sdílecí obrázky (včetně rozměrů generovaných PNG), H1, jazyk, strukturovaná data, interní odkazy, robots, ikony, soukromé adresy a HTTP 404. Nenahrazuje ověření Search Console, výkonu mobilního zařízení ani skutečné indexace Google.
+## Kontrola před spuštěním
 
-## Nutné před ostrým předáním
+Na schválené kontrolní adrese, která zobrazuje celý obsah:
 
-1. Zprovoznit doménu a HTTPS na Vercelu. Při této kontrole měla `akronlogistics.cz` chybu `ERR_CERT_COMMON_NAME_INVALID`; bezpečnostní upozornění nebylo obcházeno. Vybrat hlavní variantu domény a přesměrovat ostatní varianty. Poté ověřit canonical, sitemap a robots přímo na ostré doméně. DNS, certifikát a nastavení indexace nebyly v této úpravě změněny.
-2. Na neblokovaném počítači pořídit a ověřit databázovou zálohu. Následně ověřit skutečné schéma/historii a aplikovat pouze novou workspace migraci. Základní migraci znovu nespouštět. Zachovat publikovaný obsah, koncepty, uživatele a role.
-3. Po kontrole obsahu bezpečně dokončit `CMS_PROVIDER=supabase` a serverový klíč v hlavním Vercel projektu. Tajný klíč nesmí být veřejný ani v repozitáři. Zatím není veřejný web přepnutý na Supabase a publikování z administrace je zablokované. Pokyny jsou v `supabase/ADMIN-LAUNCH.md`.
-4. Nastavit Supabase Auth Site URL a přesný redirect `/admin/accept` na konečné doméně. Ověřit přihlášení, odhlášení a přijetí pozvánky bez navýšení cizích oprávnění.
-5. Ověřit platný serverový Supabase klíč a doručení přes Resend. Aktuální příjemce je `adam.bartusek@akronlogistics.cz`, upravitelný administrátorem v Nastavení webu → Kontaktní e-mail a doručování. Odesílatel `web@akronlogistics.cz`. Ověřit uložení poptávky před odesláním e-mailu, chování při selhání odeslání a skutečné doručení. Pouhé přijetí zprávy Resendem není důkaz doručení. Aktuální provozní blokace viz `supabase/ADMIN-LAUNCH.md`.
-6. Ověřit na živém prostředí koncept/publikování, nahrání souboru, audit, poslední aktivitu, poptávky a omezení rolí admin/uživatel/náhled. Projít desktop i mobil. Vlastník schválí firemní kontakty, obsah, práva k obrázkům a finální právní texty.
-7. Po funkční ostré doméně ověřit vlastnictví v Google Search Console a odeslat sitemapu. Google Analytics případně zapojit spolu s odpovídajícím souhlasem; zatím se v administraci nezobrazují fiktivní statistiky. Před veřejnou indexací musí být ostré spuštění odsouhlasené.
-8. Starý demo projekt odstranit až po ověřeném přechodu a výslovném potvrzení odstranění. V této úpravě nebyl smazán.
+```bash
+SEO_CANONICAL_ORIGIN=https://akronlogistics.cz node scripts/check-seo.mjs https://akron-logistics-web.vercel.app --prelaunch
+```
+
+Kontroluje všech šest stránek i bez veřejné sitemapy, metadata pro sociálního robota v serverové odpovědi, canonical, PNG a rozměry, H1, JSON-LD, interní odkazy, ikony, privátní noindex, přesměrování a 404. Na hlavní doméně musí stále potvrdit Připravujeme. Produkční OG adresy jsou do vypnutí brány stejně jako ostatní veřejný obsah záměrně zakryté; předstartovní test obrázků běží na kontrolním hostu.
+
+Lokální regresní testy také ověřují budoucí stav po vypnutí brány: sitemap, povolenou indexaci pouze v odpovídajícím prostředí a zachování zákazu pro Preview. Živý produkční stav po spuštění se musí znovu ověřit; tyto testy jej nepředstírají.
+
+## Při odsouhlaseném ostrém spuštění
+
+1. Teprve po souhlasu vlastníka nastavit `preparing = false` v `app/preparing.ts`.
+2. V Production zachovat `NEXT_PUBLIC_SITE_URL=https://akronlogistics.cz` a povolit `ALLOW_INDEXING=true` (výslovné `false` by indexaci dál blokovalo). Preview neodblokovávat. Provést nové nasazení.
+3. Testy, které záměrně kontrolují uzavřenou bránu v `tests/preparing.test.mjs`, při spuštění upravit na nový schválený stav; nemažte jejich bezpečnostní kontroly oprávnění.
+4. Po nasazení spustit:
+
+```bash
+node scripts/check-seo.mjs https://akronlogistics.cz
+```
+
+5. Ručně potvrdit veřejný obsah na doméně, `robots.txt` s `Allow: /`, neprázdnou sitemapu s canonical adresami a nepřítomnost noindex na veřejných stránkách. Administrace a Vercel aliasy musejí zůstat noindex.
+6. Teprve potom ověřit doménu v Google Search Console a odeslat `https://akronlogistics.cz/sitemap.xml`. Ověřovací token není předem vymyšlený; doplní jej vlastník účtu.
+7. GA4 připojit samostatně. Současné texty a cookie rozhraní říkají, že analytika neběží; při zapojení GA4 se musejí současně upravit deklarace a odpovídající řízení souhlasu. Nespouštět měření v rozporu s aktuální volbou návštěvníka.
+
+Technická kontrola nezaručuje okamžitou indexaci ani konkrétní pozice ve vyhledávání. Zpracování a případné chyby po spuštění sleduje vlastník v Search Console. Tento zásah neprovádí připojení GA4, změny DNS, přístupů ani zrušení Sanity.

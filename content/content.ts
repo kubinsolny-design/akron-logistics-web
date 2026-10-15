@@ -45,7 +45,8 @@ export async function contentMetadata(slug: string, title: string, description: 
   const metadata = pageMetadata(page?.seoTitle || fallback?.title || title, page?.seoDescription || fallback?.description || summary, path)
   if ((await draftMode()).isEnabled) metadata.robots = { index: false, follow: false }
   const image = imageUrl(page?.shareImage)
-  if (image) {
+  // Social crawlers do not reliably support SVG/PDF as preview images.
+  if (image && /\.(?:png|jpe?g|webp)(?:[?#]|$)/i.test(image)) {
     metadata.openGraph = { ...metadata.openGraph, images: [{ url: image, alt: page?.shareImage?.alt || title }] }
     metadata.twitter = { ...metadata.twitter, images: [image] }
   }

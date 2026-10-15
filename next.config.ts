@@ -11,7 +11,11 @@ const nextConfig: NextConfig = {
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
       { key: 'Content-Security-Policy', value: "base-uri 'self'; object-src 'none'; frame-ancestors 'self'" },
-    ] }, ...['/admin/:path*', '/studio/:path*', '/api/:path*'].map(source => ({
+    ] }, {
+      // Preview/demo aliases must stay out of search even after the main launch.
+      source: '/:path*', has: [{ type: 'host', value: '.+\\.vercel\\.app' }],
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+    }, ...['/admin/:path*', '/studio/:path*', '/api/:path*'].map(source => ({
       source, headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
     }))]
   },

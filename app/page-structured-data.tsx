@@ -1,13 +1,15 @@
 import { contentMetadata, getPage } from '../content/content'
 import { getSiteUrl } from './site'
 import { seoPages } from './seo-pages'
+import { publicHref } from './public-links'
 
 export async function PageStructuredData({ slug }: { slug: string }) {
-  const path = slug === 'home' ? '/' : `/${slug}`
+  const path = publicHref(slug === 'home' ? '/' : `/${slug}`)
   const entry = seoPages[slug]
-  const page = await getPage(slug)
+  const cmsSlug = slug === 'kontakt' ? 'spoluprace' : slug
+  const page = await getPage(cmsSlug)
   if (!entry && !page) return null
-  const metadata = await contentMetadata(slug, page?.title || entry?.title || 'AKRON Logistics', '', path)
+  const metadata = await contentMetadata(cmsSlug, page?.title || entry?.title || 'AKRON Logistics', '', path)
   const title = typeof metadata.title === 'object' && metadata.title && 'absolute' in metadata.title ? metadata.title.absolute : page?.title || entry?.title
   const site = getSiteUrl()
   const url = path === '/' ? site : `${site}${path}`

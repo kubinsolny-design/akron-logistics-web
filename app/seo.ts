@@ -10,7 +10,7 @@ export function pageMetadata(title: string, description: string, path: string): 
     openGraph: {
       title: fullTitle, description, url: path, type: 'website',
       siteName: 'AKRON Logistics', locale: 'cs_CZ',
-      images: [{ url: image, width: 1200, height: 630, alt: fullTitle }],
+      images: [{ url: image, width: 1200, height: 630, type: 'image/png', alt: fullTitle }],
     },
     twitter: { card: 'summary_large_image', title: fullTitle, description, images: [image] },
   }
