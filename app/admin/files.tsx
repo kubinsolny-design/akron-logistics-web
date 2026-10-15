@@ -5,11 +5,12 @@ import Image from 'next/image'
 import { browserClient } from '../../supabase/browser'
 import { AdminIcon } from './icons'
 import { maxFileSize, mediaUploadPath, referencedMedia, uploadTypes, type MediaFile } from './media'
+import { trashMedia, restoreMedia } from './manage-actions'
 
 function fileSize(value?: number) { return value == null ? 'Velikost neuvedena' : value < 1024 * 1024 ? `${Math.ceil(value / 1024)} kB` : `${(value / (1024 * 1024)).toFixed(1)} MB` }
 function isImage(file: MediaFile) { return file.mime?.startsWith('image/') || /\.(jpe?g|png|webp|gif|svg)(?:\?|$)/i.test(file.url) }
 
-export function AdminFiles({ documents, readOnly }: { documents: { data: unknown }[]; readOnly: boolean }) {
+export function AdminFiles({ documents, readOnly, admin=false }: { documents: { data: unknown }[]; readOnly: boolean; admin?:boolean }) {
   const [files, setFiles] = useState<MediaFile[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -20,11 +21,13 @@ export function AdminFiles({ documents, readOnly }: { documents: { data: unknown
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [selectedUrl, setSelectedUrl] = useState('')
+  const [trash,setTrash]=useState<{id:string;path:string}[]>([])
   useEffect(() => {
     let cancelled = false
     async function load() {
       setLoading(true); setError('')
       const referenced = referencedMedia(documents)
+      if(admin) {const {data}=await browserClient().from('cms_media_trash').select('id,path').eq('state','trashed');if(!cancelled)setTrash(data||[])}
       try {
         const bucket = browserClient().storage.from('site-media')
         const collected: MediaFile[] = []
@@ -57,7 +60,17 @@ export function AdminFiles({ documents, readOnly }: { documents: { data: unknown
     }
     void load()
     return () => { cancelled = true }
-  }, [documents, reload])
+  }, [documents, reload, admin])
+
+  async function remove(path:string) {
+    if(!admin || !window.confirm('Přesunout tento nepoužívaný soubor do soukromého koše? Použité soubory nelze smazat.'))return
+    setUploading(true);setError('');setNotice('')
+    try{const result=await trashMedia(path);if(!result.ok)setError(result.message);else{setNotice(result.message);setReload(value=>value+1)}}finally{setUploading(false)}
+  }
+  async function restore(id:string) {
+    setUploading(true);setError('');setNotice('')
+    try{const result=await restoreMedia(id);if(!result.ok)setError(result.message);else{setNotice(result.message);setReload(value=>value+1)}}finally{setUploading(false)}
+  }
 
   async function upload(file: File) {
     if (readOnly || uploading) return
@@ -84,10 +97,11 @@ export function AdminFiles({ documents, readOnly }: { documents: { data: unknown
   const shown = visible.slice(page * 24, (page + 1) * 24)
   return <section className="admin-records admin-files">
     <div className="admin-files-intro"><div><h3>Knihovna souborů</h3><p>Nahrané soubory i podklady použité v obsahu webu. Odkaz můžete použít na libovolné stránce.</p></div>{!readOnly && <label className="admin-file-upload"><AdminIcon name="upload" /> {uploading ? 'Nahrávám…' : 'Nahrát soubor'}<input type="file" aria-label="Nahrát veřejný soubor" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={loading || uploading} onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void upload(file) }} /></label>}</div>
-    <p className="admin-files-warning">JPEG, PNG, WebP a PDF · do 10 MB. Soubory jsou veřejné — nenahrávejte osobní údaje ani soukromé dokumenty. Původní soubory se nepřepisují ani nemažou.</p>
+    <p className="admin-files-warning">JPEG, PNG, WebP a PDF · do 10 MB. Aktivní soubory jsou veřejné — nenahrávejte osobní údaje ani soukromé dokumenty. Administrátor může nepoužívané nahrané soubory přesunout do soukromého koše. Obrázky dodané se šablonou nahraďte v obsahu stránky.</p>
     <div className="admin-record-toolbar"><label>Vyhledat soubor<input type="search" value={query} placeholder="Název souboru…" onChange={event => { setQuery(event.target.value); setPage(0) }} /></label><label>Typ souboru<select value={filter} onChange={event => { setFilter(event.target.value); setPage(0) }}><option value="all">Všechny soubory</option><option value="images">Obrázky</option><option value="documents">Dokumenty a ostatní</option></select></label><button disabled={loading || uploading} onClick={() => setReload(value => value + 1)}>Obnovit</button></div>
     {error && <p role="alert" className="admin-error">{error}</p>}{notice && <p role="status" className="admin-status admin-status-success">{notice}</p>}
     {selectedUrl && <label>Odkaz na soubor<input value={selectedUrl} readOnly onFocus={event => event.target.select()} /></label>}
-    {loading ? <p role="status">Načítám soubory…</p> : <><p className="admin-muted">{visible.length} souborů{readOnly ? ' · pouze prohlížení' : ''}</p><div className="admin-file-grid">{shown.map(file => <article className="admin-file-card" key={file.url}><div className="admin-file-preview">{isImage(file) ? <Image unoptimized src={file.url} alt="" width={320} height={180} /> : <AdminIcon name="pages" />}</div><div className="admin-file-info"><h4 title={file.path}>{file.name}</h4><p>{file.source === 'storage' ? fileSize(file.size) : 'Odkaz z obsahu webu'}{file.created ? ` · ${new Date(file.created).toLocaleDateString('cs-CZ')}` : ''}</p><div><button onClick={() => copy(file.url)}>Kopírovat odkaz</button><a href={file.url} target="_blank" rel="noopener noreferrer" aria-label={`Otevřít soubor ${file.name}`}><AdminIcon name="external" /></a></div></div></article>)}</div>{!visible.length && <p className="admin-empty">{query ? 'Žádný odpovídající soubor.' : 'Zatím zde nejsou žádné soubory.'}</p>}<div className="admin-pagination"><button disabled={page === 0} onClick={() => setPage(value => value - 1)}>Předchozí</button><span>Strana {page + 1} / {Math.max(1, Math.ceil(visible.length / 24))}</span><button disabled={(page + 1) * 24 >= visible.length} onClick={() => setPage(value => value + 1)}>Další</button></div></>}
+    {loading ? <p role="status">Načítám soubory…</p> : <><p className="admin-muted">{visible.length} souborů{readOnly ? ' · pouze prohlížení' : ''}</p><div className="admin-file-grid">{shown.map(file => <article className="admin-file-card" key={file.url}><div className="admin-file-preview">{isImage(file) ? <Image unoptimized src={file.url} alt="" width={320} height={180} /> : <AdminIcon name="pages" />}</div><div className="admin-file-info"><h4 title={file.path}>{file.name}</h4><p>{file.source === 'storage' ? fileSize(file.size) : 'Odkaz z obsahu webu'}{file.created ? ` · ${new Date(file.created).toLocaleDateString('cs-CZ')}` : ''}</p><small className="admin-file-path">{file.path}</small><div><button onClick={() => copy(file.url)}>Kopírovat odkaz</button><a href={file.url} target="_blank" rel="noopener noreferrer" aria-label={`Otevřít soubor ${file.name}`}><AdminIcon name="external" /></a>{admin && file.source==='storage' && <button className="admin-danger" disabled={uploading} onClick={()=>void remove(file.path)}>Do koše</button>}</div></div></article>)}</div>{!visible.length && <p className="admin-empty">{query ? 'Žádný odpovídající soubor.' : 'Zatím zde nejsou žádné soubory.'}</p>}<div className="admin-pagination"><button disabled={page === 0} onClick={() => setPage(value => value - 1)}>Předchozí</button><span>Strana {page + 1} / {Math.max(1, Math.ceil(visible.length / 24))}</span><button disabled={(page + 1) * 24 >= visible.length} onClick={() => setPage(value => value + 1)}>Další</button></div></>}
+    {admin && <details className="admin-invite"><summary>Koš souborů ({trash.length})</summary><p>Soubory v tomto koši nejsou veřejné. Obnovení vrátí původní adresu; existující soubory se nepřepisují.</p>{trash.map(item=><div className="admin-item-tools" key={item.id}><span className="admin-file-path">{item.path}</span><button disabled={uploading} onClick={()=>void restore(item.id)}>Obnovit soubor</button></div>)}</details>}
   </section>
 }

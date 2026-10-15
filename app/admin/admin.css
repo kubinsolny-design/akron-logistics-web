@@ -113,6 +113,7 @@
 .admin-check input { width:18px; height:18px; accent-color:#ff5a00; }
 .admin-image-preview { border-radius:8px; overflow:hidden; background:#edf0f5; margin-bottom:16px; }
 .admin-image-preview img { display:block; width:100%; max-height:200px; object-fit:contain; }
+.admin-image-preview.is-dark { background:#152236; border-radius:8px; }
 .admin-save { display:flex; gap:10px; align-items:center; flex-wrap:wrap; position:sticky; bottom:0; background:#fff; padding:18px 0 0; margin-top:22px; border-top:1px solid #dde2e8; z-index:2; }
 .admin-save > span { margin-right:auto; font-size:11px; color:#667388; }
 .admin-status { white-space:pre-wrap; background:#edf3fb; border-radius:8px; padding:12px 16px; }
@@ -316,13 +317,16 @@
 .admin-files-warning { font-size:11px!important; color:#766c5c; background:#fff8ed; padding:12px 16px; border-radius:8px; margin-bottom:24px; }
 .admin-file-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
 .admin-file-card { min-width:0; border:1px solid #dfe4e9; border-radius:10px; overflow:hidden; background:#fff; }
-.admin-file-preview { height:155px; background:#f4f6f8; display:grid; place-items:center; border-bottom:1px solid #e8ecf0; }
-.admin-file-preview img { width:100%; height:100%; object-fit:contain; }
+.admin-file-preview { height:155px; min-height:0; overflow:hidden; position:relative; background:#e8edf2; display:grid; grid-template-rows:minmax(0,1fr); place-items:center; border-bottom:1px solid #e8ecf0; }
+.admin-file-preview img { display:block; width:100%; height:100%; max-height:100%; min-height:0; object-fit:contain; }
 .admin-file-preview > .admin-icon { width:42px; height:42px; color:#9ba6b5; }
-.admin-file-info { padding:16px; }
+.admin-file-info { padding:16px; position:relative; background:#fff; min-width:0; }
 .admin-file-info h4 { font-size:12px; font-weight:500; margin:0; overflow-wrap:anywhere; }
 .admin-file-info p { color:#7b8794; font-size:10px; margin:8px 0 14px; }
 .admin-file-info > div { display:flex; gap:12px; align-items:center; justify-content:space-between; }
+.admin-file-path { display:block; font-size:10px; overflow-wrap:anywhere; margin:8px 0; color:#647184; }
+.akron-admin button.admin-danger { color:#9d2424; border-color:#e6bdbd; background:#fff7f7; }
+.admin-bin-note { padding:12px; border:1px solid #e0e5ec; border-radius:8px; font-size:12px; }
 .admin-file-info button { font-size:10px; padding:7px 9px; min-height:32px; }
 .admin-file-info a { display:grid; place-items:center; min-width:36px; min-height:36px; color:#6f7e90; }
 @media(min-width:751px) and (max-width:1100px) { .admin-file-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }

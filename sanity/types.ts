@@ -19,4 +19,5 @@ export type Settings = {
   footerText?: string; inquiryEmail?: string; formHeading?: string; formDescription?: string;
   submitLabel?: string; successMessage?: string;
   headerAction?: Action; footerAction?: Action; footerContactLabel?: string; footerTagline?: string;
+  formText?: Record<string,string>; siteText?: Record<string,string>; cookieText?:Record<string,string>;
 }

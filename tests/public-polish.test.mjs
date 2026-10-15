@@ -48,8 +48,9 @@ test('home hero has exactly one inquiry CTA even with multiple stored CMS action
     const page = { slug: { current: 'home' }, sections: [{ layout: 'hero', heading: 'Přepravu vyřešíme.', imagePath, actions: [{ label: 'Call', href: 'tel:123' }, { label: 'Old', href: '/spoluprace' }] }] }
     const html = renderToStaticMarkup(React.createElement(CmsPage, { page, settings: {} }))
     assert.equal((html.match(/<a /g) || []).length, 1)
-    assert.match(html, /href="\/kontakt#poptavka"/)
-    assert.doesNotMatch(html, /Call|>Old</)
+    assert.match(html, /class="(?:button|text-link)"/)
+    assert.doesNotMatch(html, />Call</)
+    assert.match(html, />Old</) // The selected inquiry button label is now editable, not replaced by hardcoded copy.
   }
 })
 test('options presentation preserves every approved section text and adds existing photos only', () => {

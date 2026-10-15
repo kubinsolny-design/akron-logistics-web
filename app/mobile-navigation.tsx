@@ -6,12 +6,12 @@ import { useEffect, useRef, useState } from 'react'
 
 type NavigationLink = { href: string; label: string }
 
-export function MobileNavigation({ links }: { links: NavigationLink[] }) {
+export function MobileNavigation({ links, action={label:'Poptat přepravu',href:'/kontakt#poptavka'} }: { links: NavigationLink[]; action?:NavigationLink }) {
   const pathname = usePathname()
-  return <MobileMenu key={pathname} links={links} />
+  return <MobileMenu key={pathname} links={links} action={action} />
 }
 
-function MobileMenu({ links }: { links: NavigationLink[] }) {
+function MobileMenu({ links, action }: { links: NavigationLink[];action:NavigationLink }) {
   const [open, setOpen] = useState(false)
   const container = useRef<HTMLDivElement>(null)
   const toggle = useRef<HTMLButtonElement>(null)
@@ -45,7 +45,7 @@ function MobileMenu({ links }: { links: NavigationLink[] }) {
     </button>
     <nav id="mobile-navigation" aria-label="Mobilní navigace" hidden={!open}>
       {links.map(link => <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>{link.label}</Link>)}
-      <Link className="mobile-nav-cta" href="/kontakt#poptavka" onClick={() => setOpen(false)}>Poptat přepravu</Link>
+      <Link className="mobile-nav-cta" href={action.href} onClick={() => setOpen(false)}>{action.label}</Link>
     </nav>
   </div>
 }

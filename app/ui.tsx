@@ -5,6 +5,7 @@ import { imageUrl, safeHref } from '../sanity/client'
 import { CookieSettingsButton } from './cookie-preferences'
 import { MobileNavigation } from './mobile-navigation'
 import { publicNavigationLabel } from './public-links'
+import { siteTextDefaults } from './site-text'
 
 export function Logo({ light = false, src }: { light?: boolean; src?: string }) {
   return <Link className="logo" href="/" aria-label="AKRON Logistics – úvod"><Image src={src || `/images/akron-${light ? 'white' : 'black'}.svg`} alt="AKRON Logistics" width={875} height={280} priority={!light} /></Link>
@@ -20,13 +21,14 @@ export async function Header() {
         {navigation.map((link, i) => <Link key={`${link.href}-${i}`} href={link.href}>{link.label}</Link>)}
       </nav>
       <Link className="nav-action" href={safeHref(settings.headerAction?.href)}>{settings.headerAction?.label}</Link>
-      <MobileNavigation links={navigation} />
+      <MobileNavigation links={navigation} action={{label:settings.headerAction?.label || 'Poptat přepravu',href:safeHref(settings.headerAction?.href)}} />
     </div>
   </header>
 }
 
 export async function Footer() {
   const company = await getSettings()
+  const text = {...siteTextDefaults,...company.siteText}
   return <footer className="site-footer" id="kontakt">
     <div className="shell footer-grid">
       <div><Logo light src={imageUrl(company.lightLogo, 900)} /><p className="cms-paragraph">{company.footerText}</p></div>
@@ -45,17 +47,17 @@ export async function Footer() {
       </div>
       <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{publicNavigationLabel(link.label || '', link.href || '')}</Link>)}</div>
     </div>
-    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">Vytvořili <a href="https://webaci.cz" target="_blank" rel="noopener noreferrer">Webáci</a></p><span>{company.footerTagline}</span></div>
-    <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">Ochrana osobních údajů</Link><Link href="/cookies">Cookies</Link><CookieSettingsButton /></nav>
+    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">{text.footerCreditPrefix} <a href={safeHref(text.footerCreditHref)} target="_blank" rel="noopener noreferrer">{text.footerCreditLabel}</a></p><span>{company.footerTagline}</span></div>
+    <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">{text.privacyLabel}</Link><Link href="/cookies">{text.cookiesLabel}</Link><CookieSettingsButton label={text.cookieSettings} /></nav>
   </footer>
 }
 
 
-export function RouteJourney() {
+export function RouteJourney({loadingLabel='Nakládka',deliveryLabel='Doručení'}:{loadingLabel?:string;deliveryLabel?:string}={}) {
   return <div className="route-journey" aria-hidden="true">
     <div className="route-track">
-      <span className="route-point route-point-start"><i>A</i><small>Nakládka</small></span>
-      <span className="route-point route-point-end"><i>B</i><small>Doručení</small></span>
+      <span className="route-point route-point-start"><i>A</i><small>{loadingLabel}</small></span>
+      <span className="route-point route-point-end"><i>B</i><small>{deliveryLabel}</small></span>
       <span className="route-truck">
         <svg viewBox="0 0 210 78" focusable="false">
           <path className="route-trailer" d="M3 12h133v43H3z" />

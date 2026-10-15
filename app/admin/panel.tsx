@@ -6,6 +6,7 @@ import { imageUrl } from '../../sanity/client'
 import { AdminRecords } from './records'
 import { InquiryConnectionPanel } from './inquiry-connection'
 import { InquirySettingsPanel } from './inquiry-settings'
+import { activateContentHandover } from './handover-actions'
 import { AdminIcon } from './icons'
 import { AdminFiles } from './files'
 import { DocumentEditor } from './document-editor'
@@ -36,6 +37,12 @@ const labels: Record<string, string> = {
   formHeading: 'Nadpis formuláře', formDescription: 'Popis formuláře', submitLabel: 'Odesílací tlačítko',
   successMessage: 'Potvrzení odeslání', headerAction: 'Tlačítko v hlavičce', footerAction: 'Tlačítko v patičce',
   footerContactLabel: 'Nadpis kontaktu v patičce', footerTagline: 'Podtitulek v patičce', style: 'Styl odstavce',
+  formText:'Popisky a nápověda formuláře', siteText:'Patička a animace', cookieText:'Texty oznámení o cookies',
+  notice:'Text oznámení', more:'Odkaz na podrobnosti', settings:'Nastavení', accept:'Potvrzovací tlačítko', dialogTitle:'Nadpis dialogu', dialogIntro:'Úvod dialogu', essential:'Název nezbytných technologií', always:'Stav nezbytných technologií', essentialDescription:'Popis nezbytných technologií', optional:'Název volitelných technologií', unused:'Stav volitelných technologií', optionalDescription:'Popis volitelných technologií', details:'Text odkazu na cookies', privacy:'Text odkazu na soukromí', close:'Tlačítko zavření', save:'Tlačítko uložení',
+  loading:'Nakládka – animace', delivery:'Vykládka / doručení', pickup:'Místo nakládky', date:'Termín', frequency:'Četnost', cargo:'Náklad',
+  pickupPlaceholder:'Nápověda nakládky', deliveryPlaceholder:'Nápověda vykládky', cargoPlaceholder:'Nápověda nákladu', namePlaceholder:'Nápověda jména', phonePlaceholder:'Nápověda telefonu', emailPlaceholder:'Nápověda e-mailu',
+  frequencyOnce:'Jednorázová přeprava', frequencyRegular:'Pravidelná přeprava', frequencyUnknown:'Četnost není známá', privacyBefore:'Text před odkazem na soukromí', privacyLink:'Text odkazu na soukromí', sending:'Text během odesílání',
+  footerCreditPrefix:'Autor webu – úvod', footerCreditLabel:'Autor webu – název', footerCreditHref:'Autor webu – odkaz', privacyLabel:'Odkaz – ochrana údajů', cookiesLabel:'Odkaz – cookies', cookieSettings:'Nastavení cookies',
 }
 const options: Record<string, string[]> = {
   layout: ['hero', 'trust', 'text', 'cards', 'map', 'faq', 'process', 'person', 'inquiry', 'cta', 'note'],
@@ -71,16 +78,19 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
   const shown = entries.filter(([name]) => !simple || !advancedFields.has(name))
   if (simple) shown.sort(([a], [b]) => (order.indexOf(a) < 0 ? 99 : order.indexOf(a)) - (order.indexOf(b) < 0 ? 99 : order.indexOf(b)))
   return <div className={`admin-fields${simple ? ' admin-fields-simple' : ''}`}>{shown.map(([name, item]) => {
-    const label = labels[name] || name
+    const label = path.includes('formText') && name==='name' ? 'Jméno a firma' : labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
     if (name === 'body' && path.length === 0 && documentBody && Array.isArray(item) && supportsDocumentEditor(item)) return <DocumentEditor key={name} value={item} onChange={change} disabled={disabled} />
     if (['image', 'portrait', 'logo', 'lightLogo', 'shareImage'].includes(name)) {
       const image = item && typeof item === 'object' && !Array.isArray(item) ? item : {}
       const preview = imageUrl({ url: typeof image.url === 'string' ? image.url : undefined, asset: image.asset as { _ref: string } | undefined }, 600)
         || (name === 'image' && typeof value.imagePath === 'string' && /^\/images\/[a-z0-9_./-]+$/i.test(value.imagePath) ? value.imagePath : undefined)
+      const source = imageUrl({ url: typeof image.url === 'string' ? image.url : undefined, asset: image.asset as { _ref: string } | undefined }) || (name === 'image' && typeof value.imagePath === 'string' ? value.imagePath : '')
       return <fieldset key={name}><legend>{label}</legend>
-        {preview ? <div className="admin-image-preview"><Image unoptimized width={600} height={200} src={preview} alt={String(image.alt || label)} /></div> : <p className="admin-muted">Zatím není vybraný obrázek. Nahrajte JPEG, PNG nebo WebP do 10 MB.</p>}
-        <Fields value={{ url: '', alt: '', ...image }} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} simple={simple} />
+        {preview ? <div className={`admin-image-preview${name==='lightLogo'?' is-dark':''}`}><Image unoptimized width={600} height={200} src={preview} alt={String(image.alt || label)} /></div> : <p className="admin-muted">Zatím není vybraný obrázek. Nahrajte JPEG, PNG nebo WebP do 10 MB.</p>}
+        <Fields value={{ alt: '', ...image, url: source }} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} simple={simple} />
+        {source && <small className="admin-file-path">Aktuální zdroj: {source}</small>}
+        {!disabled && source && <button type="button" onClick={() => onChange({ ...value, [name]: { url: '', alt: '' }, ...(name === 'image' ? { imagePath: '' } : {}) })}>Odebrat obrázek z této sekce</button>}
         {!disabled && onUpload && <label>Nahrát a použít nový obrázek<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => {
           const file = event.target.files?.[0]; if (file) void onUpload(file, [...path, name]); event.target.value = ''
         }} /></label>}
@@ -255,9 +265,10 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       <div className="admin-view-heading"><div><p className="admin-kicker">AKRON / {tab === 'overview' ? 'PŘEHLED' : 'SPRÁVA WEBU'}</p><h2>{title}</h2><p>{descriptions[tab]}</p></div><span className="admin-badge">{readOnly ? 'Pouze náhled' : role === 'admin' ? 'Administrátor' : 'Uživatel'}</span></div>
       {(busy || message) && <p role={!busy && messageTone === 'error' ? 'alert' : 'status'} className={busy ? 'admin-status' : `admin-status admin-status-${messageTone}`}>{busy ? 'Pracuji…' : message}</p>}
       {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
-      {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} />}
+      {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} admin={role==='admin'} />}
       {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics připojíme později</h3><p>Sem doplníme návštěvnost, nejnavštěvovanější stránky a další skutečné výsledky webu.</p><span className="admin-badge">Zatím nepřipojeno</span></section>}
       {tab === 'settings' && role === 'admin' && <><InquirySettingsPanel /><InquiryConnectionPanel /></>}
+      {tab==='settings' && role==='admin' && !publishingEnabled && <section className="admin-records"><h3>Dokončit propojení obsahu</h3><p>Přenese aktuálně zveřejněné dokumenty ze Sanity. Předchozí obsah uloží do zálohy a odlišné koncepty zachová. Režim Připravujeme nemění.</p><button disabled={busy} onClick={()=>{if(window.confirm('Provést odsouhlasený převod aktuálně zveřejněného obsahu do Supabase a zapojit publikování? Koncepty nebudou automaticky zveřejněné.'))void operation(async()=>{const result=await activateContentHandover();notify(result.message,result.ok?'success':'error')})}}>Zálohovat a propojit zveřejněný obsah</button></section>}
       {tab === 'content' && <section className="admin-page-picker admin-page-picker-compact" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
         {[false, true].map(legal => { const group = pages.filter(item => isLegalPage(item) === legal); return group.length > 0 && <div key={String(legal)} className={legal ? 'admin-legal-pages' : undefined}>{legal && <p className="admin-muted">Právní informace</p>}<div className="admin-page-cards">{group.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>/{pageSlug(item) === 'home' ? '' : pageSlug(item)}</span></button>)}</div></div> })}
@@ -271,7 +282,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
         {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy || !publishingEnabled} onClick={() => save(true)}>Publikovat na web</button></div>}
         </>}
       </section>}
-      {((tab === 'inquiries' && !readOnly) || ((tab === 'users' || tab === 'activity') && role === 'admin')) && <AdminRecords key={tab} view={tab as 'inquiries' | 'users' | 'activity'} userId={userId} />}
+      {((tab === 'inquiries' && !readOnly) || ((tab === 'users' || tab === 'activity') && role === 'admin')) && <AdminRecords key={tab} view={tab as 'inquiries' | 'users' | 'activity'} userId={userId} admin={role==='admin'} />}
     </div>
   </div>
 }

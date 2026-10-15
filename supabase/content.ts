@@ -2,8 +2,14 @@ import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig } from './config'
 import { currentMember } from './server'
+import { cache } from 'react'
 
-export function contentEnabled() { return process.env.CMS_PROVIDER === 'supabase' }
+export const contentEnabled = cache(async () => {
+  if (process.env.CMS_PROVIDER === 'supabase') return true
+  if (process.env.NEXT_PUBLIC_ADMIN_PROVIDER !== 'supabase') return false
+  try { const {data,error} = await publicClient().from('cms_site_state').select('enabled').eq('id',true).single(); return !error && data?.enabled === true }
+  catch {return false}
+})
 
 function publicClient() {
   const { url, key } = supabaseConfig()

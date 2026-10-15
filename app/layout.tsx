@@ -12,6 +12,7 @@ import { getSettings } from '../sanity/content'
 import { draftMode } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
 import { CookiePreferences } from './cookie-preferences'
+import { imageUrl } from '../sanity/client'
 import { Footer, Header } from './ui'
 import { PublicChrome } from './public-chrome'
 import { getSiteUrl, isIndexingAllowed } from './site'
@@ -70,7 +71,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     '@graph': [
       {
         '@type': 'Organization', '@id': `${siteUrl}/#organization`,
-        name: company.name, url: siteUrl, logo: `${siteUrl}/images/akron-black.svg`,
+        name: company.name, url: siteUrl, logo: new URL(imageUrl(company.logo) || '/images/akron-black.svg',siteUrl).href,
         email: company.email, telephone: company.phone, identifier: company.registrationNumber,
         address: { '@type': 'PostalAddress', streetAddress: company.street, addressLocality: company.city.replace(/^\d{3}\s?\d{2}\s*/, ''), ...(company.city.match(/^\d{3}\s?\d{2}/) ? { postalCode: company.city.match(/^\d{3}\s?\d{2}/)?.[0] } : {}), addressCountry: 'CZ' },
         contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', telephone: company.phone, email: company.email, availableLanguage: 'cs' },
@@ -87,7 +88,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }} />
         <PublicChrome><a className="skip-link" href="#obsah">Přeskočit na obsah</a><Header /></PublicChrome>
         <main id="obsah">{children}</main>
-        <PublicChrome><Footer /><CookiePreferences /></PublicChrome>
+        <PublicChrome><Footer /><CookiePreferences text={company.cookieText} /></PublicChrome>
         {isEnabled && <VisualEditing />}
       </body>
     </html>

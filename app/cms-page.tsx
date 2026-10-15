@@ -24,16 +24,16 @@ function CardVisual({ card }: { card: Card }) {
   return <span className="rail-number" aria-hidden="true">↻</span>
 }
 function RenderSection({ section: s, settings, home = false, optionsPage = false }: { section: Section; settings: Settings; home?: boolean; optionsPage?: boolean }) {
-  const src = imageUrl(s.image) || s.imagePath || (optionsPage && s.layout === 'text' && !s.anchor ? '/images/logistics-coordination.jpg' : undefined)
-  const actions: Action[] | undefined = home && s.layout === 'hero' ? [{ label: 'Poptat přepravu', href: '/kontakt#poptavka' }] : s.actions
+  const src = imageUrl(s.image) || s.imagePath
+  const actions: Action[] | undefined = home && s.layout === 'hero' ? [s.actions?.find(action => /\/(?:kontakt|spoluprace)(?:#poptavka)?$/.test(action.href || '')) || s.actions?.[0] || {label:'Poptat přepravu',href:'/kontakt#poptavka'}] : s.actions
   const attrs = { id: s.anchor || undefined }
   switch (s.layout) {
     case 'hero':
-      if (optionsPage) return <section {...attrs} className="page-hero page-hero-visual shell"><div><p className="eyebrow">{s.eyebrow}</p><h1 className="cms-paragraph">{s.heading}{s.highlight && <em>{s.highlight}</em>}</h1><p className="lead">{s.description}</p><Actions actions={actions} /></div><figure><Image src={src || '/images/trucks-highway.png'} alt={s.image?.alt || 'Silniční přeprava nákladním vozidlem'} width={1600} height={1100} priority sizes="(max-width:750px) 100vw, 48vw" /></figure></section>
+      if (optionsPage) return <section {...attrs} className="page-hero page-hero-visual shell"><div><p className="eyebrow">{s.eyebrow}</p><h1 className="cms-paragraph">{s.heading}{s.highlight && <em>{s.highlight}</em>}</h1><p className="lead">{s.description}</p><Actions actions={actions} /></div>{src && <figure><Image src={src} alt={s.image?.alt || 'Silniční přeprava nákladním vozidlem'} width={1600} height={1100} priority sizes="(max-width:750px) 100vw, 48vw" /></figure>}</section>
       return src ? <section {...attrs} className="hero hero-with-trucks hero-compact">
         <div className="hero-photo" aria-hidden="true"><Image src={src} alt="" fill priority sizes="100vw" /></div>
         <div className="shell hero-content"><div className="hero-copy"><p className="eyebrow">{s.eyebrow}</p><h1>{s.heading}{s.highlight && <><br /><em>{s.highlight}</em></>}</h1><p className="hero-description">{s.description}</p><div className="hero-actions">{actions?.map((a, i) => <Link key={a._key || i} className="button" href={safeHref(a.href)}>{a.label}</Link>)}</div></div></div>
-        <div className="hero-road"><div className="shell"><RouteJourney /></div></div>
+        <div className="hero-road"><div className="shell"><RouteJourney loadingLabel={settings.siteText?.loading} deliveryLabel={settings.siteText?.delivery} /></div></div>
       </section> : <section {...attrs} className="page-hero shell"><p className="eyebrow">{s.eyebrow}</p><h1 className="cms-paragraph">{s.heading}{s.highlight && <em>{s.highlight}</em>}</h1><p className="lead">{s.description}</p><Actions actions={actions} /></section>
     case 'trust':
       return <section {...attrs} className="trust-strip"><div className="shell trust-grid">{s.cards?.map((c, i) => <p key={c._key || i}><strong>{c.title}</strong><span>{c.description}</span></p>)}</div></section>
@@ -53,7 +53,7 @@ function RenderSection({ section: s, settings, home = false, optionsPage = false
       return <section {...attrs} className="person-section"><div className="shell person-grid">{portrait ? <Image className="cms-portrait" src={portrait} alt={s.image?.alt || settings.portrait?.alt || settings.contactName} width={600} height={600} /> : <div className="person-monogram" aria-hidden="true">{settings.contactName.slice(0, 1)}</div>}<div><Heading section={{ ...s, description: settings.about || s.description }} /><div className="personal-contact"><a href={settings.phoneHref}>{settings.phone}</a><a href={`mailto:${settings.email}`}>{settings.email}</a></div></div></div></section>
     }
     case 'inquiry':
-      return <section {...attrs} className="shell inquiry"><Heading section={s} /><div className="inquiry-grid">{s.cards?.map((c, i) => <p key={c._key || i}><strong>{c.title}</strong>{c.description}</p>)}</div><InquiryForm labels={{ formHeading: settings.formHeading, formDescription: settings.formDescription, submitLabel: settings.submitLabel }} /></section>
+      return <section {...attrs} className="shell inquiry"><Heading section={s} /><div className="inquiry-grid">{s.cards?.map((c, i) => <p key={c._key || i}><strong>{c.title}</strong>{c.description}</p>)}</div><InquiryForm labels={settings} /></section>
     case 'cta':
       return <section {...attrs} className="closing-strip"><div className="shell"><span>{s.heading || s.description}</span>{s.actions?.map((a, i) => <Link key={a._key || i} href={safeHref(a.href)}>{a.label}</Link>)}</div></section>
     case 'note':

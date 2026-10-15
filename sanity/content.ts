@@ -36,17 +36,17 @@ async function fetchContent<T>(query: string, params: Record<string, string> = {
   }
 }
 
-export const getPage = cache(async (slug: string) => contentEnabled()
+export const getPage = cache(async (slug: string) => (await contentEnabled())
   ? readDocument<CmsPage>('page', slug, (await draftMode()).isEnabled)
   : fetchContent<CmsPage>('*[_type == "page" && slug.current == $slug][0]', { slug }))
 export async function getPublishedSlugs() {
-  if (contentEnabled()) return publishedSlugs()
+  if (await contentEnabled()) return publishedSlugs()
   try {
     return await client.fetch<string[]>('*[_type == "page" && defined(slug.current) && !(_id in path("drafts.**"))].slug.current', {}, { cache: 'no-store', signal: AbortSignal.timeout(6000) })
   } catch { return [] }
 }
 export const getSettings = cache(async (): Promise<Settings> => {
-  const stored = contentEnabled()
+  const stored = (await contentEnabled())
     ? await readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled)
     : await fetchContent<Partial<Settings>>('*[_id == "siteSettings"][0]')
   const settings = { ...defaultSettings, ...Object.fromEntries(Object.entries(stored || {}).filter(([, value]) => value != null)) } as Settings

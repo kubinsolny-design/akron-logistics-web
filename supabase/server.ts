@@ -28,7 +28,7 @@ export async function currentMember() {
   const { data: { user }, error } = await client.auth.getUser()
   if (error || !user) return null
   const { data, error: roleError } = await client.from('cms_members')
-    .select('role').eq('user_id', user.id).maybeSingle()
+    .select('role').eq('user_id', user.id).is('revoked_at', null).maybeSingle()
   if (roleError || !data || !['admin', 'editor', 'viewer'].includes(data.role)) return null
   return { client, user, role: data.role as MemberRole }
 }

@@ -9,5 +9,5 @@ export function safePublicHref(value?: string) {
 }
 
 export function publicNavigationLabel(label: string, href: string) {
-  return /^\/(?:spoluprace|kontakt)(?:[?#]|$)/.test(href) ? 'Kontakt' : label
+  return label === 'Spolupráce' && /^\/(?:spoluprace|kontakt)(?:[?#]|$)/.test(href) ? 'Kontakt' : label
 }

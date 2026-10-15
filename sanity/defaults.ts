@@ -7,7 +7,7 @@ export const initialSettings: Partial<Settings> = {
   headerAction: action('Poptat přepravu'), footerAction: action('Poslat poptávku'),
   footerContactLabel: 'Přepravu s vámi řeší', footerTagline: 'Vnitrostátní a mezinárodní silniční přeprava',
   ...company, accentColor: '#ff5a00', darkColor: '#152236', backgroundColor: '#f2f2f2', textColor: '#0d1117', font: 'poppins',
-  navigation: [action('Úvod', '/'), action('Přepravy', '/preprava'), action('Vozidla a možnosti', '/moznosti'), action('Spolupráce', '/spoluprace')],
+  navigation: [action('Úvod', '/'), action('Přepravy', '/preprava'), action('Vozidla a možnosti', '/moznosti'), action('Kontakt', '/kontakt')],
   footerText: 'Silniční přeprava a spedice\nv Česku i za hranicemi.', inquiryEmail: company.email,
   formHeading: 'Krátká poptávka', formDescription: 'Stačí základní údaje. Co bude potřeba, společně upřesníme. Hvězdičkou (*) jsou označené povinné údaje.',
   submitLabel: 'Odeslat poptávku', successMessage: 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.',
@@ -50,8 +50,8 @@ export const initialPages: CmsPage[] = [
     section('note', 'Výzva k poptávce', { heading: 'Potřebujete přepravu? Postaráme se o ni.', description: 'Pošlete nám trasu, termín a informace o nákladu. Připravíme vám nabídku a vše potřebné domluvíme společně.', actions: [action('Získat nabídku přepravy')] }),
   ] },
   { _id: 'page-moznosti', title: 'Vozidla a možnosti', slug: { current: 'moznosti' }, seoTitle: 'Vozidla a přepravní možnosti', seoDescription: 'Kamiony, sóla i dodávky, plachtové, skříňové a chladírenské vozy. Pro sypké materiály zajistíme sklápěčky a návěsy s posuvnou podlahou po Česku i Evropě.', sections: [
-    section('hero', 'Úvod', { eyebrow: 'Vozidlo odpovídá nákladu', heading: 'Kamiony, sóla i dodávky. Podle vašich potřeb.', description: 'Od jedné palety po celý kamion, včetně přeprav sypkých materiálů. Zajistíme přepravu podle vašich požadavků a postaráme se o její průběh od nakládky až po doručení.' }),
-    section('text', 'Přepravní možnosti', { eyebrow: 'Možnosti přepravy', heading: 'Od jedné palety po celý kamion.', description: 'Dodávky pro menší zásilky a expresní přepravy, sólo vozidla pro větší náklady a návěsy pro celovozové přepravy. Konkrétní vozidlo vybereme podle nákladu a trasy — i jednu paletu lze přepravit v rámci sběrné přepravy. Zajistíme plachtové, skříňové i chladírenské vozy podle potřeb vašeho zboží. Pro sypké materiály zajistíme sklápěčky a návěsy s posuvnou podlahou (walking floor).', caption: 'Plachta · Skříň · Chladírna · Sklápěčka · Posuvná podlaha' }),
+    section('hero', 'Úvod', { imagePath: '/images/trucks-highway.png', eyebrow: 'Vozidlo odpovídá nákladu', heading: 'Kamiony, sóla i dodávky. Podle vašich potřeb.', description: 'Od jedné palety po celý kamion, včetně přeprav sypkých materiálů. Zajistíme přepravu podle vašich požadavků a postaráme se o její průběh od nakládky až po doručení.' }),
+    section('text', 'Přepravní možnosti', { imagePath: '/images/logistics-coordination.jpg', eyebrow: 'Možnosti přepravy', heading: 'Od jedné palety po celý kamion.', description: 'Dodávky pro menší zásilky a expresní přepravy, sólo vozidla pro větší náklady a návěsy pro celovozové přepravy. Konkrétní vozidlo vybereme podle nákladu a trasy — i jednu paletu lze přepravit v rámci sběrné přepravy. Zajistíme plachtové, skříňové i chladírenské vozy podle potřeb vašeho zboží. Pro sypké materiály zajistíme sklápěčky a návěsy s posuvnou podlahou (walking floor).', caption: 'Plachta · Skříň · Chladírna · Sklápěčka · Posuvná podlaha' }),
     section('cards', 'Typy vozidel', { cards: [
       { vehicle: 'van', title: 'Dodávka', description: 'menší zásilky a expres' }, { vehicle: 'box', title: 'Sólo', description: 'větší náklady' },
       { vehicle: 'trailer', title: 'Návěs', description: 'celovozové přepravy' }, { vehicle: 'tipper', title: 'Sklápěčka', description: 'sypké materiály' },
