@@ -1,5 +1,13 @@
 # AKRON — stav přípravy 15. 10. 2026
 
+## Aktuální stav po předání administrace
+
+Autoritativní aktuální technický stav je nahoře v `supabase/ADMIN-LAUNCH.md`. Starší seznam blokací níže je historický: serverový Supabase klíč i Resend již fungují; publikovaný obsah byl po záloze a výslovném souhlasu převeden do Supabase a propojen s `/admin`. Testovací poptávka je uložená a vlastník doložil příjem e-mailu. Pozvaný uživatel potvrdil funkční přihlášení.
+
+Příjemce a veřejný kontakt je **adam.bartusek@akronlogistics.cz**, nikoliv nefunkční `info@`. Adresy může administrátor měnit v Nastavení webu → Kontaktní e-mail a doručování. Web stále zůstává v režimu **Připravujeme**; pro veřejné spuštění je nutný samostatný souhlas. Google Analytics zatím není připojené. Před spuštěním zbývá schválení obsahu, práv k obrázkům a právních informací, rozhodnutí o analytice a kontrola Search Console vlastníkem.
+
+## Historické záznamy přípravy — nejsou aktuálním seznamem blokací
+
 ## Hotové změny v této přípravě
 
 - Ostrá doména zůstává v režimu Připravujeme. Přesná kontrolní adresa `akron-logistics-web.vercel.app` zobrazuje celý web; indexace a odesílání poptávek zůstávají do dokončení propojení vypnuté. `/admin` a `/admin/accept` jsou dostupné na obou adresách. Publikovaný obsah, koncepty, role a databáze nebyly touto změnou přepisovány ani migrovány.

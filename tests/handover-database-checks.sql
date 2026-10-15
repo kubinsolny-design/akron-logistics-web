@@ -1,5 +1,10 @@
 -- Disposable local fixture only. All test mutations roll back.
 begin;
+set local request.jwt.claim.sub='';
+insert into storage.objects(bucket_id,name,owner_id) values('site-media','audit-owner-test.jpg','00000000-0000-0000-0000-000000000001');
+do $$ begin
+  if not exists(select from public.cms_activity where entity_id='audit-owner-test.jpg' and actor_id='00000000-0000-0000-0000-000000000001') then raise exception 'Missing storage uploader attribution'; end if;
+end; $$;
 set local role authenticated;
 set local request.jwt.claim.sub='00000000-0000-0000-0000-000000000002';
 do $$ begin

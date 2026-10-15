@@ -1,6 +1,24 @@
 # Administrace AKRON — dokončení nasazení
 
-## Aktuální stav 15. října — adresy a neplatný serverový klíč
+## Předání administrace — aktuální ověřený stav 15. října
+
+Tato sekce nahrazuje historické blokace níže. Produkční kontrola po zásahu kolegy již potvrzuje funkční privátní Supabase klíč, příjem poptávek i Resend. Technická poptávka je uložená v administraci; vlastník doložil doručený e-mail Adamovi a Jirkovi. Další kopie testu se při této kontrole neposílala.
+
+- Se souhlasem vlastníka proběhl převod **7 aktuálně publikovaných dokumentů** ze Sanity do Supabase. Atomická operace nejprve vytvořila admin-only snapshot `cms_content_backups`, zachovala případné odlišné koncepty (v živém převodu jich bylo 0) a nastavila `cms_site_state.enabled=true`. Tento marker zapíná společný zdroj obsahu i bez změny staré proměnné `CMS_PROVIDER`. Publikování v `/admin` je aktivní. Sanity se automaticky nemaže; původní obrázky z jeho CDN zůstávají použitelné.
+- Nová migrace **`20261015123729_client_handover_controls.sql`** byla aplikovaná a zapsaná do živé historie pod stejným timestampem. Starší migrační timestampy stále vyžadují porovnání před CLI `db push`; základní import ani převod znovu nespouštět.
+- Uživatel `jirka.fusek1@gmail.com` byl na výslovný souhlas pozvaný s rolí **Uživatel**. Příjemce sám potvrdil doručení, nastavení hesla a úspěšné přihlášení. Existující role nebyly zvýšené.
+- Admin může odebírat a obnovovat přístupy, měnit role a zvát uživatele. Odebrání zneplatní CMS oprávnění i pro existující JWT; vlastní a poslední administrátorský přístup je chráněný. Nejde o nevratné odstranění Auth identity.
+- Poptávky mají obnovitelný koš. Nahrané nepoužívané soubory se přesouvají do neveřejného bucketu `site-media-trash` a lze je obnovit na původní adresu. Použití v publikovaném obsahu i uložených konceptech blokuje smazání; kontrola běží v databázi, nikoliv jen v tlačítku. Statické a původní Sanity podklady se nahrazují/odebírají v editoru, administrace neodstraňuje soubory z GitHubu ani z cizího CDN.
+- Nastavení nyní zahrnuje také texty formuláře, cookie rozhraní, patičky a navigace. Stránka je v adminu označená Kontakt; historický technický identifikátor `page-spoluprace` zůstává kompatibilní. Adresy pevných stránek nejsou libovolně přepisovatelné.
+- Veřejný kontakt i příjemce zůstává **adam.bartusek@akronlogistics.cz**, odesílatel **AKRON Logistics <web@akronlogistics.cz>**. Nastavení adres má vlastní okamžité uložení a audit. `info@` se nepoužívá.
+- **Připravujeme zůstává zapnuté.** Převod CMS ani publikace neznamenají veřejné spuštění; veřejné odesílání je do odsouhlaseného spuštění blokované.
+- Kontroly: 108 automatických testů, ESLint a produkční build; všechny migrace a SQL oprávnění na čistém izolovaném PostgreSQL. Ověřené scénáře zahrnují blokování anon/editor/neaktivního účtu, zachování odlišného konceptu při převodu, audit a ochranu používaných souborů. Lokální testy nenahrazují penetrační test ani kompletní kontrolu konfigurace Auth vlastníkem.
+- Živě ověřeno: uložení kontrolní změny do konceptu (na webu nebyla), publikování (na review webu byla) a vrácení přesného původního textu. Nahrání veřejné testovací fotografie, soukromý koš a obnovení stejné adresy fungují. Testovací kopie byly uklizené do obnovitelného koše, ne trvale odstraněné. Jediná technická poptávka prošla košem a obnovením; žádný další poptávkový e-mail neodešel. Historie ukazuje autora všech těchto operací.
+- Oprava autora Storage uploadu je aplikovaná a registrovaná jako **`20261015132043_media_audit_actor.sql`**. Storage může zapisovat bez `auth.uid()`; privátní trigger pak dohledává aktivního člena podle serverového `owner_id` (nikoliv podle uživatelských metadat). Následující skutečný upload již v historii ukázal konkrétního autora. Historické záznamy „Systém“ nebyly přepisované.
+- Na živém webu zkontrolováno všech šest stránek v šířkách 390 a 1440 px, editor, soubory, nastavení, účty a poptávky na mobilu; bez vodorovného přesahu. Náhledy souborů se nepřekrývají s texty. Telefon je povinný, e-mail volitelný. Čtyři obchodní stránky byly porovnané s texty před převodem; obsah zůstal zachovaný.
+- Závěrečný SQL read-only check: 7 konceptů, 7 publikovaných dokumentů, 1 snapshot, 4 členové bez odebraných přístupů, 1 obnovená poptávka, všechny `cms_*` tabulky s RLS. Anon nemůže volat správu ani příjem poptávky, souborový koš není veřejný. Živý Security Advisor po obnovení analýzy: **0 errors, 7 warnings** — šest záměrně autorizovaných CMS RPC pro přihlášené a vypnutá ochrana uniklých hesel. Poslední položku má správce Auth posoudit a zapnout, pokud je pro projekt dostupná; nebyla zamaskovaná. Nejde o záruku absence všech zranitelností.
+
+## Historický stav 15. října — adresy a tehdy neplatný serverový klíč
 
 Tato sekce nahrazuje starší údaje níže o adresách a chybějícím klíči. `info@akronlogistics.cz` podle zákazníka zatím neexistuje; nepoužívat ji a neodstraňovat její Resend suppression.
 
