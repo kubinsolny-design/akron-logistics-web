@@ -37,8 +37,30 @@ function load(file) {
   mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file)
   return mod.exports
 }
-const { AdminPanel, Fields } = load(path.join(root, 'app/admin/panel.tsx'))
+const { AdminPanel, Fields, PageEditor } = load(path.join(root, 'app/admin/panel.tsx'))
 const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture', email: 'ukazka@akronlogistics.cz' }))
+
+test('page editor opens the first section and keeps technical options out of everyday fields', () => {
+  const value = { title: 'Úvod', slug: { current: 'home' }, seoTitle: 'SEO title', sections: [{ _key: 'hero', layout: 'hero', heading: 'První nadpis', description: 'Popis', imagePath: '/images/trucks-highway.png', actions: [{ _key: 'action', label: 'Poptat', href: '/spoluprace' }] }, { _key: 'second', layout: 'text', heading: 'Druhá sekce' }] }
+  const before = JSON.stringify(value)
+  const html = renderToStaticMarkup(React.createElement(PageEditor, { value, onChange: () => {}, disabled: false, onUpload: async () => {} }))
+  assert.match(html, /aria-label="Sekce vybrané stránky"/)
+  assert.match(html, />První nadpis<\/textarea>/)
+  assert.doesNotMatch(html, />Druhá sekce<\/textarea>/)
+  assert.match(html, /<details open="" class="admin-item"/)
+  assert.match(html, /<summary>Pokročilé nastavení<\/summary>/)
+  assert.match(html, /<summary>SEO, adresa stránky a sdílení<\/summary>/)
+  assert.equal(JSON.stringify(value), before, 'displaying simplified fields must not rewrite stored content')
+})
+test('simplified legal pages retain the document editor and read-only restrictions', () => {
+  const { initialLegalPages } = load(path.join(root, 'sanity/legal-defaults.ts'))
+  for (const value of initialLegalPages) {
+    const html = renderToStaticMarkup(React.createElement(PageEditor, { value, onChange: () => {}, disabled: true, onUpload: async () => {} }))
+    assert.match(html, /Text stránky — dokumentový editor/)
+    assert.match(html, /aria-readonly="true"/)
+    assert.doesNotMatch(html, /Sekce vybrané stránky/)
+  }
+})
 
 test('overview is reserved for later and contains no content or settings cards', () => {
   const html = render('admin')

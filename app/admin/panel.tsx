@@ -8,6 +8,7 @@ import { AdminIcon } from './icons'
 import { AdminFiles } from './files'
 import { DocumentEditor } from './document-editor'
 import { supportsDocumentEditor } from './rich-text'
+import { isLegalPage, pageSlug, sortContentPages } from './content-order'
 import { signOut } from './actions'
 import { browserClient } from '../../supabase/browser'
 import type { MemberRole } from '../../supabase/server'
@@ -40,6 +41,7 @@ const options: Record<string, string[]> = {
   font: ['orbitron', 'poppins'],
 }
 const ignored = new Set(['asset', 'phoneHref', 'markDefs', 'marks'])
+const advancedFields = new Set(['slug', 'seoTitle', 'seoDescription', 'shareImage', 'layout', 'theme', 'anchor', 'imagePath', 'editorLabel', 'cardStyle', 'vehicle', 'visible', 'url', 'style'])
 
 function blankItem(field: string): Value {
   const key = crypto.randomUUID()
@@ -51,16 +53,22 @@ function blankItem(field: string): Value {
   return { _key: key, label: '', href: '' }
 }
 
-export function Fields({ value, onChange, disabled, path = [], onUpload, documentBody = false }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void>; documentBody?: boolean }) {
+export function Fields({ value, onChange, disabled, path = [], onUpload, documentBody = false, simple = false, imageCards = false }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void>; documentBody?: boolean; simple?: boolean; imageCards?: boolean }) {
   const editable = { ...value }
   if (path.length === 0 && Array.isArray(value.sections)) {
     editable.shareImage ??= { url: '', alt: '' }
   }
-  if (typeof value.layout === 'string') editable.image ??= { url: '', alt: '' }
+  if (typeof value.layout === 'string' && (!simple || ['hero', 'text', 'map', 'person'].includes(value.layout))) editable.image ??= { url: '', alt: '' }
+  if (simple && imageCards && path.at(-2) === 'cards') editable.image ??= { url: '', alt: '' }
   if (path.length === 0 && !value.sections && !value.body && value.name) {
     for (const field of ['logo', 'lightLogo', 'portrait']) editable[field] ??= { url: '', alt: '' }
   }
-  return <div className="admin-fields">{Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name)).map(([name, item]) => {
+  const entries = Object.entries(editable).filter(([name]) => !name.startsWith('_') && !ignored.has(name))
+  const advanced = Object.fromEntries(entries.filter(([name]) => advancedFields.has(name)))
+  const order = ['eyebrow', 'title', 'heading', 'highlight', 'description', 'question', 'answer', 'text', 'label', 'href', 'caption', 'image', 'actions', 'cards', 'questions']
+  const shown = entries.filter(([name]) => !simple || !advancedFields.has(name))
+  if (simple) shown.sort(([a], [b]) => (order.indexOf(a) < 0 ? 99 : order.indexOf(a)) - (order.indexOf(b) < 0 ? 99 : order.indexOf(b)))
+  return <div className={`admin-fields${simple ? ' admin-fields-simple' : ''}`}>{shown.map(([name, item]) => {
     const label = labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
     if (name === 'body' && path.length === 0 && documentBody && Array.isArray(item) && supportsDocumentEditor(item)) return <DocumentEditor key={name} value={item} onChange={change} disabled={disabled} />
@@ -70,13 +78,13 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
         || (name === 'image' && typeof value.imagePath === 'string' && /^\/images\/[a-z0-9_./-]+$/i.test(value.imagePath) ? value.imagePath : undefined)
       return <fieldset key={name}><legend>{label}</legend>
         {preview ? <div className="admin-image-preview"><Image unoptimized width={600} height={200} src={preview} alt={String(image.alt || label)} /></div> : <p className="admin-muted">Zatím není vybraný obrázek. Nahrajte JPEG, PNG nebo WebP do 10 MB.</p>}
-        <Fields value={{ url: '', alt: '', ...image }} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} />
+        <Fields value={{ url: '', alt: '', ...image }} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} simple={simple} />
         {!disabled && onUpload && <label>Nahrát a použít nový obrázek<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => {
           const file = event.target.files?.[0]; if (file) void onUpload(file, [...path, name]); event.target.value = ''
         }} /></label>}
       </fieldset>
     }
-    if (Array.isArray(item)) return <fieldset key={name}><legend>{label} · {item.length}</legend>{item.map((entry, index) => <details className="admin-item" key={typeof entry === 'object' && entry && !Array.isArray(entry) ? String(entry._key || index) : index}>
+    if (Array.isArray(item)) return <fieldset key={name}><legend>{label} · {item.length}</legend>{item.map((entry, index) => <details open={simple ? true : undefined} className="admin-item" key={typeof entry === 'object' && entry && !Array.isArray(entry) ? String(entry._key || index) : index}>
       <summary>{entry && typeof entry === 'object' && !Array.isArray(entry) ? String(entry.editorLabel || entry.title || entry.question || entry.label || `${label} ${index + 1}`) : `${label} ${index + 1}`}</summary>
       <div className="admin-item-tools"><span>{label} {index + 1}</span>{!disabled && <>
         <button type="button" disabled={index === 0} aria-label={`Posunout ${label} ${index + 1} nahoru`} onClick={() => { const items = [...item]; [items[index - 1], items[index]] = [items[index], items[index - 1]]; change(items) }}>↑</button>
@@ -84,17 +92,40 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
         <button type="button" onClick={() => { if (window.confirm('Odebrat tuto položku z rozpracované verze?')) change(item.filter((_, i) => i !== index)) }}>Odebrat</button>
       </>}</div>
       {entry && typeof entry === 'object' && !Array.isArray(entry)
-        ? <Fields value={entry} disabled={disabled} path={[...path, name, String(index)]} onUpload={onUpload} onChange={(updated) => change(item.map((it, i) => i === index ? updated : it))} />
+        ? <Fields value={entry} disabled={disabled} path={[...path, name, String(index)]} onUpload={onUpload} simple={simple} imageCards={name === 'cards' && value.layout === 'cards'} onChange={(updated) => change(item.map((it, i) => i === index ? updated : it))} />
         : <input aria-label={`${label} ${index + 1}`} value={String(entry || '')} disabled={disabled} onChange={(event) => change(item.map((it, i) => i === index ? event.target.value : it))} />}
     </details>)}{!disabled && <button type="button" onClick={() => change([...item, blankItem(name)])}>Přidat položku</button>}</fieldset>
-    if (item && typeof item === 'object') return <fieldset key={name}><legend>{label}</legend><Fields value={item} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} /></fieldset>
+    if (item && typeof item === 'object') return <fieldset key={name}><legend>{label}</legend><Fields value={item} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} simple={simple} /></fieldset>
     if (typeof item === 'boolean') return <label key={name} className="admin-check"><input type="checkbox" checked={item} disabled={disabled} onChange={(event) => change(event.target.checked)} />{label}</label>
     if (name === 'layout') return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={event => change(event.target.value)}>{Object.entries({ hero: 'Úvodní velký obrázek', trust: 'Přehled výhod', text: 'Text', cards: 'Karty služeb', map: 'Mapa', faq: 'Otázky a odpovědi', process: 'Postup spolupráce', person: 'Kontaktní osoba', inquiry: 'Poptávkový formulář', cta: 'Výzva s tlačítkem', note: 'Poznámka' }).map(([type, title]) => <option key={type} value={type}>{title}</option>)}</select></label>
     if (options[name]) return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)}><option value="">Výchozí</option>{options[name].map(option => <option key={option}>{option}</option>)}</select></label>
-    const long = ['description', 'text', 'answer', 'about', 'footerText', 'formDescription', 'seoDescription'].includes(name)
-    return <label key={name}>{label}{long ? <textarea rows={3} value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)} />
+    const long = ['description', 'text', 'answer', 'about', 'footerText', 'formDescription', 'seoDescription'].includes(name) || (simple && ['heading', 'question'].includes(name))
+    return <label key={name}>{label}{long ? <textarea rows={['heading', 'question'].includes(name) ? 2 : 3} value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)} />
       : <input value={String(item ?? '')} type={typeof item === 'number' ? 'number' : 'text'} disabled={disabled} onChange={(event) => change(typeof item === 'number' ? Number(event.target.value) : event.target.value)} />}</label>
-  })}</div>
+  })}{simple && Object.keys(advanced).length > 0 && <details className="admin-advanced"><summary>Pokročilé nastavení</summary><Fields value={advanced} onChange={next => onChange({ ...value, ...next })} disabled={disabled} path={path} onUpload={onUpload} /></details>}</div>
+}
+
+export function PageEditor({ value, onChange, disabled, onUpload }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; onUpload: (file: File, path: string[]) => Promise<void> }) {
+  const [sectionIndex, setSectionIndex] = useState(0)
+  const sections = Array.isArray(value.sections) ? value.sections : []
+  const active = Math.min(sectionIndex, Math.max(0, sections.length - 1))
+  const section = sections[active]
+  const pageFields = Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'sections'))
+  const otherContent = Object.fromEntries(Object.entries(pageFields).filter(([key]) => key !== 'title' && !key.startsWith('_') && !advancedFields.has(key)))
+  const sectionName = (item: Value, index: number) => item && typeof item === 'object' && !Array.isArray(item) ? String(item.editorLabel || item.heading || `Sekce ${index + 1}`) : `Sekce ${index + 1}`
+  return <div className="admin-page-editing">
+    <label className="admin-page-name">Název stránky<input value={String(value.title || '')} disabled={disabled} onChange={event => onChange({ ...value, title: event.target.value })} /></label>
+    {Array.isArray(value.sections) && <>
+      <label className="admin-section-select">Vybraná sekce<select value={active} onChange={event => setSectionIndex(Number(event.target.value))}>{sections.map((item, index) => <option key={index} value={index}>{index + 1}. {sectionName(item, index)}</option>)}</select></label>
+      <div className="admin-section-workspace"><nav aria-label="Sekce vybrané stránky" className="admin-section-list"><p>Co chcete upravit?</p>{sections.map((item, index) => <button type="button" key={item && typeof item === 'object' && !Array.isArray(item) ? String(item._key || index) : index} aria-pressed={index === active} onClick={() => setSectionIndex(index)}><span>{index + 1}</span>{sectionName(item, index)}</button>)}</nav>
+      <div className="admin-section-content" role="region" aria-label="Úprava vybrané sekce">
+        {section && typeof section === 'object' && !Array.isArray(section) ? <><h4>{sectionName(section, active)}</h4><Fields key={String(section._key || active)} value={section} simple path={['sections', String(active)]} onUpload={onUpload} disabled={disabled} onChange={next => onChange({ ...value, sections: sections.map((item, index) => index === active ? next : item) })} /></> : <p className="admin-muted">Stránka zatím nemá žádné sekce.</p>}
+      </div></div>
+      <details className="admin-advanced admin-section-management"><summary>Pořadí a správa sekcí</summary><p className="admin-muted">Běžné texty a fotografie upravíte výše. Zde můžete změnit strukturu stránky.</p>{sections.map((item, index) => <div className="admin-item-tools" key={index}><span>{sectionName(item, index)}</span><button type="button" disabled={disabled || index === 0} aria-label={`Posunout sekci ${index + 1} nahoru`} onClick={() => { const next = [...sections]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; onChange({ ...value, sections: next }); setSectionIndex(index - 1) }}>Nahoru</button><button type="button" disabled={disabled || index === sections.length - 1} aria-label={`Posunout sekci ${index + 1} dolů`} onClick={() => { const next = [...sections]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; onChange({ ...value, sections: next }); setSectionIndex(index + 1) }}>Dolů</button><button type="button" disabled={disabled} onClick={() => { if (window.confirm('Odebrat tuto sekci z konceptu?')) { onChange({ ...value, sections: sections.filter((_, i) => i !== index) }); setSectionIndex(0) } }}>Odebrat</button></div>)}<button type="button" disabled={disabled} onClick={() => { onChange({ ...value, sections: [...sections, blankItem('sections')] }); setSectionIndex(sections.length) }}>Přidat sekci</button></details>
+    </>}
+    {Object.keys(otherContent).length > 0 && <Fields value={otherContent} documentBody simple onChange={next => onChange({ ...value, ...next })} disabled={disabled} onUpload={onUpload} />}
+    <details className="admin-advanced"><summary>SEO, adresa stránky a sdílení</summary><Fields value={{ shareImage: { url: '', alt: '' }, ...Object.fromEntries(Object.entries(pageFields).filter(([key]) => advancedFields.has(key))) }} onChange={next => onChange({ ...value, ...next })} disabled={disabled} onUpload={onUpload} /></details>
+  </div>
 }
 
 function replaceImage(value: Value, path: string[], url: string): Value {
@@ -107,7 +138,7 @@ function replaceImage(value: Value, path: string[], url: string): Value {
 
 export function AdminPanel({ documents, role, userId, email = '', publishingEnabled = false }: { documents: Document[]; role: MemberRole; userId: string; email?: string; publishingEnabled?: boolean }) {
   const [items, setItems] = useState(documents)
-  const initial = documents.find(item => item.id === 'page-home') || documents.find(item => item.kind === 'page') || documents[0]
+  const initial = sortContentPages(documents.filter(item => item.kind === 'page'))[0] || documents[0]
   const [selected, setSelected] = useState(initial?.id || '')
   const [data, setData] = useState<ObjectValue>(initial?.data || {})
   const [dirty, setDirty] = useState(false)
@@ -155,7 +186,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       if (settings) { setSelected(settings.id); setData(settings.data); setDirty(false) }
     }
     if (next === 'content' && current?.kind !== 'page') {
-      const page = items.find(item => item.kind === 'page')
+      const page = sortContentPages(items.filter(item => item.kind === 'page'))[0]
       if (page) { setSelected(page.id); setData(page.data); setDirty(false) }
     }
   }
@@ -197,7 +228,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
     if (busy || (dirty && !window.confirm('Opustit neuložené změny?'))) return
     setSelected(item.id); setData(item.data); setDirty(false); setMessage('')
   }
-  const pages = items.filter(item => item.kind === 'page' && String(item.data.title || '').toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs')))
+  const pages = sortContentPages(items.filter(item => item.kind === 'page' && String(item.data.title || '').toLocaleLowerCase('cs').includes(query.toLocaleLowerCase('cs'))))
   const allPages = items.filter(item => item.kind === 'page')
   const title = ({ overview: 'Přehled', content: 'Obsah stránek', settings: 'Nastavení webu', inquiries: 'Poptávky', users: 'Administrace', activity: 'Aktivita', files: 'Soubory', analytics: 'Analytika' })[tab]
   const descriptions = { overview: 'Váš pracovní prostor pro správu webu.', content: 'Všechny stránky, jejich texty, obrázky a sekce.', settings: 'Kontakty, vzhled a společné prvky celého webu.', inquiries: 'Přehled poptávek a jejich zpracování.', users: 'Uživatelé, pozvánky a jejich oprávnění.', activity: 'Kdo, kdy a co na webu změnil.', files: 'Veřejné obrázky a dokumenty pro váš web.', analytics: 'Návštěvnost a výsledky vašeho webu.' }
@@ -224,15 +255,15 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
       {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} />}
       {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics připojíme později</h3><p>Sem doplníme návštěvnost, nejnavštěvovanější stránky a další skutečné výsledky webu.</p><span className="admin-badge">Zatím nepřipojeno</span></section>}
-      {tab === 'content' && <section className="admin-page-picker" aria-label="Výběr stránky">
+      {tab === 'content' && <section className="admin-page-picker admin-page-picker-compact" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
-        <div className="admin-page-cards">{pages.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>{typeof item.data.slug === 'object' && item.data.slug && !Array.isArray(item.data.slug) ? '/' + (item.data.slug.current === 'home' ? '' : item.data.slug.current || '') : 'Stránka'}</span></button>)}</div>
+        {[false, true].map(legal => { const group = pages.filter(item => isLegalPage(item) === legal); return group.length > 0 && <div key={String(legal)} className={legal ? 'admin-legal-pages' : undefined}>{legal && <p className="admin-muted">Právní informace</p>}<div className="admin-page-cards">{group.map(item => <button disabled={busy} key={item.id} aria-pressed={selected === item.id} onClick={() => selectDocument(item)}><strong>{String(item.data.title || item.id)}</strong><span>/{pageSlug(item) === 'home' ? '' : pageSlug(item)}</span></button>)}</div></div> })}
         {!pages.length && <p className="admin-muted">Žádná odpovídající stránka.</p>}
       </section>}
       {(tab === 'content' || tab === 'settings') && <section className="admin-editor">
         {!current ? <p>Obsah zatím není importovaný. Kontaktujte správce.</p> : <>
-        <div className="admin-editor-heading"><div><p className="admin-kicker">{tab === 'content' ? 'EDITOR STRÁNKY' : 'SPOLEČNÁ NASTAVENÍ'}</p><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : 'Kliknutím rozbalte sekci, kterou chcete upravit.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložený koncept'} · {current.revision}</span></div>
-        <Fields key={current.id} value={data} documentBody={['page-cookies', 'page-ochrana-osobnich-udaju'].includes(current.id) || (data.slug && typeof data.slug === 'object' && !Array.isArray(data.slug) ? ['cookies', 'ochrana-osobnich-udaju'].includes(String(data.slug.current)) : false)} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />
+        <div className="admin-editor-heading"><div><p className="admin-kicker">{tab === 'content' ? 'EDITOR STRÁNKY' : 'SPOLEČNÁ NASTAVENÍ'}</p><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : tab === 'content' ? 'Vyberte sekci. Texty, fotografie a tlačítka upravíte přímo, bez dalšího rozbalování.' : 'Upravte společné údaje celého webu.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložený koncept'} · {current.revision}</span></div>
+        {tab === 'content' ? <PageEditor key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} /> : <Fields key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />}
         {!readOnly && !publishingEnabled && <p className="admin-status">Koncept můžete upravit a uložit. Publikování na hlavní web čeká na dokončení propojení obsahu.</p>}
         {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy || !publishingEnabled} onClick={() => save(true)}>Publikovat na web</button></div>}
         </>}
