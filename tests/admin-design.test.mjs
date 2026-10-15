@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import Module from 'node:module'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
+import { JSDOM } from 'jsdom'
 import ts from 'typescript'
 import React, { act } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -24,7 +25,6 @@ function load(file) {
     if (request === './records') return { AdminRecords: () => null }
     if (request === './inquiry-connection') return { InquiryConnectionPanel: () => null }
     if (request === './inquiry-settings') return { InquirySettingsPanel: () => null }
-    if (request === './handover-actions') return { activateContentHandover: async () => ({ok:true}) }
     if (request === './manage-actions') return {}
     if (request === '../../supabase/content') return { contentEnabled: async () => true }
     if (request === './actions') return { signOut: () => {} }
@@ -33,7 +33,7 @@ function load(file) {
     if (request === '../../supabase/browser') return { browserClient: () => { throw new Error('Network is disabled in design fixtures') } }
     if (request === '../../supabase/config') return { supabaseEnabled: () => true }
     if (request === '../../supabase/server') return { currentMember: async () => ({ user: { id: 'fixture', email: 'ukazka@akronlogistics.cz' }, role: 'admin', client: { from: () => ({ select: () => ({ order: async () => ({ data: fixture }) }) }) } }) }
-    if (request === '../../sanity/client') return { imageUrl: () => undefined }
+    if (request === '../../content/client') return { imageUrl: () => undefined, ownedMediaUrl: value => /^(?:\/images\/|https:\/\/htgwzjcdxbknzvobwioa\.supabase\.co\/storage\/v1\/object\/public\/site-media\/)/.test(value) ? value : undefined }
     if (request === 'next/image') return { __esModule: true, default: props => React.createElement('img', props) }
     if (request.endsWith('.css')) return {}
     if (request.startsWith('./') || request.startsWith('../')) { const base = path.resolve(path.dirname(file), request); return load(base + (fs.existsSync(base + '.tsx') ? '.tsx' : '.ts')) }
@@ -65,7 +65,7 @@ test('page editor opens the first section and keeps technical options out of eve
   assert.equal(JSON.stringify(value), before, 'displaying simplified fields must not rewrite stored content')
 })
 test('simplified legal pages retain the document editor and read-only restrictions', () => {
-  const { initialLegalPages } = load(path.join(root, 'sanity/legal-defaults.ts'))
+  const { initialLegalPages } = load(path.join(root, 'content/legal-defaults.ts'))
   for (const value of initialLegalPages) {
     const html = renderToStaticMarkup(React.createElement(PageEditor, { value, onChange: () => {}, disabled: true, onUpload: async () => {} }))
     assert.match(html, /Text stránky — dokumentový editor/)
@@ -112,7 +112,8 @@ test('admin navigation follows the requested workspace order', () => {
 })
 test('public media references are deduplicated and unsafe links omitted', () => {
   const { referencedMedia, mediaUploadPath } = load(path.join(root, 'app/admin/media.ts'))
-  const files = referencedMedia([{ data: { image: { url: 'https://example.com/photo.png' }, imagePath: '/images/map.svg', action: { href: 'https://example.com/brochure.pdf' }, bad: { href: 'javascript:alert(1).pdf' } } }])
+  const base='https://htgwzjcdxbknzvobwioa.supabase.co/storage/v1/object/public/site-media/'
+  const files = referencedMedia([{ data: { image: { url: base+'photo.png' }, imagePath: '/images/map.svg', action: { href: base+'brochure.pdf' }, bad: { href: 'javascript:alert(1).pdf' }, external:{url:'https://cdn.sanity.io/images/example.png'} } }])
   assert.equal(files.length, 3)
   assert.ok(files.some(file => file.url.endsWith('brochure.pdf')))
   assert.equal(mediaUploadPath({ name: '../Český obrázek.jpeg', type: 'image/jpeg' }, 'fixture'), 'fixture--Cesky-obrazek.jpg')
@@ -120,7 +121,7 @@ test('public media references are deduplicated and unsafe links omitted', () => 
 })
 
 test('only the opted-in top-level body uses the document editor; other fields stay structured', () => {
-  const { initialLegalPages } = load(path.join(root, 'sanity/legal-defaults.ts'))
+  const { initialLegalPages } = load(path.join(root, 'content/legal-defaults.ts'))
   for (const page of initialLegalPages) {
     const html = renderToStaticMarkup(React.createElement(Fields, { value: page, documentBody: true, disabled: false, onChange: () => {} }))
     assert.match(html, /Text stránky — dokumentový editor/)
@@ -134,16 +135,13 @@ test('only the opted-in top-level body uses the document editor; other fields st
 })
 
 test('document conversion retains both legal articles, headings, lists, text, and links', async () => {
-  const { initialLegalPages } = load(path.join(root, 'sanity/legal-defaults.ts'))
+  const { initialLegalPages } = load(path.join(root, 'content/legal-defaults.ts'))
   const { supportsDocumentEditor, portableTextHtml, readDocument, safeTextLink } = load(path.join(root, 'app/admin/rich-text.ts'))
   assert.equal(safeTextLink('javascript:alert(1)'), false)
   assert.equal(safeTextLink('//example.com'), false)
   assert.equal(safeTextLink('/cookies'), true)
   assert.equal(supportsDocumentEditor([{ _type: 'image' }]), false)
   for (const page of initialLegalPages) { assert.equal(supportsDocumentEditor(page.body), true); assert.match(portableTextHtml(page.body), /<h2/); }
-  const packageDir = fs.readdirSync(path.join(root, 'node_modules/.pnpm')).find(name => name.startsWith('jsdom@'))
-  if (!packageDir) throw new Error('DOM regression checks require jsdom from the local test dependencies')
-  const { JSDOM } = await import(pathToFileURL(path.join(root, 'node_modules/.pnpm', packageDir, 'node_modules/jsdom/lib/api.js')).href)
   const dom = new JSDOM('<div id="editor"></div>')
   const originals = { document: globalThis.document, HTMLElement: globalThis.HTMLElement, Node: globalThis.Node, window: globalThis.window, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
   Object.assign(globalThis, { document: dom.window.document, HTMLElement: dom.window.HTMLElement, Node: dom.window.Node, window: dom.window, IS_REACT_ACT_ENVIRONMENT: true })

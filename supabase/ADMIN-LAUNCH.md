@@ -1,5 +1,9 @@
 # Administrace AKRON — dokončení nasazení
 
+## Aktuální architektura — odpojení Sanity, 15. října 2026
+
+Aplikace čte i zapisuje obsah a poptávky výhradně v Supabase. Sanity SDK, Studio a import při buildu jsou odstraněny; pět původních obrázků hostujeme ve vlastních souborech na Vercelu. Migrace médií zachovává samostatné zálohy konceptů i publikací. Aktuální postup pro definitivní zrušení služby je v README → „Odpojení původního Sanity“. Starší záznamy níže popisují historický stav, nejsou pokynem k opětovnému připojení Sanity.
+
 ## Předání administrace — aktuální ověřený stav 15. října
 
 ### Značkové pozvánky

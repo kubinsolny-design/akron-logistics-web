@@ -16,7 +16,7 @@ function load(relative) {
   mod.require = request => {
     if (request === 'next/link') return { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) }
     if (request === 'next/image') return { __esModule: true, default: props => { const image = { ...props }; delete image.fill; delete image.priority; return React.createElement('img', image) } }
-    if (request === '../sanity/client') return { imageUrl: () => undefined, safeHref: value => load('../app/public-links.ts').publicHref(value || '#') }
+    if (request === '../content/client') return { imageUrl: image => image?.url?.startsWith('/images/') ? image.url : undefined, safeHref: value => load('../app/public-links.ts').publicHref(value || '#') }
     if (request === './ui') return { RouteJourney: () => React.createElement('div', { className: 'route-journey' }) }
     if (request === './cookie-preferences') return { CookieSettingsButton: () => null }
     if (request === './actions') return { sendInquiry: async () => ({ status: 'idle', message: '' }) }
@@ -54,7 +54,7 @@ test('home hero has exactly one inquiry CTA even with multiple stored CMS action
   }
 })
 test('options presentation preserves every approved section text and adds existing photos only', () => {
-  const { initialPages } = load('../sanity/defaults.ts')
+  const { initialPages } = load('../content/defaults.ts')
   const page = initialPages.find(page => page.slug.current === 'moznosti')
   const before = JSON.stringify(page)
   const { CmsPage } = load('../app/cms-page.tsx')

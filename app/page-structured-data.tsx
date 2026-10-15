@@ -1,4 +1,4 @@
-import { contentMetadata, getPage } from '../sanity/content'
+import { contentMetadata, getPage } from '../content/content'
 import { getSiteUrl } from './site'
 import { seoPages } from './seo-pages'
 

@@ -10,12 +10,12 @@ function config(env = {}) {
   vm.runInNewContext(compile('../app/inquiry-config.ts'), { exports, process: { env } })
   return exports
 }
-test('inquiries use the admin database without switching published content providers', () => {
+test('inquiries only use Supabase, independently of obsolete content configuration', () => {
   const { inquiryStorageProvider } = config()
   assert.equal(inquiryStorageProvider({ NEXT_PUBLIC_ADMIN_PROVIDER: 'supabase', CMS_PROVIDER: 'sanity' }), 'supabase')
   assert.equal(inquiryStorageProvider({ CMS_PROVIDER: 'supabase' }), 'supabase')
-  assert.equal(inquiryStorageProvider({ CMS_PROVIDER: 'sanity' }), 'sanity')
-  assert.equal(inquiryStorageProvider({ INQUIRY_PROVIDER: 'sanity', NEXT_PUBLIC_ADMIN_PROVIDER: 'supabase' }), 'sanity')
+  assert.equal(inquiryStorageProvider({ CMS_PROVIDER: 'sanity' }), 'supabase')
+  assert.throws(() => inquiryStorageProvider({ INQUIRY_PROVIDER: 'sanity', NEXT_PUBLIC_ADMIN_PROVIDER: 'supabase' }))
   assert.throws(() => inquiryStorageProvider({ INQUIRY_PROVIDER: 'unknown' }))
 })
 function connectionFixture(options = {}) {

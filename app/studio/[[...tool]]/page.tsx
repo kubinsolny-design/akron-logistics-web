@@ -1,5 +1,4 @@
-'use client'
-import { NextStudio } from 'next-sanity/studio'
-import config from '../../../sanity.config'
+import { redirect } from 'next/navigation'
 
-export default function StudioPage() { return <div className="studio-shell"><NextStudio config={config} /></div> }
+// Old bookmarks lead to our own administration; no external Studio is loaded.
+export default function RetiredStudio() { redirect('/admin') }

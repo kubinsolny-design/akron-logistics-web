@@ -5,8 +5,8 @@ import { currentMember } from './server'
 import { cache } from 'react'
 
 export const contentEnabled = cache(async () => {
-  if (process.env.CMS_PROVIDER === 'supabase') return true
-  if (process.env.NEXT_PUBLIC_ADMIN_PROVIDER !== 'supabase') return false
+  // Publishing is enabled only after the existing database handover marker.
+  // There is intentionally no alternate CMS fallback, even on database failure.
   try { const {data,error} = await publicClient().from('cms_site_state').select('enabled').eq('id',true).single(); return !error && data?.enabled === true }
   catch {return false}
 })

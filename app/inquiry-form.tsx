@@ -4,7 +4,7 @@ import { useActionState } from 'react'
 import Link from 'next/link'
 import { sendInquiry } from './actions'
 import { initialInquiryState } from './inquiry-types'
-import type { Settings } from '../sanity/types'
+import type { Settings } from '../content/types'
 import { formTextDefaults } from './site-text'
 
 export function InquiryForm({ labels }: { labels?: Pick<Settings, 'formHeading' | 'formDescription' | 'submitLabel' | 'formText'> }) {

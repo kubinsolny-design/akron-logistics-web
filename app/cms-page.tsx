@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { PortableText } from '@portabletext/react'
-import type { Action, Card, CmsPage as PageContent, Section, Settings } from '../sanity/types'
-import { imageUrl, safeHref } from '../sanity/client'
+import type { Action, Card, CmsPage as PageContent, Section, Settings } from '../content/types'
+import { imageUrl, safeHref } from '../content/client'
 import { InquiryForm } from './inquiry-form'
 import { Truck } from './trucks'
 import { RouteJourney } from './ui'
@@ -24,7 +24,7 @@ function CardVisual({ card }: { card: Card }) {
   return <span className="rail-number" aria-hidden="true">↻</span>
 }
 function RenderSection({ section: s, settings, home = false, optionsPage = false }: { section: Section; settings: Settings; home?: boolean; optionsPage?: boolean }) {
-  const src = imageUrl(s.image) || s.imagePath
+  const src = imageUrl(s.image) || imageUrl({ url: s.imagePath })
   const actions: Action[] | undefined = home && s.layout === 'hero' ? [s.actions?.find(action => /\/(?:kontakt|spoluprace)(?:#poptavka)?$/.test(action.href || '')) || s.actions?.[0] || {label:'Poptat přepravu',href:'/kontakt#poptavka'}] : s.actions
   const attrs = { id: s.anchor || undefined }
   switch (s.layout) {

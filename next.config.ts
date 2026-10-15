@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
     }))]
   },
   images: { remotePatterns: [
-    { protocol: 'https', hostname: 'cdn.sanity.io' },
     { protocol: 'https', hostname: 'htgwzjcdxbknzvobwioa.supabase.co', pathname: '/storage/v1/object/public/site-media/**' },
   ] },
 }

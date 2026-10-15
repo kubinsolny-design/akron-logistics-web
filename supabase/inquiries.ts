@@ -1,15 +1,10 @@
 import 'server-only'
 import { headers } from 'next/headers'
 import { serviceClient } from './server'
-import { storeInquiry as storeSanity, markInquiryEmail as markSanity } from '../sanity/inquiries'
 import { requestFingerprint } from '../app/request-fingerprint'
-import { inquiryStorageProvider } from '../app/inquiry-config'
 import { serverServiceKey } from './server-key'
 
-const enabled = () => inquiryStorageProvider() === 'supabase'
-
 export async function storeInquiry(fields: Record<string, string>) {
-  if (!enabled()) return storeSanity(fields)
   const client = serviceClient()
   const request = await headers()
   const fingerprint = requestFingerprint(request, serverServiceKey(), process.env.VERCEL === '1')
@@ -20,7 +15,6 @@ export async function storeInquiry(fields: Record<string, string>) {
 }
 
 export async function markInquiryEmail(id: string | null, state: 'sent' | 'failed') {
-  if (!enabled()) return markSanity(id, state)
   if (!id) return
   try {
     const { error } = await serviceClient().from('cms_inquiries').update({ email_status: state }).eq('id', id)

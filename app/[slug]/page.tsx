@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { CmsPage } from '../cms-page'
-import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { contentMetadata, getPage, getSettings } from '../../content/content'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

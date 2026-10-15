@@ -7,23 +7,17 @@
     "check:launch-config": "node scripts/check-launch-config.mjs",
     "dev": "next dev",
     "build": "next build",
-    "build:admin-preview": "node scripts/import-supabase.mjs --apply && next build",
+    "build:admin-preview": "next build",
     "start": "next start",
     "lint": "eslint ."
   },
   "dependencies": {
     "@portabletext/react": "^8.0.1",
-    "@sanity/client": "^8.9.0",
-    "@sanity/image-url": "^2.1.1",
-    "@sanity/locale-cs-cz": "^1.1.36",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.3",
     "next": "16.4.1",
-    "next-sanity": "^13.3.4",
     "react": "19.2.9",
-    "react-dom": "19.2.9",
-    "sanity": "6.19.0",
-    "styled-components": "^6.6.0"
+    "react-dom": "19.2.9"
   },
   "pnpm": {
     "overrides": {
@@ -37,6 +31,7 @@
     "@types/react-dom": "19.2.3",
     "eslint": "9.39.4",
     "eslint-config-next": "16.4.1",
+    "jsdom": "28.1.0",
     "typescript": "5.9.3"
   }
 }

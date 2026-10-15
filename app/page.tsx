@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { RouteJourney } from './ui'
 import { Truck } from './trucks'
 import { EuropeMap } from './europe-map'
-import { contentMetadata, getPage, getSettings } from '../sanity/content'
+import { contentMetadata, getPage, getSettings } from '../content/content'
 import { CmsPage } from './cms-page'
 import { PageStructuredData } from './page-structured-data'
 

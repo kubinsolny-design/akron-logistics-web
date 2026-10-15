@@ -1,4 +1,9 @@
-import type { PortableTextBlock } from 'sanity'
+/** Stored rich text is plain JSON; no CMS SDK is required for its shape. */
+export type TextBlock = {
+  _type: 'block'; _key?: string; style?: string; listItem?: string; level?: number;
+  children: { _type: string; _key?: string; text?: string; marks?: string[]; [key: string]: unknown }[];
+  markDefs?: { _type: string; _key: string; href?: string; [key: string]: unknown }[];
+}
 
 export type CmsImage = { asset?: { _ref?: string }; alt?: string; url?: string }
 export type Action = { _key?: string; label?: string; href?: string }
@@ -10,7 +15,7 @@ export type Section = {
   actions?: Action[]; cards?: Card[]; questions?: { _key?: string; question?: string; answer?: string }[];
   cardStyle?: 'rail' | 'list';
 }
-export type CmsPage = { _id?: string; title?: string; slug?: { current?: string }; sections?: Section[]; body?: PortableTextBlock[]; seoTitle?: string; seoDescription?: string; shareImage?: CmsImage }
+export type CmsPage = { _id?: string; title?: string; slug?: { current?: string }; sections?: Section[]; body?: TextBlock[]; seoTitle?: string; seoDescription?: string; shareImage?: CmsImage }
 export type Settings = {
   name: string; contactName: string; email: string; phone: string; phoneHref: string;
   registrationNumber: string; street: string; city: string; about?: string; portrait?: CmsImage;

@@ -1,0 +1,3 @@
+-- Disposable local database fixture ONLY. Not production seed data.
+update public.cms_drafts set data='{"title":"Unpublished title stays private","image":{"_type":"image","alt":"Keep alt","asset":{"_ref":"image-96e4c65adab784362c4b490194aa0c7c5eda9cf0-2055x765-png"}},"nested":[{"imagePath":"https://cdn.sanity.io/images/l802e097/production/bc5eecffd2efc0c981063a12a94f04e79420042d-800x760.svg?w=800&auto=format"}]}' where id='page-home';
+update public.cms_published set data='{"title":"Public title stays public","image":{"asset":{"_ref":"image-06d7edd50ef549a74240ff63181648635e3b6487-875x280-svg"},"url":"/images/akron-white.svg"}}' where id='page-home';

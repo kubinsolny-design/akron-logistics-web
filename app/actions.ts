@@ -1,7 +1,7 @@
 'use server'
 
 import type { InquiryState } from './inquiry-types'
-import { getSettings } from '../sanity/content'
+import { getSettings } from '../content/content'
 import { storeInquiry, markInquiryEmail } from '../supabase/inquiries'
 import { draftMode } from 'next/headers'
 import { preparing } from './preparing'

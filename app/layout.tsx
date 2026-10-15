@@ -8,11 +8,10 @@ import './service.css'
 import './legal.css'
 import './cms.css'
 import './final-polish.css'
-import { getSettings } from '../sanity/content'
+import { getSettings } from '../content/content'
 import { draftMode } from 'next/headers'
-import { VisualEditing } from 'next-sanity/visual-editing'
 import { CookiePreferences } from './cookie-preferences'
-import { imageUrl } from '../sanity/client'
+import { imageUrl } from '../content/client'
 import { Footer, Header } from './ui'
 import { PublicChrome } from './public-chrome'
 import { getSiteUrl, isIndexingAllowed } from './site'
@@ -89,7 +88,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <PublicChrome><a className="skip-link" href="#obsah">Přeskočit na obsah</a><Header /></PublicChrome>
         <main id="obsah">{children}</main>
         <PublicChrome><Footer /><CookiePreferences text={company.cookieText} /></PublicChrome>
-        {isEnabled && <VisualEditing />}
       </body>
     </html>
   )

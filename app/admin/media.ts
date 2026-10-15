@@ -1,16 +1,14 @@
-import { imageUrl } from '../../sanity/client'
+import { imageUrl, ownedMediaUrl } from '../../content/client'
 
 export type MediaFile = { path: string; name: string; url: string; source: 'storage' | 'website'; mime?: string; size?: number; created?: string }
 export const uploadTypes: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'application/pdf': 'pdf' }
 export const maxFileSize = 10 * 1024 * 1024
 
 export function safeMediaUrl(url: string) {
-  if (/^\/images\/[a-z0-9_./-]+$/i.test(url)) return !url.includes('..')
-  try { const parsed = new URL(url); return parsed.protocol === 'https:' && !parsed.username && !parsed.password }
-  catch { return false }
+  return Boolean(ownedMediaUrl(url))
 }
 
-// Include files referenced by imported content, even when hosted by the old CMS.
+// Include current deployment assets as well as uploaded Storage media.
 export function referencedMedia(documents: { data: unknown }[]): MediaFile[] {
   const found = new Map<string, MediaFile>()
   function add(url: string, label?: string) {

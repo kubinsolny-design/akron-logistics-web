@@ -1,56 +1,35 @@
 import 'server-only'
 import { cache } from 'react'
 import { draftMode } from 'next/headers'
-import { client, imageUrl } from './client'
+import { imageUrl } from './client'
 import { company } from '../app/site'
 import { pageMetadata } from '../app/seo'
 import type { CmsPage, Settings } from './types'
-import { contentEnabled, readDocument, publishedSlugs } from '../supabase/content'
+import { readDocument, publishedSlugs } from '../supabase/content'
 import { publicContactEmail } from '../supabase/inquiry-settings'
 
 export const defaultSettings: Settings = {
   ...company,
   navigation: [
     { label: 'Úvod', href: '/' }, { label: 'Přepravy', href: '/preprava' },
-    { label: 'Vozidla a možnosti', href: '/moznosti' }, { label: 'Spolupráce', href: '/spoluprace' },
+    { label: 'Vozidla a možnosti', href: '/moznosti' }, { label: 'Kontakt', href: '/kontakt' },
   ],
   footerText: 'Silniční přeprava a spedice\nv Česku i za hranicemi.',
-  headerAction: { label: 'Poptat přepravu', href: '/spoluprace#poptavka' },
-  footerAction: { label: 'Poslat poptávku', href: '/spoluprace#poptavka' },
+  headerAction: { label: 'Poptat přepravu', href: '/kontakt#poptavka' },
+  footerAction: { label: 'Poslat poptávku', href: '/kontakt#poptavka' },
   footerContactLabel: 'Přepravu s vámi řeší', footerTagline: 'Vnitrostátní a mezinárodní silniční přeprava',
   inquiryEmail: company.email, formHeading: 'Krátká poptávka',
   formDescription: 'Stačí základní údaje. Co bude potřeba, společně upřesníme. Hvězdičkou (*) jsou označené povinné údaje.',
   submitLabel: 'Odeslat poptávku', successMessage: 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.',
 }
 
-async function fetchContent<T>(query: string, params: Record<string, string> = {}): Promise<T | null> {
-  const { isEnabled } = await draftMode()
-  try {
-    return await client.withConfig({
-      token: isEnabled ? process.env.SANITY_API_READ_TOKEN : undefined,
-      perspective: isEnabled ? 'drafts' : 'published',
-    }).fetch<T>(query, params, { cache: 'no-store', signal: AbortSignal.timeout(6000) })
-  } catch {
-    console.error('CMS content is temporarily unavailable.')
-    return null
-  }
-}
-
-export const getPage = cache(async (slug: string) => (await contentEnabled())
-  ? readDocument<CmsPage>('page', slug, (await draftMode()).isEnabled)
-  : fetchContent<CmsPage>('*[_type == "page" && slug.current == $slug][0]', { slug }))
-export async function getPublishedSlugs() {
-  if (await contentEnabled()) return publishedSlugs()
-  try {
-    return await client.fetch<string[]>('*[_type == "page" && defined(slug.current) && !(_id in path("drafts.**"))].slug.current', {}, { cache: 'no-store', signal: AbortSignal.timeout(6000) })
-  } catch { return [] }
-}
+export const getPage = cache(async (slug: string) =>
+  readDocument<CmsPage>('page', slug, (await draftMode()).isEnabled))
+export const getPublishedSlugs = publishedSlugs
 export const getSettings = cache(async (): Promise<Settings> => {
-  const stored = (await contentEnabled())
-    ? await readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled)
-    : await fetchContent<Partial<Settings>>('*[_id == "siteSettings"][0]')
+  const stored = await readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled)
   const settings = { ...defaultSettings, ...Object.fromEntries(Object.entries(stored || {}).filter(([, value]) => value != null)) } as Settings
-  // Shared live contact setting is independent of the unfinished CMS migration.
+  // The shared live contact setting applies to all published pages.
   settings.email = await publicContactEmail()
   delete settings.inquiryEmail
   settings.phoneHref = `tel:${settings.phone.replace(/[^+\d]/g, '')}`

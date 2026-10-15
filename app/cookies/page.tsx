@@ -1,4 +1,4 @@
-import { contentMetadata, getPage, getSettings } from '../../sanity/content'
+import { contentMetadata, getPage, getSettings } from '../../content/content'
 import { CmsPage } from '../cms-page'
 import Link from 'next/link'
 import { CookieSettingsButton } from '../cookie-preferences'

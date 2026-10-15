@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getSiteUrl } from './site'
-import { getPublishedSlugs } from '../sanity/content'
+import { getPublishedSlugs } from '../content/content'
 import { reservedSlugs } from './seo-pages'
 import { preparing } from './preparing'
 

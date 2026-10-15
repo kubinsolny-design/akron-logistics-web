@@ -1,6 +1,6 @@
 import { seoPages, reservedSlugs } from '../../seo-pages'
 import { sharingImage } from '../../sharing-image'
-import { getPage } from '../../../sanity/content'
+import { getPage } from '../../../content/content'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params

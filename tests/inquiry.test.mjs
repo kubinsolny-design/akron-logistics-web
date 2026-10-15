@@ -25,7 +25,7 @@ function fixture(options = {}) {
       if (name === '../supabase/server') return { currentMember: async () => options.role ? { role: options.role, user: { id: 'fixture-admin' } } : null }
       if (name === './preparing') return { preparing: options.preparing || false }
       if (name === 'next/headers') return { draftMode: async () => ({ isEnabled: options.preview || false }) }
-      if (name === '../sanity/content') return { getSettings: async () => company }
+      if (name === '../content/content') return { getSettings: async () => company }
       if (name === '../supabase/inquiries') return {
         storeInquiry: async () => { events.push('store'); if (options.storageError) throw new Error(options.storageError); return options.noStorage ? null : 'fixture-inquiry' },
         markInquiryEmail: async (id, status) => events.push(`email:${id}:${status}`),

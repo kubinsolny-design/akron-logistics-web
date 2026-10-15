@@ -45,7 +45,7 @@ test('a stale form or direct server action cannot write inquiries while preparin
     if (name === './site') return { company: {} }
     if (name === '../supabase/server') return { currentMember: forbidden }
     if (name === '../supabase/inquiry-settings') return { readInquirySettings: forbidden }
-    if (name === '../sanity/content') return { getSettings: forbidden }
+    if (name === '../content/content') return { getSettings: forbidden }
     if (name === '../supabase/inquiries') return { storeInquiry: forbidden, markInquiryEmail: forbidden }
     if (name === 'next/headers') return { draftMode: forbidden }
     throw new Error(`Unexpected import ${name}`)

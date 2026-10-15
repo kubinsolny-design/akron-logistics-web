@@ -1,4 +1,6 @@
-# Supabase migration — in progress
+# Historical Supabase implementation notes (6 October 2026)
+
+> Archived progress log, not current deployment instructions. The current application uses Supabase only; the old import script and Sanity integrations have been removed. Follow the current README and its removal checklist instead. Keep this log solely as migration history.
 
 Project: `akron-admin-preview` (`htgwzjcdxbknzvobwioa`), AKRON Logistics,
 Free, Europe / Ireland (`eu-west-1`). Creation verified on 2026-10-06.

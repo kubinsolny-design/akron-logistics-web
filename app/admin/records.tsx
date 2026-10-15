@@ -11,7 +11,7 @@ type View = 'users' | 'inquiries' | 'activity'
 const roleLabels: Record<string, string> = { admin: 'Admin', editor: 'Uživatel', viewer: 'Pouze náhled' }
 const statusLabels: Record<string, string> = { new: 'Nová', processing: 'V řešení', done: 'Vyřízená' }
 const auditLabels: Record<string, string> = { draft: 'Uložení rozpracované verze', publish: 'Publikování na web', member: 'Změna přístupu', inquiry: 'Úprava poptávky', media: 'Nahrání obrázku', inquiry_settings: 'Změna kontaktního e-mailu / doručování' }
-Object.assign(auditLabels,{member_trash:'Odebrání přístupu',member_restore:'Obnovení přístupu',inquiry_trash:'Poptávka přesunuta do koše',inquiry_restore:'Obnovení poptávky',media_prepare_trash:'Příprava přesunu souboru',media_complete_trash:'Soubor přesunut do koše',media_restore_trash:'Soubor obnoven',media_cancel_trash:'Přesun souboru zrušen',content_handover:'Propojení obsahu webu s administrací'})
+Object.assign(auditLabels,{member_trash:'Odebrání přístupu',member_restore:'Obnovení přístupu',inquiry_trash:'Poptávka přesunuta do koše',inquiry_restore:'Obnovení poptávky',media_prepare_trash:'Příprava přesunu souboru',media_complete_trash:'Soubor přesunut do koše',media_restore_trash:'Soubor obnoven',media_cancel_trash:'Přesun souboru zrušen',content_handover:'Propojení obsahu webu s administrací',legacy_media_detach:'Převod obrázků do vlastního hostingu'})
 function timestamp(value: unknown) { return value ? new Date(String(value)).toLocaleString('cs-CZ') : 'Zatím nezaznamenáno' }
 function text(value: unknown) { return typeof value === 'string' ? value : '' }
 
