@@ -7,6 +7,7 @@ import { InquiryForm } from './inquiry-form'
 import { Truck } from './trucks'
 import { RouteJourney } from './ui'
 import { CookieSettingsButton } from './cookie-preferences'
+import { withPublicContact } from './public-contact'
 
 function Actions({ actions, light = false }: { actions?: Action[]; light?: boolean }) {
   return <>{actions?.map((action, i) => <Link className={`text-link${light ? ' text-link-light' : ''}`} key={action._key || i} href={safeHref(action.href)}>{action.label}</Link>)}</>
@@ -61,6 +62,7 @@ function RenderSection({ section: s, settings, home = false, optionsPage = false
   }
 }
 
-export function CmsPage({ page, settings }: { page: PageContent; settings: Settings }) {
+export function CmsPage({ page: storedPage, settings }: { page: PageContent; settings: Settings }) {
+  const page = withPublicContact(storedPage, settings.email)
   return <>{page.sections?.filter(s => s.visible !== false).map((s, i) => <RenderSection key={s._key || i} section={s} settings={settings} home={page.slug?.current === 'home'} optionsPage={page.slug?.current === 'moznosti'} />)}{page.body && <article className="shell legal-page"><h1>{page.title}</h1><PortableText value={page.body} components={{ marks: { link: ({ value, children }) => <a href={safeHref(value?.href)}>{children}</a> } }} />{page.slug?.current === 'cookies' && <CookieSettingsButton />}</article>}</>
 }

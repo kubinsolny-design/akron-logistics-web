@@ -1,12 +1,12 @@
 import { contentMetadata, getPage, getSettings } from '../../sanity/content'
 import { CmsPage } from '../cms-page'
 import Link from 'next/link'
-import { company } from '../site'
 
 export async function generateMetadata() { return contentMetadata('ochrana-osobnich-udaju', 'Ochrana osobních údajů', 'Informace o zpracování osobních údajů při návštěvě webu a poptávce přepravy u AKRON Logistics.', '/ochrana-osobnich-udaju') }
 
 export default async function PrivacyPage() {
   const [content, settings] = await Promise.all([getPage('ochrana-osobnich-udaju'), getSettings()])
+  const company = settings
   if (content) return <CmsPage page={content} settings={settings} />
   return <article className="shell legal-page">
     <p className="eyebrow">Vaše soukromí</p>

@@ -1,5 +1,20 @@
 # Administrace AKRON — dokončení nasazení
 
+## Aktuální stav 15. října — adresy a neplatný serverový klíč
+
+Tato sekce nahrazuje starší údaje níže o adresách a chybějícím klíči. `info@akronlogistics.cz` podle zákazníka zatím neexistuje; nepoužívat ji a neodstraňovat její Resend suppression.
+
+- Veřejný kontaktní e-mail a příjemce poptávek: **adam.bartusek@akronlogistics.cz**. Odesílatel: **AKRON Logistics <web@akronlogistics.cz>**.
+- Obě adresy upraví pouze administrátor v `/admin` → Nastavení webu → Kontaktní e-mail a doručování → Načíst e-mailové adresy → Uložit e-mailové adresy. Platí ihned, nejde o publikaci konceptu. Změna má audit a kontrolu souběžné revize. Soukromý příjemce se nečte z veřejného CMS ani z formulářového vstupu. `INQUIRY_TO_EMAIL` se již ignoruje; staré pole CMS `inquiryEmail` není autoritativní.
+- Nová lokální migrace `20261015101027_editable_inquiry_delivery.sql` je již aplikovaná na projekt `htgwzjcdxbknzvobwioa` jako `20261015101452_editable_inquiry_delivery`. Přidává chráněné nastavení, výchozí dvě Adamovy adresy a audit. Zpřesňuje také SQL regulární výrazy příjmu poptávky pomocí `[+]` a `[.]`, aby nemohlo dojít k poškození escapování při vzdáleném aplikování. Nemění členství, koncepty ani publikované dokumenty. Nepoužívat naslepo `db push` kvůli starším rozdílům migračních timestampů.
+- **Produkční serverový klíč je přítomný, ale Supabase jej odmítá.** Chráněná kontrola v běžícím `/admin` po nasazení `25ee047` hlásí „klíč není platný pro tento projekt“. Supabase edge log potvrzuje `POST | 401 | …/rest/v1/rpc/cms_accept_inquiry`. Kontrola neprovádí zápis a nezobrazuje hodnoty klíčů. Auth klient s publishable klíčem funguje; načtení nového nastavení přes přihlášeného administrátora funguje také. Nezaměňovat úspěšné přihlášení za ověřený service key.
+- **Nutný krok kolegy:** ve Vercel projektu `hehu / akron-logistics-web`, prostředí Production, bezpečně nahradit `SUPABASE_SECRET_KEY` skutečným serverovým secret key z projektu `htgwzjcdxbknzvobwioa` (URL `https://htgwzjcdxbknzvobwioa.supabase.co`). Nesmí to být publishable/anon klíč ani klíč jiného projektu. Neposílat hodnotu do chatu/GitHubu. Alternativně funguje `SUPABASE_SERVICE_ROLE_KEY`; pokud jsou nastavené obě proměnné, `SUPABASE_SECRET_KEY` má přednost, takže nesmí zůstat neplatný. Poté nové Production nasazení a chráněná kontrola „Prověřit propojení“; očekáváme všechny položky v pořádku.
+- Plný test s uložením do adminu a doručením **Adamovi + jednorázově jirka.fusek@email.cz zatím nebyl spuštěn**, protože neplatný serverový klíč je první nefunkční hranice. Test nesmí obejít chráněné ukládání. Po opravě klíče v bloku propojení vyplnit „Kopie technického testu (volitelné)“ adresou Jirky a jednou spustit „Odeslat testovací poptávku“. Ověřit vznik označeného záznamu a událost Delivered pro obě adresy v Resendu. API přijetí není důkaz doručení; `email_status=sent` znamená pouze přijetí službou. Jednorázová kopie testu nemění příjemce skutečných poptávek.
+- Režim **Připravujeme zůstává aktivní**. Není povolené veřejné spuštění, přepnutí CMS ani publikace existujících konceptů. Žádné nové účty/oprávnění ani změny tajných hodnot nebyly provedeny.
+- Ověřeno lokálně: automatické testy, lint, produkční build; izolovaný PostgreSQL ověřil admin-only zápis, blokování editor/viewer/anon, audit, kontrolu souběžné revize, validaci adres i read-only oprávnění service role k nastavení (`tests/inquiry-settings-database-checks.sql`). Supabase security advisors nehlásí žádnou novou položku; původní upozornění na uniklá hesla a záměrně chráněné CMS funkce jsou nadále relevantní.
+
+## Historie předchozího ověřování (adresy a blokace níže mohou být již nahrazené)
+
 ## Živé propojení formuláře — doplnění 15. října
 
 ### Výsledek skutečného chráněného testu

@@ -1,12 +1,12 @@
 import { contentMetadata, getPage, getSettings } from '../../sanity/content'
 import { CmsPage } from '../cms-page'
 import { InquiryForm } from '../inquiry-form'
-import { company } from '../site'
 
 export async function generateMetadata() { return contentMetadata('spoluprace', 'Kontakt a poptávka přepravy', 'Pošlete trasu, termín a popis nákladu. AKRON Logistics vybere vhodné řešení, domluví dopravce a koordinuje přepravu až do doručení.', '/kontakt') }
 
 export default async function CooperationPage() {
   const [content, settings] = await Promise.all([getPage('spoluprace'), getSettings()])
+  const company = settings
   if (content) return <CmsPage page={content} settings={settings} />
   return <>
     <section className="page-hero shell"><p className="eyebrow">Od první zprávy po doručení</p><h1>Zakázku koordinujeme.<br />Vy víte, na čem jste.</h1><p className="lead">Od první domluvy až po doručení víte, na koho se obrátit. Zajistíme vozidlo, koordinujeme termíny a případné změny řešíme přímo s vámi.</p></section>

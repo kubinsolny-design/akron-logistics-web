@@ -15,7 +15,7 @@ Proměnné jsou popsané v `.env.example`. Pro ostré nasazení je nutné nastav
 
 - `NEXT_PUBLIC_SITE_URL` na finální doménu;
 - `ALLOW_INDEXING=true` mimo Vercel; Vercel produkční nasazení se indexuje automaticky, pokud není nastaveno `ALLOW_INDEXING=false`. Preview se neindexuje ani při `ALLOW_INDEXING=true`;
-- `RESEND_API_KEY` a ověřenou adresu `INQUIRY_FROM_EMAIL` pro doručování poptávek. Příjemce je ve výchozím nastavení `info@akronlogistics.cz`; `INQUIRY_TO_EMAIL` slouží jako případné přepsání.
+- `RESEND_API_KEY` a ověřeného odesílatele `AKRON Logistics <web@akronlogistics.cz>`. Veřejný kontakt i příjemce poptávek se mění ihned v `/admin` → Nastavení webu → Kontaktní e-mail a doručování. Výchozí je `adam.bartusek@akronlogistics.cz`. Staré `INQUIRY_TO_EMAIL` a CMS `inquiryEmail` se záměrně nepoužívají. Vyžaduje migraci `editable_inquiry_delivery` a funkční serverový Supabase klíč.
 
 Bez přístupu k DNS nelze ověřit odesílací doménu. Dokud není odesílání nastavené, formulář nehlásí přijetí poptávky a nabídne přímý e-mail a telefon. Test serverové akce bez skutečného odesílání: `node scripts/check-inquiry.mjs`.
 

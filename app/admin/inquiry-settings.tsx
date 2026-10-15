@@ -10,7 +10,10 @@ export function InquirySettingsPanel() {
   const [loading, startLoad] = useTransition()
   const [result, save, saving] = useActionState(async (previous: typeof initialInquiryState, data: FormData) => {
     const response = await saveInquirySettings(previous, data)
-    if (response.status === 'success') setSettings(await loadInquirySettings())
+    if (response.status === 'success') {
+      try { setSettings(await loadInquirySettings()) }
+      catch { setSettings(null); setMessage('Změna je uložená. Pro další úpravu načtěte adresy znovu.') }
+    }
     return response
   }, initialInquiryState)
   return <section className="admin-records admin-connection" aria-label="Kontaktní e-mail a doručování">

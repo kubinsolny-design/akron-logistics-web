@@ -27,6 +27,15 @@ function load(relative) {
   mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true, target: ts.ScriptTarget.ES2022 } }).outputText, file)
   return mod.exports
 }
+test('live contact replaces legacy mentions and mailto links without changing drafts or other addresses', () => {
+  const { withPublicContact } = load('../app/public-contact.ts')
+  const stored = { body: [{ text: 'info@akronlogistics.cz', href: 'mailto:info@akronlogistics.cz' }, { text: 'adam.bartusek@akronlogistics.cz' }, { text: 'other@example.com' }] }
+  const shown = withPublicContact(stored, 'dispatch@example.com')
+  assert.equal(shown.body[0].href, 'mailto:dispatch@example.com')
+  assert.equal(shown.body[1].text, 'dispatch@example.com')
+  assert.equal(shown.body[2].text, 'other@example.com')
+  assert.equal(stored.body[0].text, 'info@akronlogistics.cz')
+})
 test('contact URLs preserve anchors and external links are not rewritten', () => {
   const { publicHref, publicNavigationLabel } = load('../app/public-links.ts')
   assert.equal(publicHref('/spoluprace#poptavka'), '/kontakt#poptavka')

@@ -296,7 +296,7 @@ export const initialLegalPages: CmsPage[] = [
           {
             "_type": "span",
             "_key": "span-2",
-            "text": "info@akronlogistics.cz",
+            "text": "adam.bartusek@akronlogistics.cz",
             "marks": []
           },
           {
