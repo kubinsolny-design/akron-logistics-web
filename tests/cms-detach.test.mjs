@@ -2,10 +2,11 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import ts from 'typescript'
 
-const root=new URL('../',import.meta.url).pathname
+const root=fileURLToPath(new URL('../',import.meta.url))
 const compile=file=>ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText
 const manifest={},client={}
 vm.runInNewContext(compile('content/migrated-media.ts'),{exports:manifest})

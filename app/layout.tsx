@@ -11,6 +11,7 @@ import './final-polish.css'
 import { getSettings } from '../content/content'
 import { draftMode } from 'next/headers'
 import { CookiePreferences } from './cookie-preferences'
+import { GoogleAnalytics } from './google-analytics'
 import { imageUrl } from '../content/client'
 import { Footer, Header } from './ui'
 import { PublicChrome } from './public-chrome'
@@ -88,6 +89,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <PublicChrome><a className="skip-link" href="#obsah">Přeskočit na obsah</a><Header /></PublicChrome>
         <main id="obsah">{children}</main>
         <PublicChrome><Footer /><CookiePreferences text={company.cookieText} /></PublicChrome>
+        <GoogleAnalytics preview={isEnabled} />
       </body>
     </html>
   )

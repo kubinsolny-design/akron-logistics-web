@@ -2,16 +2,18 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import Module from 'node:module'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 const cache = new Map()
 function load(relative) {
-  const file = new URL(relative, import.meta.url).pathname
+  const file = fileURLToPath(new URL(relative, import.meta.url))
   if (cache.has(file)) return cache.get(file).exports
   const mod = new Module(file); cache.set(file, mod)
-  mod.paths = Module._nodeModulePaths(file.slice(0, file.lastIndexOf('/')))
+  mod.paths = Module._nodeModulePaths(path.dirname(file))
   const fallback = mod.require.bind(mod)
   mod.require = request => {
     if (request === 'next/link') return { __esModule: true, default: ({ children, ...props }) => React.createElement('a', props, children) }
