@@ -67,7 +67,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
 .route-truck .route-light { fill: #fff; }
 .route-truck .route-wheel { fill: #fff; stroke: var(--ink); stroke-width: 5; }
 .route-truck .route-hub { fill: var(--orange); }
-@keyframes route-drive { 0%, 8% { left: 12%; } 45%, 55% { left: 44%; } 92%, 100% { left: calc(94% - 34px - var(--route-truck-width, 145px) - 8px); } }
+@keyframes route-drive { 0%, 8% { left: 12%; } 45%, 55% { left: 44%; } 92%, 100% { left: calc(94% - 34px - var(--route-truck-width, 145px) + 4px); } }
 .hero-bottom { display: flex; justify-content: space-between; align-items: end; padding: 40px 0 45px; gap: 30px; }
 .hero-bottom p { margin: 0; max-width: 580px; font-size: 20px; line-height: 1.35; }
 .hero-actions { display: flex; align-items: center; gap: 22px; }
@@ -240,7 +240,7 @@ a:focus-visible, summary:focus-visible, button:focus-visible { outline: 3px soli
   .route-point-end { right: 7%; }
   .route-point small { display: none; }
   .route-truck { --route-truck-width: 75px; }
-  @keyframes route-drive { 0%, 8% { left: 16%; } 45%, 55% { left: 43%; } 92%, 100% { left: calc(93% - 34px - var(--route-truck-width) - 8px); } }
+  @keyframes route-drive { 0%, 8% { left: 16%; } 45%, 55% { left: 43%; } 92%, 100% { left: calc(93% - 34px - var(--route-truck-width) + 4px); } }
   .hero-bottom { display: block; padding: 32px 0; }
   .hero-bottom p { font-size: 18px; margin-bottom: 25px; }
   .hero-actions { align-items: flex-start; flex-direction: column; gap: 17px; }

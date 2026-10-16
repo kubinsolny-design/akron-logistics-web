@@ -30,14 +30,15 @@ test('contact retains full accessible email with a shorter mobile label; native 
  assert.match(css,/\.form-grid label, \.form-grid input, \.form-grid select, \.form-grid textarea \{ min-width: 0;/)
  assert.match(css,/\.form-action > \.button \{[^}]*margin: 18px auto 0;/)
 })
-test('truck endpoint accounts for its own width, destination circle and an eight-pixel gap',()=>{
+test('truck endpoint meets the destination circle, covering the line and SVG inner padding',()=>{
  const css=read('globals.css')
- assert.match(css,/left: calc\(93% - 34px - var\(--route-truck-width\) - 8px\)/)
- assert.match(css,/left: calc\(94% - 34px - var\(--route-truck-width, 145px\) - 8px\)/)
+ assert.match(css,/left: calc\(93% - 34px - var\(--route-truck-width\) \+ 4px\)/)
+ assert.match(css,/left: calc\(94% - 34px - var\(--route-truck-width, 145px\) \+ 4px\)/)
  for(const width of [284,354,394]){
-  const truckLeft=.93*width-34-75-8
+  const truckLeft=.93*width-34-75+4
   const destinationLeft=.93*width-34
-  assert.equal(Math.round(destinationLeft-(truckLeft+75)),8)
+  assert.equal(Math.round(destinationLeft-(truckLeft+75)),-4)
+  assert.ok(truckLeft+75*206/210>=destinationLeft)
   assert.ok(truckLeft>0)
  }
 })
