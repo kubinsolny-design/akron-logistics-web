@@ -75,3 +75,38 @@
   .transport-row > a { justify-self: start; }
 }
 @media (max-width: 360px) { .vehicle-options-band .cms-card-grid { grid-template-columns: 1fr; } }
+
+/* Mobile layout fixes: keep content gutters inside full-width colour bands. */
+.contact-email-mobile { display: none; }
+.footer-bottom { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.footer-credit-row { margin-top: 20px; padding-top: 20px; border-top: 1px solid #293442; }
+@media (max-width: 750px) {
+  .site-header { position: sticky; top: 0; z-index: 20; }
+  :where(section[id], form[id]) { scroll-margin-top: 84px; }
+  .note-block.shell { width: 100%; max-width: none; margin: 0 auto 70px; padding: 42px 18px; }
+  .note-block .text-link { white-space: normal; }
+  .closing-strip > .shell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px 0; text-align: center; }
+  .closing-strip > .shell > span { display: block; }
+  .closing-strip a { margin: 0; width: fit-content; max-width: 100%; white-space: normal; }
+  .person-monogram, .cms-portrait { margin-inline: auto; }
+  .personal-contact { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .personal-contact a { min-width: 0; padding: 13px 8px; font-size: clamp(11px, 3.3vw, 14px); }
+  .contact-email-desktop { display: none; }
+  .contact-email-mobile { display: inline; }
+  .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .form-grid label, .form-grid input, .form-grid select, .form-grid textarea { min-width: 0; max-width: 100%; }
+  .form-grid input[type="date"] { display: block; width: 100%; min-height: 50px; appearance: none; -webkit-appearance: none; }
+  .form-grid input[type="date"]::-webkit-date-and-time-value { text-align: left; min-width: 0; }
+  .form-action > .button { max-width: 100%; white-space: normal; margin: 18px auto 0; }
+  .site-footer { text-align: center; }
+  .site-footer .logo { margin-inline: auto; }
+  .footer-grid > *, .footer-contact { min-width: 0; }
+  .footer-contact, .footer-address { align-items: center; }
+  .footer-contact > a { max-width: 100%; overflow-wrap: anywhere; }
+  .footer-links { justify-content: center; }
+  .footer-bottom { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .footer-bottom > span:last-child { text-align: center; }
+  .footer-legal { display: grid; grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1.1fr); align-items: center; gap: 10px; padding-bottom: 0; font-size: clamp(10px, 2.6vw, 12px); }
+  .footer-legal a, .footer-legal button { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 6px 0; border: 0; border-radius: 0; background: none; text-align: center; }
+  .footer-credit-row { margin-top: 16px; padding-top: 18px; }
+}

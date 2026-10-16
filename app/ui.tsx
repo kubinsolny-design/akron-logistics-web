@@ -47,8 +47,9 @@ export async function Footer() {
       </div>
       <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{publicNavigationLabel(link.label || '', link.href || '')}</Link>)}</div>
     </div>
-    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><p className="footer-credit">{text.footerCreditPrefix} <a href={safeHref(text.footerCreditHref)} target="_blank" rel="noopener noreferrer">{text.footerCreditLabel}</a></p><span>{company.footerTagline}</span></div>
+    <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><span>{company.footerTagline}</span></div>
     <nav className="shell footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">{text.privacyLabel}</Link><Link href="/cookies">{text.cookiesLabel}</Link><CookieSettingsButton label={text.cookieSettings} /></nav>
+    <div className="shell footer-credit-row"><p className="footer-credit">{text.footerCreditPrefix} <a href={safeHref(text.footerCreditHref)} target="_blank" rel="noopener noreferrer">{text.footerCreditLabel}</a></p></div>
   </footer>
 }
 
