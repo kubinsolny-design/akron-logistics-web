@@ -76,7 +76,9 @@ export function AdminRecords({ view, userId, admin = false }: { view: View; user
       {view==='users' && <label>Zobrazení<select value={filter} onChange={event=>setFilter(event.target.value)}><option value="all">Aktivní přístupy</option><option value="trash">Odebrané přístupy</option></select></label>}
       <button disabled={busy} onClick={() => setReload(value => value + 1)}>Obnovit</button>
     </div>
-    {view === 'users' && admin && <form className="admin-record-toolbar" action={async form => {
+    {view === 'users' && admin && <form className="admin-record-toolbar" onSubmit={async event => {
+      event.preventDefault()
+      const form = new FormData(event.currentTarget)
       const target = rows.find(row => row.user_id === form.get('user_id') && !row.revoked_at)
       if (!target || !(await confirm(`Odeslat obnovu hesla na ${text(target.email)}? Oprávnění se nezmění. Použijte pouze nejnovější odkaz.`))) return
       void update(async () => { const result = await sendMemberRecovery(text(target.user_id)); if (!result.ok) throw new Error(result.message); setNotice(result.message) })
