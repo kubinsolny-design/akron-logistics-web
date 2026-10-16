@@ -30,7 +30,7 @@ export function GoogleAnalytics({ preview = false }: { preview?: boolean }) {
         target.gtag = function () { target.dataLayer?.push(arguments) }
         target.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' })
         target.gtag('js', new Date())
-        target.gtag('config', gaMeasurementId, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false, cookie_expires: 15552000, ignore_referrer: true })
+        target.gtag('config', gaMeasurementId, { send_page_view: false, page_location: location.origin + pathname, page_referrer: '', allow_google_signals: false, allow_ad_personalization_signals: false, cookie_expires: 15552000, ignore_referrer: true })
         const script = document.createElement('script')
         script.async = true
         script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`
