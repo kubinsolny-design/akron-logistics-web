@@ -9,6 +9,13 @@ test('mobile header remains sticky and colour notes keep their background edge-t
  assert.match(css,/\.note-block\.shell \{ width: 100%; max-width: none; margin: 0 auto 70px;/)
  assert.match(css,/\.closing-strip > \.shell \{ display: flex; flex-direction: column;/)
 })
+test('mobile note text and inline buttons are centered without changing desktop alignment',()=>{
+ const css=read('final-polish.css')
+ const mobile=css.slice(css.lastIndexOf('@media (max-width: 750px)'))
+ assert.match(mobile,/\.note-block\.shell \{[^}]*text-align: center;/)
+ assert.match(mobile,/\.note-block > h2, \.note-block > p \{ margin-inline: auto; \}/)
+})
+
 test('footer credit is last, separated from text-only legal links',()=>{
  const ui=read('ui.tsx'),css=read('final-polish.css')
  assert.ok(ui.indexOf('footer-credit-row')>ui.indexOf('footer-legal'))

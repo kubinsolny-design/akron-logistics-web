@@ -83,7 +83,8 @@
 @media (max-width: 750px) {
   .site-header { position: sticky; top: 0; z-index: 20; }
   :where(section[id], form[id]) { scroll-margin-top: 84px; }
-  .note-block.shell { width: 100%; max-width: none; margin: 0 auto 70px; padding: 42px 18px; }
+  .note-block.shell { width: 100%; max-width: none; margin: 0 auto 70px; padding: 42px 18px; text-align: center; }
+  .note-block > h2, .note-block > p { margin-inline: auto; }
   .note-block .text-link { white-space: normal; }
   .closing-strip > .shell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 32px 0; text-align: center; }
   .closing-strip > .shell > span { display: block; }
