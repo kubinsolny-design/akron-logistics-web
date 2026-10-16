@@ -2,15 +2,16 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import Module from 'node:module'
+import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 function load(relative, stubs = {}) {
   const file = new URL(relative, import.meta.url)
-  const mod = new Module(file.pathname)
-  mod.paths=Module._nodeModulePaths(new URL('.',file).pathname)
+  const mod = new Module(fileURLToPath(file))
+  mod.paths=Module._nodeModulePaths(fileURLToPath(new URL('.',file)))
   const fallback=mod.require.bind(mod)
   mod.require=name=>Object.hasOwn(stubs,name)?stubs[name]:fallback(name)
-  mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx:ts.JsxEmit.ReactJSX } }).outputText, file.pathname)
+  mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx:ts.JsxEmit.ReactJSX } }).outputText, fileURLToPath(file))
   return mod.exports
 }
 const { pageMetadata } = load('../app/seo.ts')

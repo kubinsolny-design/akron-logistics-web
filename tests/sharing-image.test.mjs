@@ -3,11 +3,12 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import Module from 'node:module'
+import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const file=new URL('../app/sharing-image.tsx',import.meta.url)
-const mod=new Module(file.pathname);mod.paths=Module._nodeModulePaths(new URL('../',file).pathname)
-mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,file.pathname)
+const mod=new Module(fileURLToPath(file));mod.paths=Module._nodeModulePaths(fileURLToPath(new URL('../',file)))
+mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,fileURLToPath(file))
 for(const [name,heading,label,photo] of [
   ['home','Přepravu vyřešíme. Od A do B.','ČESKO A EVROPA','highway'],
   ['kontakt','Od první poptávky až po doručení.','OSOBNÍ KOMUNIKACE','coordination'],
