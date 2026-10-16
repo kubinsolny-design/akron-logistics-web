@@ -21,7 +21,7 @@ function fixture(options = {}) {
         currentMember:async()=>options.anonymous?null:{role:options.role||'admin',client:{from:()=>query}},
         serviceClient:()=>({auth:{admin:{
           getUserById:async()=>({data:{user:{id,email:'fixture@example.invalid'}}}),
-          generateLink:async(input)=>{calls.push({generate:input});return {data:{user:{id:options.wrongUser?'other':id},properties:{hashed_token:'a'.repeat(64)}}}},
+          generateLink:async(input)=>{calls.push({generate:input});return {data:{user:{id:options.wrongUser?'other':id},properties:{hashed_token:'a'.repeat(56)}}}},
         }}}),
       }
       throw new Error('Unexpected dependency')
@@ -50,7 +50,7 @@ for(const options of [{mailError:true},{wrongUser:true}])test(`recovery failure 
 })
 
 test('recovery points directly to password setup, with no credentials in request URL', () => {
-  const link = recoveryLink('https://akronlogistics.cz', 'a'.repeat(64)), url = new URL(link)
+  const link = recoveryLink('https://akronlogistics.cz', 'a'.repeat(56)), url = new URL(link)
   assert.equal(url.origin + url.pathname, 'https://akronlogistics.cz/admin/accept')
   assert.equal(url.search, '')
   assert.equal(isRecoveryLink(link), true)

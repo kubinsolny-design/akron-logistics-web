@@ -15,7 +15,7 @@ export async function acceptSession(auth: CallbackAuth, href: string, clearUrl: 
   clearUrl()
   if (callbackError) return false
   if (tokenHash) {
-    if (!/^[a-f0-9]{64}$/i.test(tokenHash) || hash.get('type') !== 'recovery' || accessToken || refreshToken || code) return false
+    if (!/^[a-f0-9]{56}$/i.test(tokenHash) || hash.get('type') !== 'recovery' || accessToken || refreshToken || code) return false
     const { error } = await auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
     if (error) return false
   } else if (accessToken || refreshToken) {

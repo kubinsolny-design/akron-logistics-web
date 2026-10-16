@@ -29,18 +29,18 @@ test('PKCE callbacks remain supported', async () => {
 })
 
 test('recovery hash is exchanged only by the explicit acceptance operation', async () => {
-  const f = fixture(), hash = 'a'.repeat(64)
+  const f = fixture(), hash = 'a'.repeat(56)
   assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept#token_hash=${hash}&type=recovery`, f.clear), true)
   assert.deepEqual(f.calls, ['clear', ['otp', {token_hash: hash, type: 'recovery'}], 'user'])
 })
 
 test('expired recovery never falls back to an unrelated existing session', async () => {
   const f = fixture({sessionError: new Error('expired')})
-  assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept#token_hash=${'b'.repeat(64)}&type=recovery`, f.clear), false)
+  assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept#token_hash=${'b'.repeat(56)}&type=recovery`, f.clear), false)
   assert.equal(f.calls.includes('user'), false)
 })
 
-for (const suffix of ['#token_hash=invalid&type=recovery', `#token_hash=${'a'.repeat(64)}&type=invite`, `?code=mixed#token_hash=${'a'.repeat(64)}&type=recovery`]) {
+for (const suffix of ['#token_hash=invalid&type=recovery', `#token_hash=${'a'.repeat(56)}&type=invite`, `?code=mixed#token_hash=${'a'.repeat(56)}&type=recovery`]) {
   test(`malformed recovery is rejected: ${suffix}`, async () => {
     const f = fixture()
     assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept${suffix}`, f.clear), false)
