@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { browserClient } from '../../supabase/browser'
 import { inviteMember, sendInvitationPreview } from './actions'
+import { sendMemberRecovery } from './recovery-actions'
 import { trashRecord } from './manage-actions'
 import { useConfirmation } from './confirmation'
 
@@ -75,6 +76,11 @@ export function AdminRecords({ view, userId, admin = false }: { view: View; user
       {view==='users' && <label>Zobrazení<select value={filter} onChange={event=>setFilter(event.target.value)}><option value="all">Aktivní přístupy</option><option value="trash">Odebrané přístupy</option></select></label>}
       <button disabled={busy} onClick={() => setReload(value => value + 1)}>Obnovit</button>
     </div>
+    {view === 'users' && admin && <form className="admin-record-toolbar" action={async form => {
+      const target = rows.find(row => row.user_id === form.get('user_id') && !row.revoked_at)
+      if (!target || !(await confirm(`Odeslat obnovu hesla na ${text(target.email)}? Oprávnění se nezmění. Použijte pouze nejnovější odkaz.`))) return
+      void update(async () => { const result = await sendMemberRecovery(text(target.user_id)); if (!result.ok) throw new Error(result.message); setNotice(result.message) })
+    }}><label>Obnova hesla<select name="user_id" required disabled={busy} defaultValue=""><option value="" disabled>Vyberte účet</option>{rows.filter(row => !row.revoked_at).map(row => <option key={text(row.user_id)} value={text(row.user_id)}>{text(row.email)}</option>)}</select></label><button disabled={busy}>Odeslat obnovu hesla</button></form>}
     {error && <p className="admin-error" role="alert">{error}</p>}{notice && <p role="status" className="admin-status">{notice}</p>}
     {busy && <p role="status">Načítám…</p>}
     {!busy && !error && !visible.length && <div className="admin-empty"><h3>Zatím žádné záznamy</h3><p>{query ? 'Zkuste změnit hledaný výraz.' : view === 'inquiries' ? 'Nové poptávky se zde objeví po odeslání formuláře na webu.' : 'Záznamy se zobrazí po první aktivitě.'}</p></div>}

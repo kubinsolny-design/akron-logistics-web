@@ -5,16 +5,26 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { browserClient } from '../../../supabase/browser'
 import { acceptSession } from '../../../supabase/accept-session'
+import { isRecoveryLink } from '../../../supabase/recovery-link'
 
 export function AcceptInvite() {
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState('Ověřuji odkaz pro nastavení hesla…')
   const [failed, setFailed] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
+  const recoveryHref = useRef<string | null>(null)
   const router = useRouter()
   const initialization = useRef<Promise<boolean> | null>(null)
   useEffect(() => {
     let active = true
+    if (recoveryHref.current || isRecoveryLink(window.location.href)) {
+      recoveryHref.current ??= window.location.href
+      window.history.replaceState(null, '', '/admin/accept')
+      setAwaitingConfirmation(true)
+      setMessage('Pro ověření odkazu stiskněte tlačítko níže. Pouhé otevření stránky odkaz nespotřebuje.')
+      return
+    }
     // Reuse the same operation when React replays effects: codes are single-use.
     initialization.current ??= acceptSession(browserClient().auth, window.location.href, () => {
       window.history.replaceState(null, '', '/admin/accept')
@@ -32,6 +42,21 @@ export function AcceptInvite() {
     return () => { active = false }
   }, [])
 
+  async function confirmRecovery() {
+    if (!recoveryHref.current || busy) return
+    setBusy(true)
+    try {
+      initialization.current ??= acceptSession(browserClient().auth, recoveryHref.current, () => {})
+      const valid = await initialization.current
+      recoveryHref.current = null
+      setAwaitingConfirmation(false); setReady(valid); setFailed(!valid)
+      setMessage(valid ? 'Nastavte a uložte vlastní nové heslo.' : 'Odkaz vypršel nebo byl použit. Požádejte správce o nový a otevřete pouze nejnovější e-mail.')
+    } catch {
+      initialization.current = null
+      setFailed(true); setMessage('Připojení se nezdařilo. Zkuste ověření znovu.')
+    } finally { setBusy(false) }
+  }
+
   async function submit(form: FormData) {
     setFailed(false)
     const password = String(form.get('password') || '')
@@ -45,7 +70,7 @@ export function AcceptInvite() {
     } catch { setFailed(true); setMessage('Připojení se nezdařilo. Zkuste to znovu.') }
     finally { setBusy(false) }
   }
-  return <><p className={failed ? 'admin-error' : undefined} role={failed ? 'alert' : 'status'}>{message}</p>{ready && <form action={submit}>
+  return <><p className={failed ? 'admin-error' : undefined} role={failed ? 'alert' : 'status'}>{message}</p>{awaitingConfirmation && <button className="admin-primary admin-auth-submit" disabled={busy} onClick={() => void confirmRecovery()}>{busy ? 'Ověřuji…' : 'Pokračovat k nastavení hesla'}</button>}{ready && <form action={submit}>
     <label>Nové heslo<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
     <label>Heslo ještě jednou<input name="confirm" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
     <button className="admin-primary admin-auth-submit" disabled={busy}>{busy ? 'Ukládám…' : 'Nastavit heslo a pokračovat'}</button></form>}

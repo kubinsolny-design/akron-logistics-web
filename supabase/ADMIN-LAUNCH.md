@@ -1,5 +1,9 @@
 # Administrace AKRON — dokončení nasazení
 
+## Obnova hesel — 16. října 2026
+
+V Administrace → Obnova hesla vybere admin aktivní účet a odešle obnovu přes produkční Resend. Příjemce se ověřuje proti Auth identitě, role se nemění. Supabase generuje recovery token; vlastní odkaz vede přímo na `/admin/accept`, token je pouze v URL fragmentu (ne v HTTP logu). Stránka odstraní fragment z historie a ověří ho až po výslovném kliknutí „Pokračovat k nastavení hesla“. Běžný automatický GET/náhled tedy token nespotřebuje. Jednorázovost a expirace zůstávají platné; používat jen nejnovější e-mail. Přímé odesílání z Dashboardu Supabase stále používá jeho výchozí SMTP a Site URL, nikoliv tento opravený tok. Obnovy posílat z administrace webu. Přijetí Resendem není důkaz doručení: ověřit událost Delivered. Dokončení nastavení hesla provádí pouze příjemce.
+
 ## Aktuální architektura — odpojení Sanity, 15. října 2026
 
 Aplikace čte i zapisuje obsah a poptávky výhradně v Supabase. Sanity SDK, Studio a import při buildu jsou odstraněny; pět původních obrázků hostujeme ve vlastních souborech na Vercelu. Migrace médií zachovává samostatné zálohy konceptů i publikací. Aktuální postup pro definitivní zrušení služby je v README → „Odpojení původního Sanity“. Starší záznamy níže popisují historický stav, nejsou pokynem k opětovnému připojení Sanity.

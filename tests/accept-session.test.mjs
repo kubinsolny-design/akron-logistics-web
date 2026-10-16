@@ -12,6 +12,7 @@ function fixture({ sessionError = null, userError = null, user = { id: 'test' } 
       setSession: async (tokens) => { calls.push(['session', tokens]); return { error: sessionError } },
       exchangeCodeForSession: async (code) => { calls.push(['code', code]); return { error: sessionError } },
       getUser: async () => { calls.push('user'); return { data: { user }, error: userError } },
+      verifyOtp: async (value) => { calls.push(['otp', value]); return { error: sessionError } },
     },
   }
 }
@@ -26,6 +27,26 @@ test('PKCE callbacks remain supported', async () => {
   assert.equal(await acceptSession(f.auth, 'https://demo.test/admin/accept?code=fixture-code', f.clear), true)
   assert.deepEqual(f.calls, ['clear', ['code', 'fixture-code'], 'user'])
 })
+
+test('recovery hash is exchanged only by the explicit acceptance operation', async () => {
+  const f = fixture(), hash = 'a'.repeat(64)
+  assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept#token_hash=${hash}&type=recovery`, f.clear), true)
+  assert.deepEqual(f.calls, ['clear', ['otp', {token_hash: hash, type: 'recovery'}], 'user'])
+})
+
+test('expired recovery never falls back to an unrelated existing session', async () => {
+  const f = fixture({sessionError: new Error('expired')})
+  assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept#token_hash=${'b'.repeat(64)}&type=recovery`, f.clear), false)
+  assert.equal(f.calls.includes('user'), false)
+})
+
+for (const suffix of ['#token_hash=invalid&type=recovery', `#token_hash=${'a'.repeat(64)}&type=invite`, `?code=mixed#token_hash=${'a'.repeat(64)}&type=recovery`]) {
+  test(`malformed recovery is rejected: ${suffix}`, async () => {
+    const f = fixture()
+    assert.equal(await acceptSession(f.auth, `https://demo.test/admin/accept${suffix}`, f.clear), false)
+    assert.deepEqual(f.calls, ['clear'])
+  })
+}
 test('existing verified session can reopen password setup', async () => {
   const f = fixture()
   assert.equal(await acceptSession(f.auth, 'https://demo.test/admin/accept', f.clear), true)
