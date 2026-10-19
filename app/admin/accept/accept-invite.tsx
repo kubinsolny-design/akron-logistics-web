@@ -74,5 +74,6 @@ export function AcceptInvite() {
     <label>Nové heslo<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
     <label>Heslo ještě jednou<input name="confirm" type="password" autoComplete="new-password" minLength={12} maxLength={1024} required /></label>
     <button className="admin-primary admin-auth-submit" disabled={busy}>{busy ? 'Ukládám…' : 'Nastavit heslo a pokračovat'}</button></form>}
+    {failed && <p><Link href="/admin/forgot-password" prefetch={false}>Poslat nový odkaz pro obnovu hesla</Link></p>}
     <Link href="/admin" prefetch={false}>Přejít na přihlášení</Link></>
 }

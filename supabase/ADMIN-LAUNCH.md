@@ -1,5 +1,11 @@
 # Administrace AKRON — dokončení nasazení
 
+## Samoobslužná obnova — 19. října 2026
+
+Přihlášení `/admin` má odkaz **Zapomněl jsem heslo** → `/admin/forgot-password`. Uživatel zadá přihlašovací e-mail bez zásahu správce. Stejný odkaz nabízí i neplatný/vypršelý callback. Odesílá se přes produkční Resend z `web@akronlogistics.cz`, se stejným fragmentovým recovery callbackem a výslovným potvrzením před spotřebováním tokenu. Nová migrace `20261019090000_self_service_recovery` přidává pouze oddělenou privátní tabulku kvót a service-role-only RPC. Nedotýká se účtů, rolí, CMS ani poptávek. Neaplikovat znovu naslepo.
+
+Veřejná akce vrací shodnou neutrální odpověď pro neexistující/odebrané účty, chybu transportu i dosažený limit; nikdy nevrací token. Na serveru ověří aktivní členství i aktuální Auth e-mail. Kvóta je atomická napříč instancemi: nejvýše 3 žádosti/adresu/hodinu s odstupem 60 s, 10/IP/15 minut a 30 celkem/15 minut; počítají se také neexistující účty. V kvótách jsou pouze HMAC otisky, nikoliv otevřené adresy či IP. Staré otisky se při povoleném požadavku čistí po dvou dnech. RLS zůstává zapnuté; anon/authenticated nemají přímý přístup k tabulce ani RPC. Při chybě kvóty se žádný e-mail neodesílá. Admin-only ruční obnova zůstává samostatně funkční. Režim Připravujeme zůstává zapnutý.
+
 ## Obnova hesel — 16. října 2026
 
 V Administrace → Obnova hesla vybere admin aktivní účet a odešle obnovu přes produkční Resend. Příjemce se ověřuje proti Auth identitě, role se nemění. Supabase generuje recovery token; vlastní odkaz vede přímo na `/admin/accept`, token je pouze v URL fragmentu (ne v HTTP logu). Stránka odstraní fragment z historie a ověří ho až po výslovném kliknutí „Pokračovat k nastavení hesla“. Běžný automatický GET/náhled tedy token nespotřebuje. Jednorázovost a expirace zůstávají platné; používat jen nejnovější e-mail. Přímé odesílání z Dashboardu Supabase stále používá jeho výchozí SMTP a Site URL, nikoliv tento opravený tok. Obnovy posílat z administrace webu. Přijetí Resendem není důkaz doručení: ověřit událost Delivered. Dokončení nastavení hesla provádí pouze příjemce.
