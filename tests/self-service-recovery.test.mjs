@@ -59,6 +59,9 @@ test('mail failure does not disclose account existence',async()=>{
 test('login and expired callback both offer self-service recovery',()=>{
   for(const file of ['../app/admin/login-form.tsx','../app/admin/accept/accept-invite.tsx'])assert.match(read(file),/href="\/admin\/forgot-password"/)
 })
+test('honeypot stays outside the layout and keyboard navigation on mobile',()=>{
+  assert.match(read('../app/admin/forgot-password/recovery-form.tsx'),/<div hidden aria-hidden="true"><input type="text" name="website" tabIndex=\{-1\}/)
+})
 test('quota migration denies public reads and RPC, serializes three scopes and leaves business data unchanged',()=>{
   const sql=read('../supabase/migrations/20261019090000_self_service_recovery.sql')
   assert.match(sql,/enable row level security/)
