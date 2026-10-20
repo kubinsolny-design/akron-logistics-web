@@ -130,6 +130,7 @@ test('form layout pins labels to the top and main workspace no longer floats ver
   assert.match(css, /\.admin-main \{[^}]*margin:0 auto;/)
   assert.match(css, /\.admin-record-toolbar label \{ flex-basis:100%; min-width:0;/)
   assert.match(css, /\.akron-admin input,\.akron-admin textarea,\.akron-admin select \{ font-size:16px; min-height:44px;/)
+  assert.match(css, /\.admin-connection \.admin-section-heading > div \{ flex:none; width:100%;/)
 })
 
 test('mobile admin menu can close with Escape or an outside pointer without discarding edits', async () => {

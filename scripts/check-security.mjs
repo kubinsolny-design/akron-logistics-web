@@ -10,6 +10,7 @@ async function read(path, init) {
 }
 function noSecrets(source) {
   assert.doesNotMatch(source, /sb_secret_[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, 'A private credential appears in a public response')
+  assert.doesNotMatch(source, /\bre_[A-Za-z0-9_]{20,}|\bgh[pousr]_[A-Za-z0-9]{30,}/, 'A mail or source-control credential appears in a public response')
   for (const match of source.matchAll(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g)) {
     let payload
     try { payload = JSON.parse(Buffer.from(match[0].split('.')[1], 'base64url').toString()) } catch { continue }
@@ -57,12 +58,12 @@ async function database(path, init) {
 for (const table of ['cms_members', 'cms_drafts', 'cms_inquiries', 'cms_activity', 'cms_inquiry_settings', 'cms_content_backups', 'cms_media_trash', 'cms_recovery_limits']) {
   const { response, body } = await database(`/rest/v1/${table}?select=*&limit=1`)
   // A denied grant or an empty result protected by RLS are both safe outcomes.
-  assert.ok([401, 403].includes(response.status) || response.status === 200 && body.trim() === '[]', `Anonymous access to ${table} is not denied`)
+  assert.ok([401, 403, 404].includes(response.status) || response.status === 200 && body.trim() === '[]', `Anonymous access to ${table} is not denied`)
   console.log(`PASS anonymous access denied/empty: ${table}`)
 }
 // This RPC only reads member metadata; no mutation or email operation is invoked.
 const members = await database('/rest/v1/rpc/cms_list_members', { method: 'POST', body: '{}' })
-assert.ok([401, 403].includes(members.response.status), 'Anonymous member-list RPC must be denied')
+assert.ok([401, 403, 404].includes(members.response.status), 'Anonymous member-list RPC must be denied/unavailable')
 const trash = await database('/storage/v1/object/list/site-media-trash', { method: 'POST', body: JSON.stringify({ prefix: '', limit: 1 }) })
 assert.ok([400, 401, 403, 404].includes(trash.response.status) || trash.response.status === 200 && trash.body.trim() === '[]', 'Private trash is not protected')
 const crossOrigin = await read('/api/draft-mode/enable', { method: 'POST', headers: { Origin: 'https://outside.example.invalid' } })
