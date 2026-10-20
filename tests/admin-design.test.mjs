@@ -34,7 +34,7 @@ function load(file) {
     if (request === '../../supabase/config') return { supabaseEnabled: () => true }
     if (request === '../../supabase/server') return { currentMember: async () => ({ user: { id: 'fixture', email: 'ukazka@akronlogistics.cz' }, role: 'admin', client: { from: () => ({ select: () => ({ order: async () => ({ data: fixture }) }) }) } }) }
     if (request === '../../content/client') return { imageUrl: () => undefined, ownedMediaUrl: value => /^(?:\/images\/|https:\/\/htgwzjcdxbknzvobwioa\.supabase\.co\/storage\/v1\/object\/public\/site-media\/)/.test(value) ? value : undefined }
-    if (request === 'next/image') return { __esModule: true, default: props => React.createElement('img', props) }
+    if (request === 'next/image') return { __esModule: true, default: ({ unoptimized, ...props }) => { void unoptimized; return React.createElement('img', props) } }
     if (request.endsWith('.css')) return {}
     if (request.startsWith('./') || request.startsWith('../')) { const base = path.resolve(path.dirname(file), request); return load(base + (fs.existsSync(base + '.tsx') ? '.tsx' : '.ts')) }
     return normalRequire(request)
@@ -42,7 +42,7 @@ function load(file) {
   mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file)
   return mod.exports
 }
-const { AdminPanel, Fields, PageEditor } = load(path.join(root, 'app/admin/panel.tsx'))
+const { AdminPanel, Fields, PageEditor, SettingsEditor } = load(path.join(root, 'app/admin/panel.tsx'))
 const render = role => renderToStaticMarkup(React.createElement(AdminPanel, { documents: fixture, role, userId: 'fixture', email: 'ukazka@akronlogistics.cz' }))
 
 test('client-facing settings retain contact editing but omit technical connection and test tools',async()=>{
@@ -82,6 +82,78 @@ test('page editor opens the first section and keeps technical options out of eve
   assert.match(html, /<summary>Pokročilé nastavení<\/summary>/)
   assert.match(html, /<summary>SEO, adresa stránky a sdílení<\/summary>/)
   assert.equal(JSON.stringify(value), before, 'displaying simplified fields must not rewrite stored content')
+  assert.match(html, /readonly="" value="\/"/i)
+  assert.doesNotMatch(html, /value="\/home"/)
+  assert.equal((html.match(/<legend>Obrázek<\/legend>/g) || []).length, 1, 'the section image must not appear again in technical options')
+})
+
+test('settings use ordered groups without rewriting content or exposing private delivery fields', () => {
+  const value = { name: 'AKRON', city: 'Ostrava', phone: '+420606123456', font: 'poppins', navigation: [{ label: 'Kontakt', href: '/kontakt' }], formText: { cargo: 'Popis nákladu' }, cookieText: { notice: 'Cookies' }, unknownSetting: 'Preserve me', email: 'old@example.invalid', inquiryEmail: 'private@example.invalid' }
+  const before = JSON.stringify(value)
+  const html = renderToStaticMarkup(React.createElement(SettingsEditor, { value, disabled: true, onChange: () => {}, onUpload: async () => {} }))
+  const dom = new JSDOM(html)
+  assert.deepEqual([...dom.window.document.querySelectorAll('.admin-settings-group > h4')].map(e => e.textContent), ['Firemní a kontaktní údaje', 'Loga a vzhled', 'Navigace a patička', 'Poptávkový formulář', 'Oznámení o cookies', 'Další nastavení'])
+  assert.doesNotMatch(html, /old@example|private@example/)
+  assert.match(html, /Preserve me/)
+  assert.match(html, /value="poppins" selected="">Poppins/)
+  assert.equal(JSON.stringify(value), before)
+  assert.equal(dom.window.document.querySelector('input:not([disabled])'), null)
+  dom.window.close()
+})
+
+test('grouped settings upload still targets the original image field, not a nested settings object', async () => {
+  const dom = new JSDOM('<div id="root"></div>')
+  const originals = { document: globalThis.document, window: globalThis.window, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
+  Object.assign(globalThis, { document: dom.window.document, window: dom.window, IS_REACT_ACT_ENVIRONMENT: true })
+  let mounted, uploaded
+  try {
+    const { createRoot } = await import('react-dom/client')
+    const container = document.getElementById('root'); mounted = createRoot(container)
+    await act(async () => mounted.render(React.createElement(SettingsEditor, { value: { name: 'AKRON' }, disabled: false, onChange: () => {}, onUpload: async (file, path) => { uploaded = { file, path } } })))
+    const fieldset = [...container.querySelectorAll('fieldset')].find(e => e.querySelector(':scope > legend')?.textContent === 'Logo')
+    const input = fieldset.querySelector('input[type=file]')
+    const file = new dom.window.File(['fixture'], 'logo.png', { type: 'image/png' })
+    Object.defineProperty(input, 'files', { value: [file] })
+    await act(async () => input.dispatchEvent(new dom.window.Event('change', { bubbles: true })))
+    assert.deepEqual(uploaded.path, ['logo'])
+    assert.equal(uploaded.file, file)
+  } finally {
+    if (mounted) await act(async () => mounted.unmount())
+    Object.assign(globalThis, originals); dom.window.close()
+  }
+})
+
+test('form layout pins labels to the top and main workspace no longer floats vertically', () => {
+  const css = fs.readFileSync(path.join(root, 'app/admin/admin.css'), 'utf8')
+  assert.match(css, /\.akron-admin label \{[^}]*align-content:start;/)
+  assert.match(css, /\.admin-fields \{[^}]*align-items:start;/)
+  assert.match(css, /\.admin-main \{[^}]*margin:0 auto;/)
+  assert.match(css, /\.admin-record-toolbar label \{ flex-basis:100%; min-width:0;/)
+  assert.match(css, /\.akron-admin input,\.akron-admin textarea,\.akron-admin select \{ font-size:16px; min-height:44px;/)
+})
+
+test('mobile admin menu can close with Escape or an outside pointer without discarding edits', async () => {
+  const dom = new JSDOM('<div id="root"></div>')
+  const originals = { document: globalThis.document, window: globalThis.window, Element: globalThis.Element, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
+  Object.assign(globalThis, { document: dom.window.document, window: dom.window, Element: dom.window.Element, IS_REACT_ACT_ENVIRONMENT: true })
+  let mounted
+  try {
+    const { createRoot } = await import('react-dom/client')
+    const container = document.getElementById('root'); mounted = createRoot(container)
+    await act(async () => mounted.render(React.createElement(AdminPanel, { documents: fixture, role: 'admin', userId: 'fixture' })))
+    const toggle = container.querySelector('.admin-menu-toggle')
+    await act(async () => toggle.click())
+    assert.equal(toggle.getAttribute('aria-expanded'), 'true')
+    await act(async () => document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+    assert.equal(toggle.getAttribute('aria-expanded'), 'false')
+    assert.equal(document.activeElement, toggle)
+    await act(async () => toggle.click())
+    await act(async () => container.querySelector('.admin-main').dispatchEvent(new dom.window.Event('pointerdown', { bubbles: true })))
+    assert.equal(toggle.getAttribute('aria-expanded'), 'false')
+  } finally {
+    if (mounted) await act(async () => mounted.unmount())
+    Object.assign(globalThis, originals); dom.window.close()
+  }
 })
 test('simplified legal pages retain the document editor and read-only restrictions', () => {
   const { initialLegalPages } = load(path.join(root, 'content/legal-defaults.ts'))

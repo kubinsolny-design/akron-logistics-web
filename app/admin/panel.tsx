@@ -49,6 +49,7 @@ const options: Record<string, string[]> = {
   vehicle: ['none', 'van', 'box', 'trailer', 'tipper', 'walking-floor'], theme: ['light', 'dark'], cardStyle: ['rail', 'list'],
   font: ['orbitron', 'poppins'],
 }
+const optionLabels: Record<string, string> = { none: 'Bez nákresu vozidla', van: 'Dodávka', box: 'Sólo vozidlo', trailer: 'Návěs', tipper: 'Sklápěčka', 'walking-floor': 'Posuvná podlaha', light: 'Světlá', dark: 'Tmavá', rail: 'Karty vedle sebe', list: 'Seznam', orbitron: 'Orbitron', poppins: 'Poppins' }
 const ignored = new Set(['asset', 'phoneHref', 'markDefs', 'marks'])
 const advancedFields = new Set(['slug', 'seoTitle', 'seoDescription', 'shareImage', 'layout', 'theme', 'anchor', 'imagePath', 'editorLabel', 'cardStyle', 'vehicle', 'visible', 'url', 'style'])
 
@@ -62,12 +63,12 @@ function blankItem(field: string): Value {
   return { _key: key, label: '', href: '' }
 }
 
-export function Fields({ value, onChange, disabled, path = [], onUpload, documentBody = false, simple = false, imageCards = false }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void>; documentBody?: boolean; simple?: boolean; imageCards?: boolean }) {
+export function Fields({ value, onChange, disabled, path = [], onUpload, documentBody = false, simple = false, imageCards = false, technicalOnly = false }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; path?: string[]; onUpload?: (file: File, path: string[]) => Promise<void>; documentBody?: boolean; simple?: boolean; imageCards?: boolean; technicalOnly?: boolean }) {
   const editable = { ...value }
   if (path.length === 0 && Array.isArray(value.sections)) {
     editable.shareImage ??= { url: '', alt: '' }
   }
-  if (typeof value.layout === 'string' && (!simple || ['hero', 'text', 'map', 'person'].includes(value.layout))) editable.image ??= { url: '', alt: '' }
+  if (!technicalOnly && typeof value.layout === 'string' && (!simple || ['hero', 'text', 'map', 'person'].includes(value.layout))) editable.image ??= { url: '', alt: '' }
   if (simple && imageCards && path.at(-2) === 'cards') editable.image ??= { url: '', alt: '' }
   if (path.length === 0 && !value.sections && !value.body && value.name) {
     for (const field of ['logo', 'lightLogo', 'portrait']) editable[field] ??= { url: '', alt: '' }
@@ -80,7 +81,7 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
   return <div className={`admin-fields${simple ? ' admin-fields-simple' : ''}`}>{shown.map(([name, item]) => {
     const label = path.includes('formText') && name==='name' ? 'Jméno a firma' : labels[name] || name
     const change = (updated: Value) => onChange({ ...value, [name]: updated })
-    if (name === 'slug' && item && typeof item === 'object' && !Array.isArray(item)) return <label key={name}>{label}<input readOnly value={publicHref(`/${String(item.current || '')}`)} /><small>Adresa této stránky je pevná. Text navigace lze změnit v Nastavení webu.</small></label>
+    if (name === 'slug' && item && typeof item === 'object' && !Array.isArray(item)) return <label key={name}>{label}<input readOnly value={publicHref(item.current === 'home' ? '/' : `/${String(item.current || '')}`)} /><small>Adresa této stránky je pevná. Text navigace lze změnit v Nastavení webu.</small></label>
     if (name === 'body' && path.length === 0 && documentBody && Array.isArray(item) && supportsDocumentEditor(item)) return <DocumentEditor key={name} value={item} onChange={change} disabled={disabled} />
     if (['image', 'portrait', 'logo', 'lightLogo', 'shareImage'].includes(name)) {
       const image = item && typeof item === 'object' && !Array.isArray(item) ? item : {}
@@ -111,11 +112,11 @@ export function Fields({ value, onChange, disabled, path = [], onUpload, documen
     if (item && typeof item === 'object') return <fieldset key={name}><legend>{label}</legend><Fields value={item} onChange={change} disabled={disabled} path={[...path, name]} onUpload={onUpload} simple={simple} /></fieldset>
     if (typeof item === 'boolean') return <label key={name} className="admin-check"><input type="checkbox" checked={item} disabled={disabled} onChange={(event) => change(event.target.checked)} />{label}</label>
     if (name === 'layout') return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={event => change(event.target.value)}>{Object.entries({ hero: 'Úvodní velký obrázek', trust: 'Přehled výhod', text: 'Text', cards: 'Karty služeb', map: 'Mapa', faq: 'Otázky a odpovědi', process: 'Postup spolupráce', person: 'Kontaktní osoba', inquiry: 'Poptávkový formulář', cta: 'Výzva s tlačítkem', note: 'Poznámka' }).map(([type, title]) => <option key={type} value={type}>{title}</option>)}</select></label>
-    if (options[name]) return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)}><option value="">Výchozí</option>{options[name].map(option => <option key={option}>{option}</option>)}</select></label>
+    if (options[name]) return <label key={name}>{label}<select value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)}><option value="">Výchozí</option>{options[name].map(option => <option key={option} value={option}>{optionLabels[option] || option}</option>)}</select></label>
     const long = ['description', 'text', 'answer', 'about', 'footerText', 'formDescription', 'seoDescription'].includes(name) || (simple && ['heading', 'question'].includes(name))
     return <label key={name}>{label}{long ? <textarea rows={['heading', 'question'].includes(name) ? 2 : 3} value={String(item || '')} disabled={disabled} onChange={(event) => change(event.target.value)} />
       : <input value={String(item ?? '')} type={typeof item === 'number' ? 'number' : 'text'} disabled={disabled} onChange={(event) => change(typeof item === 'number' ? Number(event.target.value) : event.target.value)} />}</label>
-  })}{simple && Object.keys(advanced).length > 0 && <details className="admin-advanced"><summary>Pokročilé nastavení</summary><Fields value={advanced} onChange={next => onChange({ ...value, ...next })} disabled={disabled} path={path} onUpload={onUpload} /></details>}</div>
+  })}{simple && Object.keys(advanced).length > 0 && <details className="admin-advanced"><summary>Pokročilé nastavení</summary><Fields value={advanced} onChange={next => onChange({ ...value, ...next })} disabled={disabled} path={path} onUpload={onUpload} technicalOnly /></details>}</div>
 }
 
 export function PageEditor({ value, onChange, disabled, onUpload }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; onUpload: (file: File, path: string[]) => Promise<void> }) {
@@ -139,6 +140,25 @@ export function PageEditor({ value, onChange, disabled, onUpload }: { value: Obj
     {Object.keys(otherContent).length > 0 && <Fields value={otherContent} documentBody simple onChange={next => onChange({ ...value, ...next })} disabled={disabled} onUpload={onUpload} />}
     <details className="admin-advanced"><summary>SEO, adresa stránky a sdílení</summary><Fields value={{ shareImage: { url: '', alt: '' }, ...Object.fromEntries(Object.entries(pageFields).filter(([key]) => advancedFields.has(key))) }} onChange={next => onChange({ ...value, ...next })} disabled={disabled} onUpload={onUpload} /></details>
   </div>
+}
+
+const settingsGroups = [
+  { title: 'Firemní a kontaktní údaje', keys: ['name', 'contactName', 'phone', 'registrationNumber', 'street', 'city', 'about', 'portrait'] },
+  { title: 'Loga a vzhled', keys: ['logo', 'lightLogo', 'font', 'accentColor', 'darkColor', 'backgroundColor', 'textColor'] },
+  { title: 'Navigace a patička', keys: ['navigation', 'headerAction', 'footerAction', 'footerContactLabel', 'footerTagline', 'footerText', 'siteText'] },
+  { title: 'Poptávkový formulář', keys: ['formHeading', 'formDescription', 'submitLabel', 'successMessage', 'formText'] },
+  { title: 'Oznámení o cookies', keys: ['cookieText'] },
+]
+
+export function SettingsEditor({ value, onChange, disabled, onUpload }: { value: ObjectValue; onChange: (value: ObjectValue) => void; disabled: boolean; onUpload: (file: File, path: string[]) => Promise<void> }) {
+  const editable: ObjectValue = { ...value }
+  for (const key of ['logo', 'lightLogo', 'portrait']) editable[key] ??= { url: '', alt: '' }
+  const grouped = new Set([...settingsGroups.flatMap(group => group.keys), 'email', 'inquiryEmail', 'phoneHref'])
+  const extra = Object.keys(editable).filter(key => !key.startsWith('_') && !grouped.has(key))
+  return <div className="admin-settings-groups">{[...settingsGroups, { title: 'Další nastavení', keys: extra }].map(group => {
+    const fields = Object.fromEntries(group.keys.filter(key => key in editable).map(key => [key, editable[key]]))
+    return Object.keys(fields).length > 0 ? <section className="admin-settings-group" key={group.title} aria-label={group.title}><h4>{group.title}</h4><Fields value={fields} path={['settings']} disabled={disabled} onUpload={onUpload ? (file, path) => onUpload(file, path.slice(1)) : undefined} onChange={next => onChange({ ...value, ...next })} /></section> : null
+  })}</div>
 }
 
 function replaceImage(value: Value, path: string[], url: string): Value {
@@ -172,6 +192,19 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
     window.addEventListener('beforeunload', guard)
     return () => window.removeEventListener('beforeunload', guard)
   }, [dirty])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setMenuOpen(false); document.querySelector<HTMLButtonElement>('.admin-menu-toggle')?.focus() }
+    }
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Element && !event.target.closest('#admin-sidebar, .admin-menu-toggle')) setMenuOpen(false)
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    document.addEventListener('pointerdown', closeOutside)
+    return () => { document.removeEventListener('keydown', closeOnEscape); document.removeEventListener('pointerdown', closeOutside) }
+  }, [menuOpen])
 
   useEffect(() => {
     const touch = () => {
@@ -278,7 +311,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {(tab === 'content' || tab === 'settings') && <section className="admin-editor">
         {!current ? <p>Obsah zatím není importovaný. Kontaktujte správce.</p> : <>
         <div className="admin-editor-heading"><div><p className="admin-kicker">{tab === 'content' ? 'EDITOR STRÁNKY' : 'SPOLEČNÁ NASTAVENÍ'}</p><h3>{String(data.title || 'Nastavení webu')}</h3><p>{readOnly ? 'Tento účet může obsah prohlížet, ale nemůže ho měnit.' : tab === 'content' ? 'Vyberte sekci. Texty, fotografie a tlačítka upravíte přímo, bez dalšího rozbalování.' : 'Upravte společné údaje celého webu.'}</p></div><span className={`admin-badge${dirty ? ' is-dirty' : ''}`}>{dirty ? 'Neuložené změny' : 'Uložený koncept'} · {current.revision}</span></div>
-        {tab === 'content' ? <PageEditor key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} /> : <Fields key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />}
+        {tab === 'content' ? <PageEditor key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} /> : <SettingsEditor key={current.id} value={data} disabled={readOnly || busy} onUpload={upload} onChange={next => { setData(next); setDirty(true) }} />}
         {!readOnly && !publishingEnabled && <p className="admin-status">Koncept můžete upravit a uložit. Publikování na hlavní web čeká na dokončení propojení obsahu.</p>}
         {!readOnly && <div className="admin-save"><span><strong>{dirty ? 'Neuložené změny' : 'Koncept je uložený'}</strong><small>Veřejný web změní až publikování.</small></span><button disabled={busy || !dirty} onClick={() => save(false)}>Uložit koncept</button><button className="admin-primary" disabled={busy || !publishingEnabled} onClick={() => save(true)}>Publikovat na web</button></div>}
         </>}

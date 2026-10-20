@@ -16,7 +16,11 @@ const nextConfig: NextConfig = {
       source: '/:path*', has: [{ type: 'host', value: '.+\\.vercel\\.app' }],
       headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
     }, ...['/admin/:path*', '/studio/:path*', '/api/:path*'].map(source => ({
-      source, headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      source, headers: [
+        { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+        // Do not forward an admin/callback address to any navigation target.
+        ...(source === '/admin/:path*' ? [{ key: 'Referrer-Policy', value: 'no-referrer' }] : []),
+      ],
     }))]
   },
   images: { remotePatterns: [
