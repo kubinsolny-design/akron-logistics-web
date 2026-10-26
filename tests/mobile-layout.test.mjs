@@ -3,6 +3,12 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const read=name=>fs.readFileSync(new URL('../app/'+name,import.meta.url),'utf8')
+
+test('service cards allow five desktop columns while retaining the mobile layout',()=>{
+ assert.match(read('cms-page.tsx'),/Math\.min\(s\.cards\?\.length \|\| 1, 5\)/)
+ assert.match(read('cms.css'),/grid-template-columns: repeat\(var\(--cms-columns, 3\), minmax\(0, 1fr\)\)/)
+ assert.match(read('cms.css'),/@media \(max-width: 750px\) \{ \.cms-card-grid, \.cms-text-image \{ grid-template-columns: 1fr;/)
+})
 test('mobile header remains sticky and colour notes keep their background edge-to-edge',()=>{
  const css=read('final-polish.css')
  assert.match(css,/\.site-header \{ position: sticky; top: 0;/)
