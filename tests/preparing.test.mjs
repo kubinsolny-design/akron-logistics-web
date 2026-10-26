@@ -8,21 +8,30 @@ const file = new URL('../app/preparing.ts', import.meta.url)
 const mod = new Module(file.pathname)
 mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, file.pathname)
 const { preparing, hidePublicPage, showPreparingPage, preparingHtml } = mod.exports
+const closed = new Module(file.pathname)
+closed._compile(ts.transpileModule(fs.readFileSync(file, 'utf8').replace('export const preparing = false', 'export const preparing = true'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, file.pathname)
+
+test('approved public launch removes the preparing gate from the canonical website', () => {
+  assert.equal(preparing, false)
+  for (const path of ['/', '/preprava', '/moznosti', '/kontakt', '/cookies', '/ochrana-osobnich-udaju']) {
+    assert.equal(showPreparingPage(path, 'akronlogistics.cz'), false)
+  }
+})
 
 test('only the exact approved review hostname shows the full website', () => {
   for (const path of ['/', '/preprava', '/cookies', '/og/home', '/nova-stranka']) {
-    assert.equal(showPreparingPage(path, 'akron-logistics-web.vercel.app'), false)
+    assert.equal(closed.exports.showPreparingPage(path, 'akron-logistics-web.vercel.app'), false)
     for (const host of ['akronlogistics.cz', 'www.akronlogistics.cz', 'other.vercel.app', '', 'akron-logistics-web.vercel.app.evil.test']) {
-      assert.equal(showPreparingPage(path, host), true, `${host}${path}`)
+      assert.equal(closed.exports.showPreparingPage(path, host), true, `${host}${path}`)
     }
   }
   for (const host of ['akronlogistics.cz', 'akron-logistics-web.vercel.app']) {
-    assert.equal(showPreparingPage('/admin/accept', host), false)
+    assert.equal(closed.exports.showPreparingPage('/admin/accept', host), false)
   }
 })
 
 test('preparing gate covers every public page, unknown routes and form submissions', () => {
-  assert.equal(preparing, true)
+  assert.equal(closed.exports.preparing, true)
   for (const path of ['/', '/preprava', '/moznosti', '/spoluprace', '/cookies', '/ochrana-osobnich-udaju', '/nova-stranka', '/api/draft-mode/enable', '/administrator', '/og/home']) assert.equal(hidePublicPage(path), true, path)
 })
 test('admin, invitation callback and necessary assets stay available', () => {
@@ -39,7 +48,7 @@ test('a stale form or direct server action cannot write inquiries while preparin
   const actionModule = new Module(actionFile.pathname)
   const forbidden = () => assert.fail('Preparing must not access CMS, database or email')
   actionModule.require = name => {
-    if (name === './preparing') return mod.exports
+    if (name === './preparing') return closed.exports
     if (name === './inquiry-validation') return { inquiryValidation: forbidden }
     if (name === './inquiry-config') return {}
     if (name === './site') return { company: {} }

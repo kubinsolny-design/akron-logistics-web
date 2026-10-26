@@ -1,6 +1,7 @@
-// Temporary launch gate. Set to false and redeploy after the final launch checks.
+// Public launch approved by the owner on 26 October 2026.
+// Set to true and redeploy to restore the temporary launch gate if needed.
 // This does not modify any published content, accounts, or database records.
-export const preparing = true
+export const preparing = false
 
 // Only the explicitly approved review address may show the unfinished website.
 // Unknown deployment hosts remain closed; neither query strings nor forwarded
