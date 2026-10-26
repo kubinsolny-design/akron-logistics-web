@@ -8,14 +8,21 @@ import { JSDOM } from 'jsdom'
 
 const source = fs.readFileSync(new URL('../app/admin/analytics-data.ts', import.meta.url), 'utf8')
 const credential = JSON.stringify({ type: 'service_account', client_email: 'reader@fixture.iam.gserviceaccount.com', private_key: '-----BEGIN PRIVATE KEY-----\nFAKE-NOT-A-KEY\n-----END PRIVATE KEY-----', token_uri: 'https://untrusted.invalid' })
+const calendarModule = { exports: {} }
+new Function('exports', ts.transpileModule(fs.readFileSync(new URL('../app/admin/analytics-calendar.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText)(calendarModule.exports)
+const { analyticsDay, analyticsPeriod } = calendarModule.exports
 
-function fixture({ role = 'admin', configured = true, fail = false, reports } = {}) {
+function fixture({ role = 'admin', configured = true, fail = false, reports, now = '2026-10-26T12:00:00Z' } = {}) {
   const calls = { auth: 0, google: 0, cache: 0, options: null, identity: null }
+  const stored = new Map()
+  let instant = now
+  const clock = class extends Date { constructor(...args) { super(...(args.length ? args : [instant])) } }
   const mod = new Module(import.meta.filename)
   mod.require = request => {
     if (request === 'server-only') return {}
+    if (request === './analytics-calendar') return calendarModule.exports
     if (request === '../../supabase/server') return { currentMember: async () => { calls.auth++; return role ? { role } : null } }
-    if (request === 'next/cache') return { unstable_cache: (fn, key, options) => { calls.cache++; calls.identity = { key, options }; return fn } }
+    if (request === 'next/cache') return { unstable_cache: (fn, key, options) => { calls.cache++; calls.identity = { key, options }; return async () => { const id = JSON.stringify(key); if (!stored.has(id)) stored.set(id, fn().catch(error => { stored.delete(id); throw error })); return stored.get(id) } } }
     if (request === 'google-auth-library') return { JWT: class {
       constructor(options) { calls.options = options }
       async request(request) {
@@ -34,9 +41,9 @@ function fixture({ role = 'admin', configured = true, fail = false, reports } = 
   }
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
   // Pass an isolated env object, never inspect or change real machine credentials.
-  const run = new Function('require', 'module', 'exports', 'process', code)
-  run(mod.require.bind(mod), mod, mod.exports, { env: configured ? { GA4_PROPERTY_ID: '559040702', GA4_SERVICE_ACCOUNT_JSON: credential } : {} })
-  return { load: mod.exports.authorizedAnalytics, calls }
+  const run = new Function('require', 'module', 'exports', 'process', 'Date', code)
+  run(mod.require.bind(mod), mod, mod.exports, { env: configured ? { GA4_PROPERTY_ID: '559040702', GA4_SERVICE_ACCOUNT_JSON: credential } : {} }, clock)
+  return { load: mod.exports.authorizedAnalytics, calls, setNow: value => { instant = value } }
 }
 
 test('analytics blocks anonymous, revoked and non-admin roles before config/cache/Google', async () => {
@@ -63,10 +70,11 @@ test('analytics uses readonly SDK auth, a fixed batch endpoint, safe filters and
   assert.equal(calls.google, 1)
   assert.equal(calls.request.url, 'https://analyticsdata.googleapis.com/v1beta/properties/559040702:batchRunReports')
   assert.equal(calls.request.data.requests.length, 4)
-  assert.deepEqual(calls.request.data.requests[0].dateRanges, [{ startDate: '7daysAgo', endDate: 'yesterday' }])
+  assert.deepEqual(calls.request.data.requests[0].dateRanges, [{ startDate: '2026-10-19', endDate: '2026-10-25' }])
   assert.deepEqual(calls.request.data.requests[0].dimensionFilter.andGroup.expressions[0].filter.inListFilter.values, ['akronlogistics.cz', 'www.akronlogistics.cz'])
   assert.equal(calls.request.timeout, 15000); assert.equal(calls.request.retry, false)
-  assert.equal(calls.identity.options.revalidate, 300)
+  assert.equal(calls.identity.options.revalidate, 172800)
+  assert.equal(calls.identity.key.at(-1), '2026-10-26')
   assert.doesNotMatch(JSON.stringify(calls.identity), /PRIVATE KEY|reader@/)
   assert.equal(result.report.users, 5); assert.equal(result.report.sessions, 8); assert.equal(result.report.views, 12)
   assert.equal(result.report.engagementRate, .625); assert.equal(result.report.days.length, 7)
@@ -82,8 +90,27 @@ test('analytics failures never disclose Google errors or credentials', async () 
 })
 test('every analytics load rechecks membership, even if aggregate caching is enabled', async () => {
   const { load, calls } = fixture()
-  await load(7); await load(28)
+  await load(7); await load(7)
   assert.equal(calls.auth, 2)
+  assert.equal(calls.google, 1)
+})
+test('daily snapshots refresh at Czech midnight, not every visit or every five minutes', async () => {
+  const { load, calls, setNow } = fixture({ now: '2026-10-26T00:30:00Z' })
+  const first = await load(28)
+  setNow('2026-10-26T22:59:59Z')
+  assert.deepEqual(await load(28), first)
+  assert.equal(calls.google, 1)
+  setNow('2026-10-26T23:00:01Z')
+  const next = await load(28)
+  assert.equal(calls.google, 2)
+  assert.equal(next.report.endDate, '2026-10-26')
+  assert.equal(calls.identity.key.at(-1), '2026-10-27')
+})
+test('Czech reporting dates handle DST, year changes and explicit API windows', () => {
+  assert.equal(analyticsDay(new Date('2026-03-29T22:00:00Z')), '2026-03-30')
+  assert.equal(analyticsDay(new Date('2026-10-25T22:59:59Z')), '2026-10-25')
+  assert.equal(analyticsDay(new Date('2026-10-25T23:00:00Z')), '2026-10-26')
+  assert.deepEqual(analyticsPeriod(7, '2027-01-01'), { startDate: '2026-12-25', endDate: '2026-12-31' })
 })
 test('missing report responses fail closed rather than showing false zeros', async () => {
   assert.equal((await fixture({ reports: [] }).load(28)).status, 'error')
@@ -96,7 +123,8 @@ test('analytics panel renders actual aggregates and updates the selected period'
   const require = Module.createRequire(import.meta.url)
   const mod = new Module(import.meta.filename)
   const ranges = []
-  mod.require = request => request === './analytics-actions' ? { loadAnalytics: async range => { ranges.push(range); return fixture().load(range) } } : require(request)
+  let uiDay = '2026-10-26'
+  mod.require = request => request === './analytics-calendar' ? { ...calendarModule.exports, analyticsDay: () => uiDay } : request === './analytics-actions' ? { loadAnalytics: async range => { ranges.push(range); return fixture().load(range) } } : require(request)
   const code = ts.transpileModule(fs.readFileSync(new URL('../app/admin/analytics-panel.tsx', import.meta.url), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
   mod._compile(code, import.meta.filename)
   let mounted
@@ -115,6 +143,13 @@ test('analytics panel renders actual aggregates and updates the selected period'
     await act(async () => { select.value = '7'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
     assert.deepEqual(ranges, [28, 7])
     assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 7)
+    await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
+    assert.deepEqual(ranges, [28, 7], 'focusing again during the same day must not reload Google data')
+    uiDay = '2026-10-27'
+    await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
+    assert.deepEqual(ranges, [28, 7, 7], 'returning after Czech midnight must load the new daily snapshot')
+    await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
+    assert.deepEqual(ranges, [28, 7, 7])
     await act(async () => mounted.render(React.createElement(mod.exports.AnalyticsPanel, { administrator: false })))
     assert.match(container.textContent, /pouze administrátor/)
     assert.equal(container.querySelector('.admin-analytics-metrics'), null)

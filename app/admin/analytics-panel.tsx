@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { loadAnalytics } from './analytics-actions'
+import { analyticsDay } from './analytics-calendar'
 import type { AnalyticsRange, AnalyticsResult } from './analytics-types'
 
 const format = new Intl.NumberFormat('cs-CZ')
@@ -12,13 +13,27 @@ const shortDate = (date: string) => new Intl.DateTimeFormat('cs-CZ', { day: 'num
 export function AnalyticsPanel({ administrator }: { administrator: boolean }) {
   const [range, setRange] = useState<AnalyticsRange>(28)
   const [result, setResult] = useState<AnalyticsResult | null>(null)
+  const [day, setDay] = useState(() => analyticsDay())
   const [pending, startTransition] = useTransition()
   useEffect(() => {
     if (!administrator) return
     let active = true
     loadAnalytics(range).then(value => { if (active) setResult(value) }).catch(() => { if (active) setResult({ status: 'error', message: 'Načtení se nezdařilo. Zkuste to znovu.' }) })
     return () => { active = false }
-  }, [administrator, range])
+  }, [administrator, range, day])
+  useEffect(() => {
+    if (!administrator) return
+    // Clock checks are local; no API polling. A new Czech day triggers one load.
+    const checkDay = () => {
+      if (document.visibilityState === 'hidden') return
+      const next = analyticsDay()
+      if (next !== day) { setResult(null); setDay(next) }
+    }
+    const timer = window.setInterval(checkDay, 60000)
+    document.addEventListener('visibilitychange', checkDay)
+    window.addEventListener('focus', checkDay)
+    return () => { window.clearInterval(timer); document.removeEventListener('visibilitychange', checkDay); window.removeEventListener('focus', checkDay) }
+  }, [administrator, day])
   const report = result?.status === 'ready' ? result.report : null
   const loading = pending || (administrator && (!result || (report && report.range !== range)))
   const maxViews = Math.max(1, ...(report?.days.map(day => day.views) || []))
@@ -40,7 +55,7 @@ export function AnalyticsPanel({ administrator }: { administrator: boolean }) {
         </div>
         <div className="admin-analytics-tables">{[{ title: 'Nejnavštěvovanější stránky', rows: report.pages, names: pageNames, unit: 'Zobrazení' }, { title: 'Odkud přicházejí návštěvníci', rows: report.sources, names: channels, unit: 'Návštěvy' }].map(group => <div className="admin-records" key={group.title}><h4>{group.title}</h4>{group.rows.length ? <div className="admin-table-wrap"><table><thead><tr><th>{group.title === 'Nejnavštěvovanější stránky' ? 'Stránka' : 'Kanál'}</th><th>{group.unit}</th></tr></thead><tbody>{group.rows.map(row => <tr key={row.label}><td>{group.names[row.label] || row.label}</td><td>{format.format(row.count)}</td></tr>)}</tbody></table></div> : <p>Zatím bez dat.</p>}</div>)}</div>
         {report.thresholded && <p className="admin-status">Google část dat kvůli ochraně soukromí nezobrazuje. Nízké počty proto mohou být neúplné.</p>}
-        <p className="admin-muted">Načteno {new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Prague' }).format(new Date(report.fetchedAt))}. Přehled se obnovuje nejvýše jednou za 5 minut. Nezahrnuje administraci ani testovací domény.</p>
+        <p className="admin-muted">Načteno {new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Prague' }).format(new Date(report.fetchedAt))}. Aktualizace 1× denně při prvním otevření přehledu, podle času v Česku. Nezahrnuje administraci ani testovací domény. Google může data zpřesňovat 24–48 hodin.</p>
       </>}
       <a className="admin-open-site" href="https://analytics.google.com/analytics/web/#/p559040702/reports/" target="_blank" rel="noopener noreferrer">Otevřít podrobné Google Analytics</a>
     </>}

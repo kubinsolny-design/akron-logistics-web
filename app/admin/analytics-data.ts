@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { JWT } from 'google-auth-library'
 import { unstable_cache } from 'next/cache'
 import { currentMember } from '../../supabase/server'
+import { analyticsDay, analyticsPeriod } from './analytics-calendar'
 import type { AnalyticsRange, AnalyticsReport, AnalyticsResult } from './analytics-types'
 
 type Config = { property: string; email: string; key: string }
@@ -31,10 +32,11 @@ function dateLabel(value: string) {
   return /^\d{8}$/.test(value) ? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}` : ''
 }
 
-async function query(config: Config, range: AnalyticsRange): Promise<AnalyticsReport> {
+async function query(config: Config, range: AnalyticsRange, snapshotDay: string): Promise<AnalyticsReport> {
   const client = new JWT({ email: config.email, key: config.key, scopes: ['https://www.googleapis.com/auth/analytics.readonly'] })
+  const period = analyticsPeriod(range, snapshotDay)
   const base = {
-    dateRanges: [{ startDate: `${range}daysAgo`, endDate: 'yesterday' }],
+    dateRanges: [period],
     dimensionFilter: { andGroup: { expressions: [
       { filter: { fieldName: 'hostName', inListFilter: { values: ['akronlogistics.cz', 'www.akronlogistics.cz'] } } },
       { filter: { fieldName: 'pagePath', inListFilter: { values: publicPaths } } },
@@ -54,12 +56,8 @@ async function query(config: Config, range: AnalyticsRange): Promise<AnalyticsRe
   if (!Array.isArray(data.reports) || data.reports.length !== 4) throw new Error('Invalid Analytics response')
   const [summary, daily, pages, sources] = data.reports
   const timeZone = summary.metadata?.timeZone || 'Europe/Prague'
-  // Relative API dates use the property's timezone, not the Vercel server timezone.
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
-  const end = new Date(`${today}T12:00:00Z`)
-  end.setUTCDate(end.getUTCDate() - 1)
-  const start = new Date(end)
-  start.setUTCDate(start.getUTCDate() - range + 1)
+  // Use the same explicit dates in API requests and UI, even across midnight.
+  const start = new Date(`${period.startDate}T12:00:00Z`)
   const dayViews = new Map((daily.rows || []).map(row => [dateLabel(row.dimensionValues?.[0]?.value || ''), number(row)]))
   const days = Array.from({ length: range }, (_, i) => {
     const date = new Date(start)
@@ -86,8 +84,12 @@ export async function authorizedAnalytics(range: unknown): Promise<AnalyticsResu
   // Cache only aggregates, not cookies, auth, credentials or raw Google responses.
   // Include a credential fingerprint so rotation cannot reuse a former account's report.
   const identity = createHash('sha256').update(`${config.email}\n${config.key}`).digest('hex')
+  const snapshotDay = analyticsDay(new Date())
   try {
-    const report = await unstable_cache(() => query(config, range), ['akron-ga4-v1', config.property, identity, String(range)], { revalidate: 300 })()
+    // First authorized opening in a new calendar day fetches a fresh snapshot.
+    // A longer retention avoids a second refresh during a 25-hour DST day;
+    // the DAY in the key, not a rolling TTL, controls the daily refresh.
+    const report = await unstable_cache(() => query(config, range, snapshotDay), ['akron-ga4-daily-v2', config.property, identity, String(range), snapshotDay], { revalidate: 172800 })()
     return { status: 'ready', report }
   } catch {
     // Google/Auth error objects can contain request headers, tokens and key data.
