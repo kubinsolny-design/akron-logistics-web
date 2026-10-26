@@ -158,8 +158,8 @@ test('missing report responses fail closed rather than showing false zeros', asy
 
 test('analytics panel renders actual aggregates and updates the selected period', async () => {
   const dom = new JSDOM('<div id="root"></div>')
-  const originals = { document: globalThis.document, window: globalThis.window, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
-  Object.assign(globalThis, { document: dom.window.document, window: dom.window, IS_REACT_ACT_ENVIRONMENT: true })
+  const originals = { document: globalThis.document, window: globalThis.window, FormData: globalThis.FormData, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
+  Object.assign(globalThis, { document: dom.window.document, window: dom.window, FormData: dom.window.FormData, IS_REACT_ACT_ENVIRONMENT: true })
   const require = Module.createRequire(import.meta.url)
   const mod = new Module(import.meta.filename)
   const ranges = []
@@ -197,9 +197,17 @@ test('analytics panel renders actual aggregates and updates the selected period'
     await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
     assert.deepEqual(ranges, [30, 7, 7])
     await act(async () => { select.value = 'custom'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+    // A browser-native picker/autofill may set visible values without React's change event.
+    container.querySelector('[name="startDate"]').value = '2026-10-01'
+    container.querySelector('[name="endDate"]').value = '2026-10-20'
     await act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
-    assert.deepEqual(ranges.at(-1), { startDate: '2026-09-26', endDate: '2026-10-25' })
-    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 30)
+    assert.deepEqual(ranges.at(-1), { startDate: '2026-10-01', endDate: '2026-10-20' })
+    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 20)
+    const previousRequests = ranges.length
+    container.querySelector('[name="startDate"]').value = '2026-10-21'
+    await act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
+    assert.equal(ranges.length, previousRequests, 'invalid form must not load data')
+    assert.match(container.querySelector('[role="alert"]').textContent, /platné datum/)
     await act(async () => mounted.render(React.createElement(mod.exports.AnalyticsPanel, { administrator: false })))
     assert.match(container.textContent, /pouze administrátor/)
     assert.equal(container.querySelector('.admin-analytics-metrics'), null)

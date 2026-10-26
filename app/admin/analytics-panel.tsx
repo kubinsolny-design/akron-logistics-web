@@ -59,11 +59,16 @@ export function AnalyticsPanel({ administrator }: { administrator: boolean }) {
     {!administrator ? <p className="admin-status">Analytiku může zobrazit pouze administrátor.</p> : <>
       {selection === 'custom' && <form className="admin-analytics-period" onSubmit={event => {
         event.preventDefault()
-        if (!analyticsPeriod(dates, day)) { setDateError('Zvolte platné datum od–do, nejvýše 366 dní a nejpozději do včerejška.'); return }
-        setDateError(''); setResult(null); setRange({ ...dates })
+        // Read the visible form values as well: native autofill/date pickers may
+        // commit a value without a React change event before submission.
+        const form = new FormData(event.currentTarget)
+        const requested = { startDate: String(form.get('startDate') || ''), endDate: String(form.get('endDate') || '') }
+        setDates(requested)
+        if (!analyticsPeriod(requested, day)) { setDateError('Zvolte platné datum od–do, nejvýše 366 dní a nejpozději do včerejška.'); return }
+        setDateError(''); setResult(null); setRange(requested)
       }}>
-        <label>Od<input type="date" required min="2005-01-01" max={analyticsPeriod('yesterday', day)!.endDate} value={dates.startDate} aria-describedby="analytics-period-hint" aria-invalid={!!dateError} onChange={event => { setDateError(''); setDates({ ...dates, startDate: event.target.value }) }} /></label>
-        <label>Do<input type="date" required min={dates.startDate || '2005-01-01'} max={analyticsPeriod('yesterday', day)!.endDate} value={dates.endDate} aria-describedby="analytics-period-hint" aria-invalid={!!dateError} onChange={event => { setDateError(''); setDates({ ...dates, endDate: event.target.value }) }} /></label>
+        <label>Od<input name="startDate" type="date" required min="2005-01-01" max={analyticsPeriod('yesterday', day)!.endDate} value={dates.startDate} aria-describedby="analytics-period-hint" aria-invalid={!!dateError} onChange={event => { setDateError(''); setDates({ ...dates, startDate: event.target.value }) }} /></label>
+        <label>Do<input name="endDate" type="date" required min={dates.startDate || '2005-01-01'} max={analyticsPeriod('yesterday', day)!.endDate} value={dates.endDate} aria-describedby="analytics-period-hint" aria-invalid={!!dateError} onChange={event => { setDateError(''); setDates({ ...dates, endDate: event.target.value }) }} /></label>
         <button type="submit" disabled={!!loading}>Zobrazit období</button>
         <p id="analytics-period-hint" className="admin-muted">Dokončené dny do včerejška, nejvýše 366 dní. Rozsah potvrďte tlačítkem.</p>
         {dateError && <p className="admin-error" role="alert">{dateError}</p>}
