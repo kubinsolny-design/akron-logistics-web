@@ -25,9 +25,10 @@ test('mobile note text and inline buttons are centered without changing desktop 
 test('footer credit is last, separated from text-only legal links',()=>{
  const ui=read('ui.tsx'),css=read('final-polish.css')
  assert.ok(ui.indexOf('footer-credit-row')>ui.indexOf('footer-legal'))
- assert.match(css,/\.footer-credit-row \{[^}]*border-top:/)
+ assert.match(ui,/footer-bottom[\s\S]*?<nav className="footer-legal"/)
+ assert.doesNotMatch(ui,/className="shell footer-legal"/)
  assert.match(css,/\.footer-legal a, \.footer-legal button \{[^}]*border: 0;[^}]*background: none;/)
- assert.match(css,/\.footer-legal \{ display: grid; grid-template-columns:/)
+ assert.match(css,/\.footer-bottom \.footer-legal \{ display: flex; flex-wrap: wrap;/)
 })
 test('contact retains full accessible email with a shorter mobile label; native date stays contained',()=>{
  assert.match(read('cms-page.tsx'),/aria-label=\{`E-mail: \$\{settings.email\}`\}/)

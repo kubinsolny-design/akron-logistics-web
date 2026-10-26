@@ -22,8 +22,9 @@
 .text-link-light:hover, .note-block .text-link:hover, .footer-action:hover { background: #e4e9ef; color: var(--ink); }
 .closing-strip a { background: var(--ink); color: #fff; border-color: var(--ink); }
 .footer-legal a, .footer-legal button {
-  padding: 8px 12px; border: 1px solid #46505c; border-radius: 5px;
-  text-decoration: none; line-height: 1.5;
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding: 6px 0; border: 0; border-radius: 0; background: none;
+  color: inherit; font: inherit; text-decoration: none; line-height: 1.5;
 }
 .footer-credit a { border: 0; text-decoration: none; }
 .privacy-confirmation a { text-decoration: none; font-weight: 700; }
@@ -78,8 +79,9 @@
 
 /* Mobile layout fixes: keep content gutters inside full-width colour bands. */
 .contact-email-mobile { display: none; }
-.footer-bottom { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.footer-credit-row { margin-top: 20px; padding-top: 20px; border-top: 1px solid #293442; }
+.footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 28px; }
+.footer-bottom .footer-legal { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 24px; margin: 0; padding: 0; color: inherit; }
+.footer-credit-row { margin-top: 12px; padding-top: 0; }
 @media (max-width: 750px) {
   .site-header { position: sticky; top: 0; z-index: 20; }
   :where(section[id], form[id]) { scroll-margin-top: 84px; }
@@ -105,9 +107,8 @@
   .footer-contact, .footer-address { align-items: center; }
   .footer-contact > a { max-width: 100%; overflow-wrap: anywhere; }
   .footer-links { justify-content: center; }
-  .footer-bottom { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .footer-bottom > span:last-child { text-align: center; }
-  .footer-legal { display: grid; grid-template-columns: minmax(0, 1.5fr) auto minmax(0, 1.1fr); align-items: center; gap: 10px; padding-bottom: 0; font-size: clamp(10px, 2.6vw, 12px); }
+  .footer-bottom { flex-direction: column; align-items: center; gap: 4px; }
+  .footer-bottom .footer-legal { justify-content: center; gap: 0 16px; font-size: 11px; }
   .footer-legal a, .footer-legal button { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; padding: 6px 0; border: 0; border-radius: 0; background: none; text-align: center; }
-  .footer-credit-row { margin-top: 16px; padding-top: 18px; }
+  .footer-credit-row { margin-top: 10px; padding-top: 0; }
 }

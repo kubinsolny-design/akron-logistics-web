@@ -22,6 +22,7 @@ function load(file) {
   mod.paths = Module._nodeModulePaths(path.dirname(file))
   const normalRequire = mod.require.bind(mod)
   mod.require = request => {
+    if (request === './analytics-actions') return { loadAnalytics: async () => ({ status: 'unconfigured', message: 'Propojení čeká na správce.' }) }
     if (request === './records') return { AdminRecords: () => null }
     if (request === './inquiry-connection') return { InquiryConnectionPanel: () => React.createElement('section', null, 'Propojení poptávkového formuláře') }
     if (request === './inquiry-settings') return { InquirySettingsPanel: () => React.createElement('section', { 'aria-label': 'Kontaktní e-mail a doručování' }, 'Kontaktní e-mail a doručování') }

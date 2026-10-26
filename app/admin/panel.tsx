@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { imageUrl } from '../../content/client'
 import { AdminRecords } from './records'
 import { InquirySettingsPanel } from './inquiry-settings'
+import { AnalyticsPanel } from './analytics-panel'
 import { useConfirmation } from './confirmation'
 import { publicHref } from '../public-links'
 import { AdminIcon } from './icons'
@@ -301,7 +302,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
       {(busy || message) && <p role={!busy && messageTone === 'error' ? 'alert' : 'status'} className={busy ? 'admin-status' : `admin-status admin-status-${messageTone}`}>{busy ? 'Pracuji…' : message}</p>}
       {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
       {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} admin={role==='admin'} />}
-      {tab === 'analytics' && <section className="admin-records admin-feature-placeholder"><span className="admin-placeholder-icon"><AdminIcon name="analytics" /></span><h3>Google Analytics 4</h3><p>Měření G-D2XLJKJMNH je připravené. Dokud je web v režimu Připravujeme, žádná návštěvnost se neodesílá. Po spuštění se měří pouze ostrá doména se souhlasem návštěvníka, nikdy administrace nebo demo.</p><a href="https://analytics.google.com/" target="_blank" rel="noopener noreferrer">Otevřít Google Analytics</a><p>Zobrazení statistik přímo zde vyžaduje samostatné propojení Google Analytics Data API. Zatím se zde žádná čísla nenačítají.</p></section>}
+      {tab === 'analytics' && <AnalyticsPanel administrator={role === 'admin'} />}
       {tab === 'settings' && role === 'admin' && <InquirySettingsPanel />}
       {tab === 'content' && <section className="admin-page-picker admin-page-picker-compact" aria-label="Výběr stránky">
         <div className="admin-section-heading"><h3>Vyberte stránku k úpravě</h3><label>Vyhledat stránku<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Název stránky…" /></label></div>
