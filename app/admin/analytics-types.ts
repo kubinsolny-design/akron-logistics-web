@@ -1,4 +1,6 @@
-export type AnalyticsRange = 7 | 28 | 90
+export type AnalyticsDates = { startDate: string; endDate: string }
+export type AnalyticsPreset = 7 | 28 | 30 | 90 | 'yesterday' | 'month' | 'lastMonth' | 'year' | 'lastYear'
+export type AnalyticsRange = AnalyticsPreset | AnalyticsDates
 export type AnalyticsReport = {
   range: AnalyticsRange
   fetchedAt: string

@@ -112,6 +112,46 @@ test('Czech reporting dates handle DST, year changes and explicit API windows', 
   assert.equal(analyticsDay(new Date('2026-10-25T23:00:00Z')), '2026-10-26')
   assert.deepEqual(analyticsPeriod(7, '2027-01-01'), { startDate: '2026-12-25', endDate: '2026-12-31' })
 })
+test('standard calendar periods resolve month/year boundaries and leap years', () => {
+  for (const [range, day, startDate, endDate] of [
+    [30, '2026-10-26', '2026-09-26', '2026-10-25'],
+    ['yesterday', '2026-10-26', '2026-10-25', '2026-10-25'],
+    ['month', '2026-10-26', '2026-10-01', '2026-10-25'],
+    ['lastMonth', '2026-01-01', '2025-12-01', '2025-12-31'],
+    ['lastMonth', '2024-03-01', '2024-02-01', '2024-02-29'],
+    ['year', '2026-10-26', '2026-01-01', '2026-10-25'],
+    ['lastYear', '2025-01-01', '2024-01-01', '2024-12-31'],
+  ]) assert.deepEqual(analyticsPeriod(range, day), { startDate, endDate })
+  assert.equal(analyticsPeriod('month', '2026-11-01'), null)
+  assert.equal(analyticsPeriod('year', '2027-01-01'), null)
+})
+test('custom periods reject malformed, impossible, reversed, future and oversized dates before Google/cache', async () => {
+  const { load, calls } = fixture()
+  for (const range of [
+    { startDate: '2026-02-30', endDate: '2026-03-02' },
+    { startDate: '2026-10-25', endDate: '2026-10-24' },
+    { startDate: '2026-10-26', endDate: '2026-10-26' },
+    { startDate: '2024-01-01', endDate: '2025-01-01' },
+    { startDate: '2004-12-31', endDate: '2005-01-01' },
+    { startDate: '2026-1-01', endDate: '2026-10-25' },
+    { startDate: 7, endDate: '2026-10-25' }, [], { startDate: '2026-01-01' },
+  ]) assert.equal((await load(range)).status, 'error')
+  assert.equal(calls.google, 0); assert.equal(calls.cache, 0)
+})
+test('custom ranges fetch exact inclusive dates and share daily cache with identical presets', async () => {
+  const { load, calls } = fixture()
+  const range = { startDate: '2026-10-19', endDate: '2026-10-25' }
+  const custom = await load(range)
+  assert.equal(custom.status, 'ready')
+  assert.deepEqual(calls.request.data.requests[0].dateRanges, [range])
+  assert.equal(custom.report.days.length, 7)
+  assert.equal(custom.report.startDate, range.startDate); assert.equal(custom.report.endDate, range.endDate)
+  await load(7)
+  assert.equal(calls.google, 1)
+  assert.equal(calls.auth, 2)
+  assert.equal((await load({ startDate: '2024-01-01', endDate: '2024-12-31' })).report.days.length, 366)
+  assert.equal(calls.request.data.requests[1].limit, 366)
+})
 test('missing report responses fail closed rather than showing false zeros', async () => {
   assert.equal((await fixture({ reports: [] }).load(28)).status, 'error')
 })
@@ -133,23 +173,33 @@ test('analytics panel renders actual aggregates and updates the selected period'
     const container = document.getElementById('root')
     mounted = createRoot(container)
     await act(async () => mounted.render(React.createElement(mod.exports.AnalyticsPanel, { administrator: true })))
-    assert.deepEqual(ranges, [28])
+    assert.deepEqual(ranges, [30])
     assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 4)
     assert.match(container.textContent, /Aktivní uživatelé5/)
     assert.match(container.textContent, /62,5 %/)
     assert.match(container.textContent, /Google část dat/)
-    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 28)
+    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 30)
     const select = container.querySelector('select')
+    assert.deepEqual([...select.options].map(option => option.textContent), ['Včera', 'Posledních 7 dní', 'Posledních 30 dní', 'Posledních 90 dní', 'Tento měsíc', 'Minulý měsíc', 'Tento rok', 'Minulý rok', 'Vlastní období'])
+    await act(async () => { select.value = 'custom'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+    assert.equal(container.querySelectorAll('input[type="date"]').length, 2)
+    assert.deepEqual(ranges, [30], 'opening the picker does not request unconfirmed dates')
+    await act(async () => { select.value = '30'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+    assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 4, 'returning to the active preset must not get stuck loading')
     await act(async () => { select.value = '7'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
-    assert.deepEqual(ranges, [28, 7])
+    assert.deepEqual(ranges, [30, 7])
     assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 7)
     await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
-    assert.deepEqual(ranges, [28, 7], 'focusing again during the same day must not reload Google data')
+    assert.deepEqual(ranges, [30, 7], 'focusing again during the same day must not reload Google data')
     uiDay = '2026-10-27'
     await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
-    assert.deepEqual(ranges, [28, 7, 7], 'returning after Czech midnight must load the new daily snapshot')
+    assert.deepEqual(ranges, [30, 7, 7], 'returning after Czech midnight must load the new daily snapshot')
     await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
-    assert.deepEqual(ranges, [28, 7, 7])
+    assert.deepEqual(ranges, [30, 7, 7])
+    await act(async () => { select.value = 'custom'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
+    await act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
+    assert.deepEqual(ranges.at(-1), { startDate: '2026-09-26', endDate: '2026-10-25' })
+    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 30)
     await act(async () => mounted.render(React.createElement(mod.exports.AnalyticsPanel, { administrator: false })))
     assert.match(container.textContent, /pouze administrátor/)
     assert.equal(container.querySelector('.admin-analytics-metrics'), null)

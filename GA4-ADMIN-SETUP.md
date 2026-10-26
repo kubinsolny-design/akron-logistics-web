@@ -15,7 +15,7 @@
    - `GA4_PROPERTY_ID` = `559040702` (Config).
    - `GA4_SERVICE_ACCOUNT_JSON` = **celý obsah staženého JSON**, nikoli cesta k souboru (Secret / Sensitive).
 3. Znovu nasadit aktuální `main`. Samotné uložení proměnných nezmění již běžící deployment.
-4. Přihlásit se administrátorským účtem na `https://akronlogistics.cz/admin` → **Analytika**. Vyzkoušet 7/28/90 dní a porovnat stejná data v GA4. Bez klíče se zobrazuje pravdivé upozornění, nikoli falešné nuly.
+4. Přihlásit se administrátorským účtem na `https://akronlogistics.cz/admin` → **Analytika**. Vyzkoušet běžná i vlastní období a porovnat stejná data v GA4. Bez klíče se zobrazuje pravdivé upozornění, nikoli falešné nuly.
 5. Stažený klíč uložit pouze do schváleného správce tajemství; odstranit nezabezpečené pracovní kopie. Při úniku klíč ihned zrušit v Google Cloud, vytvořit nový, aktualizovat Secret a redeployovat. Starý klíč odstranit po ověření nového.
 
 ## Oprávnění a provoz
@@ -24,8 +24,8 @@
 - Servisní účet má mít v této jediné GA4 službě roli **Viewer / Čtenář**, bez přístupu k nákladovým a příjmovým metrikám. Není potřeba role Editor/Owner v Google Cloud, doménové delegování ani přístup do ostatních GA4 služeb.
 - Pro čtení statistik není potřeba Measurement Protocol secret ani změna sběru cookies. Veřejné měření zůstává závislé na souhlasu a pouze na ostré doméně.
 - Server znovu ověřuje aktivní administrátorskou roli před každým načtením i před použitím cache. Editoři, návštěvníci a odvolané účty statistiky nezískají.
-- Přehled používá oficiální `google-auth-library`, scope `analytics.readonly`, pevný endpoint Google a čtyři agregované reporty v jednom batch požadavku. Každé období (7/28/90 dní) se načte při prvním otevření v daném českém kalendářním dni, pak se používá denní cache. Není potřeba cron, další secret ani migrace. Otevřený panel rozpozná nový den a při návratu na kartu načte denní přehled; během dne neprovádí API polling. Retence cache je 48 hodin kvůli změně letního času; denní obnovu určuje datum v klíči. Nevrací tokeny, klíče ani surové odpovědi Google do prohlížeče/logů.
-- Délka období je omezena na 7/28/90 dokončených dní. Datum se řídí časovým pásmem GA4 služby. Zahrnuje jen veřejné stránky na ostré doméně, nikoli admin, URL parametry, identifikátory návštěvníků či obsah poptávek.
+- Přehled používá oficiální `google-auth-library`, scope `analytics.readonly`, pevný endpoint Google a čtyři agregované reporty v jednom batch požadavku. Každý konkrétní rozsah se načte při prvním otevření v daném českém kalendářním dni, pak se používá denní cache (stejná data sdílí vlastní i přednastavené období). Není potřeba cron, další secret ani migrace. Otevřený panel rozpozná nový den a při návratu na kartu načte denní přehled; během dne neprovádí API polling. Retence cache je 48 hodin kvůli změně letního času; denní obnovu určuje datum v klíči. Nevrací tokeny, klíče ani surové odpovědi Google do prohlížeče/logů.
+- Výchozí období je posledních 30 dní. Výběr: včera, posledních 7/30/90 dní, tento/minulý měsíc, tento/minulý rok, vlastní datum od–do. Vlastní rozsah se odešle až potvrzením tlačítka. Nejvýše 366 dokončených dní, nejpozději do včerejška, bez neplatných či obrácených dat; server ověřuje totéž nezávisle na formuláři. Tento měsíc/rok je první den nedostupný, dokud nemá dokončený den. Hranice kalendáře se řídí českým časem; skutečné časové pásmo reportu z GA4 se zobrazuje v UI. Zahrnuje jen veřejné stránky na ostré doméně, nikoli admin, URL parametry, identifikátory návštěvníků či obsah poptávek.
 - Google může finální data doplňovat 24–48 hodin. U nízkých počtů se může uplatnit práh ochrany soukromí; UI jej přiznává.
 - Preview a starý admin demo projekt produkční klíč nedostávají. Pro případné preview testování použít samostatnou testovací GA4 službu a samostatný účet.
 
