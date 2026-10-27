@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig } from './config'
 import { currentMember } from './server'
 import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
+import { publicContentTag, publicContentLifetime } from './content-cache'
 
 export const contentEnabled = cache(async () => {
   // Publishing is enabled only after the existing database handover marker.
@@ -19,12 +21,23 @@ function publicClient() {
   })
 }
 
+const publishedDocument = unstable_cache(async (kind: 'page' | 'settings', slug: string) => {
+  // Anonymous client only. Request cookies and the draft flag never enter this cache.
+  let query = publicClient().from('cms_published').select('data').eq('kind', kind)
+  query = kind === 'settings' ? query.eq('id', 'site-settings') : query.eq('data->slug->>current', slug)
+  const { data, error } = await query.maybeSingle()
+  // Throw inside the cached function: an outage must not cache fallback content.
+  if (error) throw new Error('Published content unavailable')
+  return data?.data || null
+}, ['akron-published-document-v1'], { tags: [publicContentTag], revalidate: publicContentLifetime })
+
 export async function readDocument<T>(kind: 'page' | 'settings', slug?: string, draft = false): Promise<T | null> {
   try {
-    const member = draft ? await currentMember() : null
-    if (draft && !member) return null
-    const client = member?.client || publicClient()
-    let query = client.from(draft ? 'cms_drafts' : 'cms_published').select('data').eq('kind', kind)
+    if (!draft) return await publishedDocument(kind, slug || '') as T | null
+    // Fresh membership and uncached caller-bound database access for every preview.
+    const member = await currentMember()
+    if (!member) return null
+    let query = member.client.from('cms_drafts').select('data').eq('kind', kind)
     query = kind === 'settings' ? query.eq('id', 'site-settings') : query.eq('data->slug->>current', slug || '')
     const { data, error } = await query.maybeSingle()
     if (error) throw error
@@ -35,8 +48,13 @@ export async function readDocument<T>(kind: 'page' | 'settings', slug?: string, 
   }
 }
 
-export async function publishedSlugs(): Promise<string[]> {
+const readPublishedSlugs = unstable_cache(async (): Promise<string[]> => {
   const { data, error } = await publicClient().from('cms_published').select('data').eq('kind', 'page')
-  if (error) return []
+  if (error) throw new Error('Published slugs unavailable')
   return (data || []).map(item => item.data?.slug?.current).filter((slug): slug is string => typeof slug === 'string')
+}, ['akron-published-slugs-v1'], { tags: [publicContentTag], revalidate: publicContentLifetime })
+
+export async function publishedSlugs(): Promise<string[]> {
+  try { return await readPublishedSlugs() }
+  catch { return [] }
 }

@@ -43,9 +43,11 @@ export async function Footer() {
         <strong>{company.contactName}</strong>
         <a href={company.phoneHref}>{company.phone}</a>
         <a href={`mailto:${company.email}`}>{company.email}</a>
-        <Link className="footer-action" href={safeHref(company.footerAction?.href)}>{company.footerAction?.label}</Link>
       </div>
-      <div className="footer-links">{company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{publicNavigationLabel(link.label || '', link.href || '')}</Link>)}</div>
+      <nav className="footer-links" aria-label="Navigace v patičce">
+        {company.navigation.map((link, i) => <Link key={link._key || i} href={safeHref(link.href)}>{publicNavigationLabel(link.label || '', link.href || '')}</Link>)}
+        <Link href={safeHref(company.footerAction?.href)}>{company.footerAction?.label}</Link>
+      </nav>
     </div>
     <div className="shell footer-bottom"><span>© {new Date().getFullYear()} {company.name}</span><nav className="footer-legal" aria-label="Právní informace"><Link href="/ochrana-osobnich-udaju">{text.privacyLabel}</Link><Link href="/cookies">{text.cookiesLabel}</Link><CookieSettingsButton label={text.cookieSettings} /></nav></div>
     <div className="shell footer-credit-row"><p className="footer-credit">{text.footerCreditPrefix} <a href={safeHref(text.footerCreditHref)} target="_blank" rel="noopener noreferrer">{text.footerCreditLabel}</a></p></div>

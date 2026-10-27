@@ -15,7 +15,8 @@ function fixture(role, changed = false) {
       rpc: async (name, args) => { calls.push([name, args]); return { error: changed ? { message: 'Settings changed' } : null } },
     } } : null }
     if (name === '../inquiry-config') return config
-    if (name === 'next/cache') return { revalidatePath: () => calls.push('revalidate') }
+    if (name === '../../supabase/content-cache') return { publicContactTag: 'akron-public-contact-v1' }
+    if (name === 'next/cache') return { updateTag: tag => calls.push(['invalidate', tag]), revalidatePath: () => calls.push('revalidate') }
     throw new Error(name)
   } })
   const form = new FormData()
@@ -35,7 +36,8 @@ test('admin saves addresses immediately through the versioned authenticated RPC'
   assert.equal(f.calls[1][0], 'cms_update_inquiry_settings')
   assert.equal(f.calls[1][1].delivery_email, 'dispatch@example.com')
   assert.equal(f.calls[1][1].expected_revision, 2)
-  assert.equal(f.calls[2], 'revalidate')
+  assert.deepEqual(f.calls[2], ['invalidate', 'akron-public-contact-v1'])
+  assert.equal(f.calls[3], 'revalidate')
 })
 test('invalid recipient and stale revisions fail without claiming success', async () => {
   const f = fixture('admin'); f.form.set('recipientEmail', 'one@example.com,two@example.com')

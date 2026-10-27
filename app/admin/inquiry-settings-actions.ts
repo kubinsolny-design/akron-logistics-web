@@ -3,7 +3,8 @@
 import { currentMember } from '../../supabase/server'
 import { validContactEmail } from '../inquiry-config'
 import type { InquiryState } from '../inquiry-types'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
+import { publicContactTag } from '../../supabase/content-cache'
 
 export async function loadInquirySettings() {
   const member = await currentMember()
@@ -24,6 +25,7 @@ export async function saveInquirySettings(_previous: InquiryState, data: FormDat
     if (!validContactEmail(contact) || !validContactEmail(recipient) || !Number.isSafeInteger(revision) || revision < 1) return { status: 'error', message: 'Zadejte dvě platné e-mailové adresy a nejdříve načtěte aktuální nastavení.' }
     const { error } = await member.client.rpc('cms_update_inquiry_settings', { contact_email: contact, delivery_email: recipient, expected_revision: revision })
     if (error) return { status: 'error', message: error.message === 'Settings changed' ? 'Nastavení mezitím změnil jiný administrátor. Načtěte jej znovu.' : 'E-mailové adresy se nepodařilo uložit.' }
+    updateTag(publicContactTag)
     revalidatePath('/', 'layout')
     return { status: 'success', message: 'E-mailové adresy jsou uložené a platí ihned. Není potřeba publikovat koncept.' }
   } catch { return { status: 'error', message: 'Uložení se nezdařilo. Obnovte přihlášení a zkuste to znovu.' } }

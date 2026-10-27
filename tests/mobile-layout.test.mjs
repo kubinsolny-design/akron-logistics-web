@@ -30,6 +30,13 @@ test('footer credit is last, separated from text-only legal links',()=>{
  assert.match(css,/\.footer-legal a, \.footer-legal button \{[^}]*border: 0;[^}]*background: none;/)
  assert.match(css,/\.footer-bottom \.footer-legal \{ display: flex; flex-wrap: wrap;/)
 })
+test('footer inquiry is an editable plain link in the right-hand navigation, not a contact button',()=>{
+ const ui=read('ui.tsx')
+ assert.doesNotMatch(ui,/className="footer-action"/)
+ assert.match(ui,/<nav className="footer-links" aria-label="Navigace v patičce">[\s\S]*?company.navigation.map[\s\S]*?<Link href=\{safeHref\(company.footerAction\?\.href\)\}>\{company.footerAction\?\.label\}<\/Link>[\s\S]*?<\/nav>/)
+ const contact=ui.slice(ui.indexOf('<div className="footer-contact">'),ui.indexOf('<nav className="footer-links"'))
+ assert.doesNotMatch(contact,/footerAction/)
+})
 test('contact retains full accessible email with a shorter mobile label; native date stays contained',()=>{
  assert.match(read('cms-page.tsx'),/aria-label=\{`E-mail: \$\{settings.email\}`\}/)
  const css=read('final-polish.css')

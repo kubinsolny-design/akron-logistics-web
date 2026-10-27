@@ -14,6 +14,7 @@ import { DocumentEditor } from './document-editor'
 import { supportsDocumentEditor } from './rich-text'
 import { isLegalPage, pageSlug, sortContentPages } from './content-order'
 import { signOut } from './actions'
+import { publishDocument } from './publish-actions'
 import { browserClient } from '../../supabase/browser'
 import type { MemberRole } from '../../supabase/server'
 
@@ -36,7 +37,7 @@ const labels: Record<string, string> = {
   backgroundColor: 'Barva pozadí', textColor: 'Barva textu', font: 'Písmo', navigation: 'Navigace',
   footerText: 'Text v patičce', inquiryEmail: 'E-mail příjemce poptávek (neveřejný)',
   formHeading: 'Nadpis formuláře', formDescription: 'Popis formuláře', submitLabel: 'Odesílací tlačítko',
-  successMessage: 'Potvrzení odeslání', headerAction: 'Tlačítko v hlavičce', footerAction: 'Tlačítko v patičce',
+  successMessage: 'Potvrzení odeslání', headerAction: 'Tlačítko v hlavičce', footerAction: 'Odkaz na poptávku v patičce',
   footerContactLabel: 'Nadpis kontaktu v patičce', footerTagline: 'Podtitulek v patičce', style: 'Styl odstavce',
   formText:'Popisky a nápověda formuláře', siteText:'Patička a animace', cookieText:'Texty oznámení o cookies',
   notice:'Text oznámení', more:'Odkaz na podrobnosti', settings:'Nastavení', accept:'Potvrzovací tlačítko', dialogTitle:'Nadpis dialogu', dialogIntro:'Úvod dialogu', essential:'Název nezbytných technologií', always:'Stav nezbytných technologií', essentialDescription:'Popis nezbytných technologií', optional:'Název volitelných technologií', unused:'Stav volitelných technologií', optionalDescription:'Popis volitelných technologií', details:'Text odkazu na cookies', privacy:'Text odkazu na soukromí', close:'Tlačítko zavření', save:'Tlačítko uložení',
@@ -252,8 +253,8 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
         setItems(previous => previous.map(item => item.id === current.id ? { ...item, data, revision } : item)); setDirty(false)
       }
       if (publish) {
-        const { error } = await client.rpc('cms_publish', { document_id: current.id, expected_revision: revision })
-        if (error) { notify('Zveřejnění se nezdařilo. Obnovte stránku a zkontrolujte aktuální verzi.', 'error'); return }
+        const published = await publishDocument(current.id, revision)
+        if (!published.ok) { notify(published.message, 'error'); return }
       }
       notify(publish ? 'Změny jsou zveřejněné na webu.' : 'Koncept je uložený. Veřejný web se zatím nezměnil.', 'success')
     })

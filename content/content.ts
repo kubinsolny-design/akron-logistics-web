@@ -27,10 +27,12 @@ export const getPage = cache(async (slug: string) =>
   readDocument<CmsPage>('page', slug, (await draftMode()).isEnabled))
 export const getPublishedSlugs = publishedSlugs
 export const getSettings = cache(async (): Promise<Settings> => {
-  const stored = await readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled)
+  const [stored, email] = await Promise.all([
+    readDocument<Partial<Settings>>('settings', undefined, (await draftMode()).isEnabled), publicContactEmail(),
+  ])
   const settings = { ...defaultSettings, ...Object.fromEntries(Object.entries(stored || {}).filter(([, value]) => value != null)) } as Settings
   // The shared live contact setting applies to all published pages.
-  settings.email = await publicContactEmail()
+  settings.email = email
   delete settings.inquiryEmail
   settings.phoneHref = `tel:${settings.phone.replace(/[^+\d]/g, '')}`
   return settings

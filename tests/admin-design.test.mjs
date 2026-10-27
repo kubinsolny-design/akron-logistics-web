@@ -29,6 +29,7 @@ function load(file) {
     if (request === './manage-actions') return {}
     if (request === '../../supabase/content') return { contentEnabled: async () => true }
     if (request === './actions') return { signOut: () => {} }
+    if (request === './publish-actions') return { publishDocument: async () => ({ ok: true, message: 'Zveřejněno' }) }
     if (request === './auth-shell') return { AuthShell: () => null }
     if (request === './login-form') return { LoginForm: () => null }
     if (request === '../../supabase/browser') return { browserClient: () => { throw new Error('Network is disabled in design fixtures') } }
