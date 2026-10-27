@@ -435,7 +435,9 @@
 .akron-admin .admin-analytics { display: grid; gap: 24px; min-width: 0; }
 .akron-admin .admin-analytics > .admin-section-heading { margin: 0; align-items: start; }
 .akron-admin .admin-analytics .admin-section-heading > label { width: 210px; max-width: 100%; margin: 0; }
-.akron-admin .admin-overview { display: grid; gap: 24px; min-width: 0; }
+.akron-admin .admin-overview { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; min-width: 0; }
+.akron-admin .admin-overview > * { min-width: 0; }
+.akron-admin .admin-table-wrap { width: 100%; min-width: 0; overflow-x: auto; }
 .akron-admin .admin-overview-welcome { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 28px; background: #fff; border: 1px solid #dce2e9; border-left: 4px solid #ff5a00; border-radius: 16px; }
 .akron-admin .admin-overview-welcome h3 { margin: 0 0 10px; font-size: clamp(20px, 2vw, 28px); }
 .akron-admin .admin-overview-welcome p:last-child { margin-bottom: 0; color: #687686; }
@@ -451,7 +453,9 @@
 .akron-admin .admin-recent-name { display: block; color: #687686; margin-top: 5px; }
 .akron-admin .admin-overview-alert, .akron-admin .admin-retry-email { padding: 20px; border: 1px solid #f2b58d; border-radius: 14px; background: #fff5ed; color: #7b370d; }
 .akron-admin .admin-overview-alert p, .akron-admin .admin-retry-email p { font-size: 13px; line-height: 1.8; }
-.akron-admin .admin-overview table { min-width: 520px; }
+.akron-admin .admin-overview table { width: 100%; min-width: 520px; border-collapse: collapse; }
+.akron-admin .admin-overview th, .akron-admin .admin-overview td { padding: 12px 8px; text-align: left; vertical-align: top; }
+.akron-admin .admin-overview th { font-size: 11px; color: #8190a0; border-bottom: 1px solid #edf0f4; }
 .akron-admin .admin-analytics-metrics small { font-size: 11px; line-height: 1.7; color: #687686; }
 .akron-admin .admin-analytics-metrics { grid-template-columns: repeat(3, minmax(0,1fr)); }
 .akron-admin .analytics-trend .admin-section-heading { margin-bottom: 24px; }
