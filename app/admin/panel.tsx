@@ -6,6 +6,7 @@ import { imageUrl } from '../../content/client'
 import { AdminRecords } from './records'
 import { InquirySettingsPanel } from './inquiry-settings'
 import { AnalyticsPanel } from './analytics-panel'
+import { OverviewPanel } from './overview-panel'
 import { useConfirmation } from './confirmation'
 import { publicHref } from '../public-links'
 import { AdminIcon } from './icons'
@@ -301,7 +302,7 @@ export function AdminPanel({ documents, role, userId, email = '', publishingEnab
     <div className="admin-main">
       <div className="admin-view-heading"><div><p className="admin-kicker">AKRON / {tab === 'overview' ? 'PŘEHLED' : 'SPRÁVA WEBU'}</p><h2>{title}</h2><p>{descriptions[tab]}</p></div><span className="admin-badge">{readOnly ? 'Pouze náhled' : role === 'admin' ? 'Administrátor' : 'Uživatel'}</span></div>
       {(busy || message) && <p role={!busy && messageTone === 'error' ? 'alert' : 'status'} className={busy ? 'admin-status' : `admin-status admin-status-${messageTone}`}>{busy ? 'Pracuji…' : message}</p>}
-      {tab === 'overview' && <section className="admin-overview-placeholder" aria-label="Úvodní přehled"><span className="admin-placeholder-icon"><AdminIcon name="home" /></span><h3>Vítejte ve svém pracovním prostoru</h3><p>Pro správu webu vyberte položku v menu vlevo.</p><small>Obsah tohoto přehledu doplníme později.</small></section>}
+      {tab === 'overview' && <OverviewPanel role={role} pages={allPages.length} onNavigate={next => { void showTab(next) }} />}
       {tab === 'files' && <AdminFiles documents={items} readOnly={readOnly} admin={role==='admin'} />}
       {tab === 'analytics' && <AnalyticsPanel administrator={role === 'admin'} />}
       {tab === 'settings' && role === 'admin' && <InquirySettingsPanel />}

@@ -1,6 +1,7 @@
 export type InquiryState = {
   status: 'idle' | 'success' | 'error'
   message: string
+  conversionId?: string
 }
 
 export const initialInquiryState: InquiryState = {

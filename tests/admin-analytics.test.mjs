@@ -13,7 +13,7 @@ new Function('exports', ts.transpileModule(fs.readFileSync(new URL('../app/admin
 const { analyticsDay, analyticsPeriod } = calendarModule.exports
 
 function fixture({ role = 'admin', configured = true, fail = false, reports, now = '2026-10-26T12:00:00Z' } = {}) {
-  const calls = { auth: 0, google: 0, cache: 0, options: null, identity: null }
+  const calls = { auth: 0, google: 0, cache: 0, options: null, identity: null, requests: [] }
   const stored = new Map()
   let instant = now
   const clock = class extends Date { constructor(...args) { super(...(args.length ? args : [instant])) } }
@@ -26,14 +26,21 @@ function fixture({ role = 'admin', configured = true, fail = false, reports, now
     if (request === 'google-auth-library') return { JWT: class {
       constructor(options) { calls.options = options }
       async request(request) {
-        calls.google++; calls.request = request
+        calls.google++; calls.request ||= request; calls.requests.push(request)
         if (fail) throw new Error('Sensitive Bearer token MUST NOT escape')
-        return { data: { reports: reports ?? [
+        const all = reports ?? [
           { rows: [{ metricValues: [{ value: '5' }, { value: '8' }, { value: '12' }, { value: '.625' }] }], metadata: { timeZone: 'Europe/Prague', subjectToThresholding: true } },
           { rows: [] },
           { rows: [{ dimensionValues: [{ value: '/kontakt' }], metricValues: [{ value: '7' }] }, { dimensionValues: [{ value: '/admin/secret' }], metricValues: [{ value: '9' }] }] },
           { rows: [{ dimensionValues: [{ value: 'Organic Search' }], metricValues: [{ value: '3' }] }] },
-        ] } }
+          { rows: [{ dimensionValues: [{ value: 'google / organic' }], metricValues: [{ value: '3' }, { value: '2' }] }] },
+          { rows: [{ dimensionValues: [{ value: 'mobile' }], metricValues: [{ value: '5' }, { value: '4' }] }] },
+          { rows: [{ dimensionValues: [{ value: 'Czechia' }], metricValues: [{ value: '8' }, { value: '5' }] }] },
+          { rows: [{ dimensionValues: [{ value: 'generate_lead' }], metricValues: [{ value: '1' }] }] },
+          { rows: [{ metricValues: [{ value: '2' }, { value: '4' }, { value: '6' }, { value: '.5' }] }] },
+        ]
+        const start = request.data.requests[0].dimensions?.[0]?.name === 'deviceCategory' ? 5 : 0
+        return { data: { reports: all.slice(start,start+request.data.requests.length) } }
       }
     } }
     if (request === 'node:crypto') return Module.createRequire(import.meta.url)(request)
@@ -67,9 +74,10 @@ test('analytics uses readonly SDK auth, a fixed batch endpoint, safe filters and
   assert.equal(result.status, 'ready')
   assert.deepEqual(calls.options.scopes, ['https://www.googleapis.com/auth/analytics.readonly'])
   assert.equal(calls.options.token_uri, undefined)
-  assert.equal(calls.google, 1)
+  assert.equal(calls.google, 2)
   assert.equal(calls.request.url, 'https://analyticsdata.googleapis.com/v1beta/properties/559040702:batchRunReports')
-  assert.equal(calls.request.data.requests.length, 4)
+  assert.equal(calls.request.data.requests.length, 5)
+  assert.equal(calls.requests[1].data.requests.length, 4)
   assert.deepEqual(calls.request.data.requests[0].dateRanges, [{ startDate: '2026-10-19', endDate: '2026-10-25' }])
   assert.deepEqual(calls.request.data.requests[0].dimensionFilter.andGroup.expressions[0].filter.inListFilter.values, ['akronlogistics.cz', 'www.akronlogistics.cz'])
   assert.equal(calls.request.timeout, 15000); assert.equal(calls.request.retry, false)
@@ -79,7 +87,10 @@ test('analytics uses readonly SDK auth, a fixed batch endpoint, safe filters and
   assert.equal(result.report.users, 5); assert.equal(result.report.sessions, 8); assert.equal(result.report.views, 12)
   assert.equal(result.report.engagementRate, .625); assert.equal(result.report.days.length, 7)
   assert.equal(result.report.thresholded, true)
-  assert.deepEqual(result.report.pages, [{ label: '/kontakt', count: 7 }])
+  assert.deepEqual(result.report.pages, [{ label: '/kontakt', count: 7, users: 0 }])
+  assert.equal(result.report.devices[0].label, 'mobile')
+  assert.equal(result.report.events[0].count, 1)
+  assert.equal(result.report.previous.sessions, 4)
   assert.doesNotMatch(JSON.stringify(result), /PRIVATE KEY|reader@|token|\/admin\/secret/)
 })
 test('analytics failures never disclose Google errors or credentials', async () => {
@@ -92,17 +103,17 @@ test('every analytics load rechecks membership, even if aggregate caching is ena
   const { load, calls } = fixture()
   await load(7); await load(7)
   assert.equal(calls.auth, 2)
-  assert.equal(calls.google, 1)
+  assert.equal(calls.google, 2)
 })
 test('daily snapshots refresh at Czech midnight, not every visit or every five minutes', async () => {
   const { load, calls, setNow } = fixture({ now: '2026-10-26T00:30:00Z' })
   const first = await load(28)
   setNow('2026-10-26T22:59:59Z')
   assert.deepEqual(await load(28), first)
-  assert.equal(calls.google, 1)
+  assert.equal(calls.google, 2)
   setNow('2026-10-26T23:00:01Z')
   const next = await load(28)
-  assert.equal(calls.google, 2)
+  assert.equal(calls.google, 4)
   assert.equal(next.report.endDate, '2026-10-26')
   assert.equal(calls.identity.key.at(-1), '2026-10-27')
 })
@@ -147,7 +158,7 @@ test('custom ranges fetch exact inclusive dates and share daily cache with ident
   assert.equal(custom.report.days.length, 7)
   assert.equal(custom.report.startDate, range.startDate); assert.equal(custom.report.endDate, range.endDate)
   await load(7)
-  assert.equal(calls.google, 1)
+  assert.equal(calls.google, 2)
   assert.equal(calls.auth, 2)
   assert.equal((await load({ startDate: '2024-01-01', endDate: '2024-12-31' })).report.days.length, 366)
   assert.equal(calls.request.data.requests[1].limit, 366)
@@ -164,7 +175,10 @@ test('analytics panel renders actual aggregates and updates the selected period'
   const mod = new Module(import.meta.filename)
   const ranges = []
   let uiDay = '2026-10-26'
-  mod.require = request => request === './analytics-calendar' ? { ...calendarModule.exports, analyticsDay: () => uiDay } : request === './analytics-actions' ? { loadAnalytics: async range => { ranges.push(range); return fixture().load(range) } } : require(request)
+  const charts = new Module(import.meta.filename)
+  charts.require = require
+  charts._compile(ts.transpileModule(fs.readFileSync(new URL('../app/admin/analytics-charts.tsx', import.meta.url), 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText,import.meta.filename)
+  mod.require = request => request === './analytics-charts' ? charts.exports : request === './analytics-calendar' ? { ...calendarModule.exports, analyticsDay: () => uiDay } : request === './analytics-actions' ? { loadAnalytics: async range => { ranges.push(range); return fixture().load(range) } } : require(request)
   const code = ts.transpileModule(fs.readFileSync(new URL('../app/admin/analytics-panel.tsx', import.meta.url), 'utf8'), { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText
   mod._compile(code, import.meta.filename)
   let mounted
@@ -174,21 +188,23 @@ test('analytics panel renders actual aggregates and updates the selected period'
     mounted = createRoot(container)
     await act(async () => mounted.render(React.createElement(mod.exports.AnalyticsPanel, { administrator: true })))
     assert.deepEqual(ranges, [30])
-    assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 4)
+    assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 6)
     assert.match(container.textContent, /Aktivní uživatelé5/)
     assert.match(container.textContent, /62,5 %/)
     assert.match(container.textContent, /Google část dat/)
-    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 30)
+    assert.equal(container.querySelectorAll('.analytics-trend tbody tr').length, 30)
+    assert.equal(container.querySelectorAll('.analytics-plot svg').length, 1)
+    assert.match(container.textContent,/google \/ organic|Přijaté poptávky|Mobil/)
     const select = container.querySelector('select')
     assert.deepEqual([...select.options].map(option => option.textContent), ['Včera', 'Posledních 7 dní', 'Posledních 30 dní', 'Posledních 90 dní', 'Tento měsíc', 'Minulý měsíc', 'Tento rok', 'Minulý rok', 'Vlastní období'])
     await act(async () => { select.value = 'custom'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
     assert.equal(container.querySelectorAll('input[type="date"]').length, 2)
     assert.deepEqual(ranges, [30], 'opening the picker does not request unconfirmed dates')
     await act(async () => { select.value = '30'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
-    assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 4, 'returning to the active preset must not get stuck loading')
+    assert.equal(container.querySelectorAll('.admin-analytics-metrics article').length, 6, 'returning to the active preset must not get stuck loading')
     await act(async () => { select.value = '7'; select.dispatchEvent(new dom.window.Event('change', { bubbles: true })) })
     assert.deepEqual(ranges, [30, 7])
-    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 7)
+    assert.equal(container.querySelectorAll('.analytics-trend tbody tr').length, 7)
     await act(async () => window.dispatchEvent(new dom.window.Event('focus')))
     assert.deepEqual(ranges, [30, 7], 'focusing again during the same day must not reload Google data')
     uiDay = '2026-10-27'
@@ -202,7 +218,7 @@ test('analytics panel renders actual aggregates and updates the selected period'
     container.querySelector('[name="endDate"]').value = '2026-10-20'
     await act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))
     assert.deepEqual(ranges.at(-1), { startDate: '2026-10-01', endDate: '2026-10-20' })
-    assert.equal(container.querySelectorAll('.admin-analytics-chart > div').length, 20)
+    assert.equal(container.querySelectorAll('.analytics-trend tbody tr').length, 20)
     const previousRequests = ranges.length
     container.querySelector('[name="startDate"]').value = '2026-10-21'
     await act(async () => container.querySelector('form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true })))

@@ -15,6 +15,12 @@ function fixture(options = {}) {
   const company = { email: 'info@akronlogistics.cz', phone: '+420 606 187 648', inquiryEmail: 'old-test@example.com' }
   const config = {}
   vm.runInNewContext(configCode, { exports: config, process: { env } })
+  const mail = {}
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../supabase/inquiry-email.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: mail, require: () => ({}), AbortSignal, setTimeout: callback => callback(), fetch: async (url, init) => {
+    assert.equal(url, 'https://api.resend.com/emails'); events.push('send'); requests.push({ ...JSON.parse(init.body), headers: init.headers })
+    if (options.transportError) throw new Error('fixture transport failure')
+    return { ok: !options.providerError, status: options.providerError ? 503 : 200 }
+  } })
   vm.runInNewContext(compiled, {
     exports, process: { env }, AbortSignal, FormData, Error, console: { error() {} },
     require: name => {
@@ -22,6 +28,7 @@ function fixture(options = {}) {
       if (name === './inquiry-config') return config
       if (name === './site') return { company }
       if (name === '../supabase/inquiry-settings') return { readInquirySettings: async () => { if (options.routingFailure) throw new Error('fixture-private-error'); return { recipientEmail: options.recipient || 'adam.bartusek@akronlogistics.cz', revision: 1 } } }
+      if (name === '../supabase/inquiry-email') return mail
       if (name === '../supabase/server') return { currentMember: async () => options.role ? { role: options.role, user: { id: 'fixture-admin' } } : null }
       if (name === './preparing') return { preparing: options.preparing || false }
       if (name === 'next/headers') return { draftMode: async () => ({ isEnabled: options.preview || false }) }

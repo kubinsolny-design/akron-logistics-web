@@ -30,6 +30,7 @@ function load(file) {
     if (request === '../../supabase/content') return { contentEnabled: async () => true }
     if (request === './actions') return { signOut: () => {} }
     if (request === './publish-actions') return { publishDocument: async () => ({ ok: true, message: 'Zveřejněno' }) }
+    if (request === './overview-actions') return { loadOverview: async () => ({ status: 'ready', fresh: 2, processing: 1, month: 3, failed: 0, stalled: 0, recent: [] }) }
     if (request === './auth-shell') return { AuthShell: () => null }
     if (request === './login-form') return { LoginForm: () => null }
     if (request === '../../supabase/browser') return { browserClient: () => { throw new Error('Network is disabled in design fixtures') } }
@@ -168,15 +169,37 @@ test('simplified legal pages retain the document editor and read-only restrictio
   }
 })
 
-test('overview is reserved for later and contains no content or settings cards', () => {
+test('overview offers useful shortcuts and does not invent counts while loading', () => {
   const html = render('admin')
-  assert.match(html, /Obsah tohoto přehledu doplníme později/)
-  assert.doesNotMatch(html, /admin-shortcuts|admin-overview-pages|admin-howto/)
+  assert.match(html, /Co dnes potřebuje vaši pozornost/)
+  assert.match(html, /admin-overview-shortcuts/)
+  assert.doesNotMatch(html, /Obsah tohoto přehledu doplníme později/)
   assert.match(html, /Soubory/)
   assert.match(html, /Analytika/)
   assert.match(html, /Aktivita/)
   assert.match(html, /Administrace/)
   assert.doesNotMatch(html, /Nové poptávky: \d/)
+})
+test('overview loads actual inquiry counts and its shortcut opens the inquiry workspace', async () => {
+  const dom = new JSDOM('<div id="root"></div>')
+  const originals = { document: globalThis.document, window: globalThis.window, IS_REACT_ACT_ENVIRONMENT: globalThis.IS_REACT_ACT_ENVIRONMENT }
+  Object.assign(globalThis, { document: dom.window.document, window: dom.window, IS_REACT_ACT_ENVIRONMENT: true })
+  let mounted
+  try {
+    const { createRoot } = await import('react-dom/client')
+    const container = document.getElementById('root'); mounted = createRoot(container)
+    await act(async () => mounted.render(React.createElement(AdminPanel, { documents: fixture, role: 'admin', userId: 'fixture' })))
+    const metrics = container.querySelector('.admin-overview-metrics')
+    assert.ok(metrics)
+    assert.equal(metrics.querySelector('strong').textContent, '2')
+    assert.match(container.textContent, /Zatím nepřišla žádná poptávka/)
+    assert.doesNotMatch(container.textContent, /Upozornění na e-mailové doručování/)
+    await act(async () => [...container.querySelectorAll('button')].find(button => button.textContent === 'Všechny poptávky').click())
+    assert.equal(container.querySelector('nav button[aria-pressed="true"]').textContent.trim(), 'Poptávky')
+  } finally {
+    if (mounted) await act(async () => mounted.unmount())
+    Object.assign(globalThis, originals); dom.window.close()
+  }
 })
 test('viewer has no inquiries, user management, audit, or publish actions', () => {
   const html = render('viewer')

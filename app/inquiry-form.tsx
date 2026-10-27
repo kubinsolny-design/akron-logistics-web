@@ -1,15 +1,23 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { sendInquiry } from './actions'
 import { initialInquiryState } from './inquiry-types'
 import type { Settings } from '../content/types'
 import { formTextDefaults } from './site-text'
+import { leadEvent } from './analytics-config'
 
 export function InquiryForm({ labels }: { labels?: Pick<Settings, 'formHeading' | 'formDescription' | 'submitLabel' | 'formText'> }) {
   const [state, formAction, isPending] = useActionState(sendInquiry, initialInquiryState)
   const text = {...formTextDefaults,...labels?.formText}
+  const measured = useRef('')
+  useEffect(() => {
+    if (state.status !== 'success' || !state.conversionId || measured.current === state.conversionId) return
+    measured.current = state.conversionId
+    // Local deduplication only; the identifier and form fields never go to Google.
+    window.dispatchEvent(new Event(leadEvent))
+  }, [state.status, state.conversionId])
 
   return (
     <form className="inquiry-form" action={formAction}>

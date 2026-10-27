@@ -57,6 +57,7 @@ test('a stale form or direct server action cannot write inquiries while preparin
     if (name === '../content/content') return { getSettings: forbidden }
     if (name === '../supabase/inquiries') return { storeInquiry: forbidden, markInquiryEmail: forbidden }
     if (name === 'next/headers') return { draftMode: forbidden }
+    if (name === '../supabase/inquiry-email') return {}
     throw new Error(`Unexpected import ${name}`)
   }
   actionModule._compile(ts.transpileModule(fs.readFileSync(actionFile, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, actionFile.pathname)

@@ -12,9 +12,16 @@ export type AnalyticsReport = {
   sessions: number
   views: number
   engagementRate: number
-  days: { date: string; views: number }[]
-  pages: { label: string; count: number }[]
-  sources: { label: string; count: number }[]
+  newUsers: number
+  averageDuration: number
+  previous: { users: number; sessions: number; views: number; engagementRate: number }
+  days: { date: string; views: number; sessions: number; users: number }[]
+  pages: { label: string; count: number; users: number }[]
+  sources: { label: string; count: number; users: number }[]
+  sourceMedium: { label: string; count: number; users: number }[]
+  devices: { label: string; count: number; users: number }[]
+  countries: { label: string; count: number; users: number }[]
+  events: { label: string; count: number }[]
 }
 export type AnalyticsResult = { status: 'ready'; report: AnalyticsReport } | {
   status: 'unconfigured' | 'error' | 'forbidden'

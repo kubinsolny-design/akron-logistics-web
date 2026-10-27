@@ -43,34 +43,47 @@ async function query(config: Config, period: AnalyticsDates): Promise<AnalyticsR
     ] } },
     keepEmptyRows: true,
   }
-  const { data } = await client.request<{ reports?: Report[] }>({
-    url: `https://analyticsdata.googleapis.com/v1beta/properties/${config.property}:batchRunReports`,
-    method: 'POST', timeout: 15000, retry: false,
-    data: { requests: [
-      { ...base, metrics: [{ name: 'activeUsers' }, { name: 'sessions' }, { name: 'screenPageViews' }, { name: 'engagementRate' }] },
-      { ...base, dimensions: [{ name: 'date' }], metrics: [{ name: 'screenPageViews' }], orderBys: [{ dimension: { dimensionName: 'date' } }], limit: 366 },
-      { ...base, dimensions: [{ name: 'pagePath' }], metrics: [{ name: 'screenPageViews' }], orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }], limit: 10 },
-      { ...base, dimensions: [{ name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'sessions' }], orderBys: [{ metric: { metricName: 'sessions' }, desc: true }], limit: 10 },
-    ] },
-  })
-  if (!Array.isArray(data.reports) || data.reports.length !== 4) throw new Error('Invalid Analytics response')
-  const [summary, daily, pages, sources] = data.reports
+  const metrics = ['activeUsers', 'sessions', 'screenPageViews', 'engagementRate', 'newUsers', 'averageSessionDuration'].map(name => ({ name }))
+  const grouped = (dimension: string, metric = 'sessions') => ({ ...base, dimensions: [{ name: dimension }], metrics: [{ name: metric }, { name: 'activeUsers' }], orderBys: [{ metric: { metricName: metric }, desc: true }], limit: 10 })
+  const previousEnd = new Date(`${period.startDate}T12:00:00Z`)
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1)
+  const previousStart = new Date(previousEnd); previousStart.setUTCDate(previousStart.getUTCDate() - length + 1)
+  const requests = [
+    { ...base, metrics },
+    { ...base, dimensions: [{ name: 'date' }], metrics: [{ name: 'screenPageViews' }, { name: 'sessions' }, { name: 'activeUsers' }], orderBys: [{ dimension: { dimensionName: 'date' } }], limit: 366 },
+    grouped('pagePath', 'screenPageViews'), grouped('sessionDefaultChannelGroup'), grouped('sessionSourceMedium'), grouped('deviceCategory'), grouped('country'),
+    { ...base, dimensions: [{ name: 'eventName' }], metrics: [{ name: 'eventCount' }], dimensionFilter: { andGroup: { expressions: [...base.dimensionFilter.andGroup.expressions, { filter: { fieldName: 'eventName', inListFilter: { values: ['generate_lead', 'contact_phone', 'contact_email'] } } }] } }, limit: 3 },
+    { ...base, dateRanges: [{ startDate: previousStart.toISOString().slice(0, 10), endDate: previousEnd.toISOString().slice(0, 10) }], metrics },
+  ]
+  // The API permits at most five reports per batch. No per-visitor identifiers.
+  const batches = await Promise.all([requests.slice(0, 5), requests.slice(5)].map(async batch => {
+    const { data } = await client.request<{ reports?: Report[] }>({ url: `https://analyticsdata.googleapis.com/v1beta/properties/${config.property}:batchRunReports`, method: 'POST', timeout: 15000, retry: false, data: { requests: batch } })
+    if (!Array.isArray(data.reports) || data.reports.length !== batch.length) throw new Error('Invalid Analytics response')
+    return data.reports
+  }))
+  const reports = batches.flat()
+  const [summary, daily, pages, sources, sourceMedium, devices, countries, events, previous] = reports
   const timeZone = summary.metadata?.timeZone || 'Europe/Prague'
   // Use the same explicit dates in API requests and UI, even across midnight.
   const start = new Date(`${period.startDate}T12:00:00Z`)
-  const dayViews = new Map((daily.rows || []).map(row => [dateLabel(row.dimensionValues?.[0]?.value || ''), number(row)]))
+  const dayValues = new Map((daily.rows || []).map(row => [dateLabel(row.dimensionValues?.[0]?.value || ''), row]))
   const days = Array.from({ length }, (_, i) => {
     const date = new Date(start)
     date.setUTCDate(date.getUTCDate() + i)
     const label = date.toISOString().slice(0, 10)
-    return { date: label, views: dayViews.get(label) || 0 }
+    return { date: label, views: number(dayValues.get(label)), sessions: number(dayValues.get(label), 1), users: number(dayValues.get(label), 2) }
   })
+  const rows = (report: Report) => (report.rows || []).slice(0, 10).map(row => ({ label: (row.dimensionValues?.[0]?.value || 'Neurčeno').slice(0, 100), count: number(row), users: number(row, 1) }))
   return {
     range: period, fetchedAt: new Date().toISOString(), startDate: days[0].date, endDate: days[days.length - 1].date, timeZone,
-    thresholded: data.reports.some(report => report.metadata?.subjectToThresholding === true),
+    thresholded: reports.some(report => report.metadata?.subjectToThresholding === true),
     users: number(summary.rows?.[0]), sessions: number(summary.rows?.[0], 1), views: number(summary.rows?.[0], 2), engagementRate: Math.min(1, number(summary.rows?.[0], 3)), days,
-    pages: (pages.rows || []).filter(row => publicPaths.includes(row.dimensionValues?.[0]?.value || '')).map(row => ({ label: row.dimensionValues![0].value!, count: number(row) })),
-    sources: (sources.rows || []).slice(0, 10).map(row => ({ label: (row.dimensionValues?.[0]?.value || 'Neurčeno').slice(0, 100), count: number(row) })),
+    newUsers: number(summary.rows?.[0], 4), averageDuration: number(summary.rows?.[0], 5),
+    previous: { users: number(previous.rows?.[0]), sessions: number(previous.rows?.[0], 1), views: number(previous.rows?.[0], 2), engagementRate: Math.min(1, number(previous.rows?.[0], 3)) },
+    pages: rows(pages).filter(row => publicPaths.includes(row.label)), sources: rows(sources),
+    sourceMedium: rows(sourceMedium).map(row => ({ ...row, label: /^[a-z0-9 .()_/-]{1,100}$/i.test(row.label) && !row.label.includes('://') ? row.label : 'Jiný zdroj' })),
+    devices: rows(devices), countries: rows(countries),
+    events: rows(events).filter(row => ['generate_lead', 'contact_phone', 'contact_email'].includes(row.label)).map(({ label, count }) => ({ label, count })),
   }
 }
 
@@ -90,7 +103,7 @@ export async function authorizedAnalytics(range: unknown): Promise<AnalyticsResu
     // First authorized opening in a new calendar day fetches a fresh snapshot.
     // A longer retention avoids a second refresh during a 25-hour DST day;
     // the DAY in the key, not a rolling TTL, controls the daily refresh.
-    const report = await unstable_cache(() => query(config, period), ['akron-ga4-daily-v3', config.property, identity, period.startDate, period.endDate, snapshotDay], { revalidate: 172800 })()
+    const report = await unstable_cache(() => query(config, period), ['akron-ga4-daily-v4', config.property, identity, period.startDate, period.endDate, snapshotDay], { revalidate: 172800 })()
     return { status: 'ready', report }
   } catch {
     // Google/Auth error objects can contain request headers, tokens and key data.

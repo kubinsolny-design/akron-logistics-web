@@ -4,11 +4,9 @@ import { useEffect, useState, useTransition } from 'react'
 import { loadAnalytics } from './analytics-actions'
 import { analyticsDay, analyticsPeriod } from './analytics-calendar'
 import type { AnalyticsPreset, AnalyticsRange, AnalyticsResult } from './analytics-types'
+import { AnalyticsCharts } from './analytics-charts'
 
 const format = new Intl.NumberFormat('cs-CZ')
-const pageNames: Record<string, string> = { '/': 'Úvod', '/preprava': 'Přepravy', '/moznosti': 'Vozidla a možnosti', '/kontakt': 'Kontakt', '/cookies': 'Cookies', '/ochrana-osobnich-udaju': 'Ochrana osobních údajů' }
-const channels: Record<string, string> = { 'Direct': 'Přímá návštěva', 'Organic Search': 'Vyhledávače', 'Organic Social': 'Sociální sítě', 'Referral': 'Odkazy z jiných webů', 'Paid Search': 'Placené vyhledávání', 'Email': 'E-mail', 'Unassigned': 'Nezařazeno' }
-const shortDate = (date: string) => new Intl.DateTimeFormat('cs-CZ', { day: 'numeric', month: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))
 const fullDate = (date: string) => new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${date}T12:00:00Z`))
 const presets: { value: AnalyticsPreset; label: string }[] = [
   { value: 'yesterday', label: 'Včera' }, { value: 7, label: 'Posledních 7 dní' }, { value: 30, label: 'Posledních 30 dní' }, { value: 90, label: 'Posledních 90 dní' },
@@ -44,7 +42,6 @@ export function AnalyticsPanel({ administrator }: { administrator: boolean }) {
   }, [administrator, day])
   const report = result?.status === 'ready' ? result.report : null
   const loading = pending || (administrator && !result)
-  const maxViews = Math.max(1, ...(report?.days.map(day => day.views) || []))
   return <section className="admin-analytics" aria-labelledby="analytics-heading" aria-busy={!!loading}>
     <div className="admin-section-heading"><div><h3 id="analytics-heading">Návštěvnost webu</h3><p>Souhrn Google Analytics 4. Pouze ostrý web a návštěvníci, kteří souhlasili s analytikou.</p></div>
       {administrator && <label>Období<select value={selection} disabled={pending} onChange={event => {
@@ -78,13 +75,11 @@ export function AnalyticsPanel({ administrator }: { administrator: boolean }) {
       {!loading && report && <>
         <p className="admin-muted">{fullDate(report.startDate)} – {fullDate(report.endDate)} · {report.timeZone}</p>
         <div className="admin-analytics-metrics">{[
-          ['Aktivní uživatelé', format.format(report.users)], ['Návštěvy', format.format(report.sessions)], ['Zobrazení stránek', format.format(report.views)], ['Míra zapojení', `${format.format(Math.round(report.engagementRate * 1000) / 10)} %`],
-        ].map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
+          ['Aktivní uživatelé', format.format(report.users), report.previous.users, report.users], ['Návštěvy', format.format(report.sessions), report.previous.sessions, report.sessions], ['Zobrazení stránek', format.format(report.views), report.previous.views, report.views],
+          ['Míra zapojení', `${format.format(Math.round(report.engagementRate * 1000) / 10)} %`, report.previous.engagementRate, report.engagementRate], ['Noví uživatelé', format.format(report.newUsers), null, null], ['Průměrná délka návštěvy', `${Math.floor(Math.round(report.averageDuration) / 60)} min ${Math.round(report.averageDuration) % 60} s`, null, null],
+        ].map(([label, value, previous, current]) => <article key={String(label)}><span>{label}</span><strong>{value}</strong><small>{previous === null ? 'Za zvolené období' : Number(previous) > 0 ? `${Number(current) >= Number(previous) ? '+' : ''}${format.format(Math.round((Number(current) / Number(previous) - 1) * 100))} % oproti předchozímu období` : 'V předchozím období bez aktivity'}</small></article>)}</div>
         {report.views === 0 && <p className="admin-status">Za vybrané období zatím nejsou naměřená zobrazení. Nová data se v GA4 mohou objevit se zpožděním 24–48 hodin.</p>}
-        <div className="admin-records"><h4>Zobrazení stránek v čase</h4><div className="admin-analytics-chart" style={{ gap: report.days.length > 90 ? 0 : undefined }} role="img" aria-label={`Denní zobrazení stránek od ${fullDate(report.startDate)} do ${fullDate(report.endDate)}. Celkem ${format.format(report.views)}.`}>{report.days.map(day => <div key={day.date} title={`${fullDate(day.date)}: ${format.format(day.views)}`} style={{ height: `${day.views / maxViews * 100}%` }} />)}</div><div className="admin-analytics-axis"><span>{shortDate(report.startDate)}</span><span>{shortDate(report.endDate)}</span></div>
-          <details><summary>Denní hodnoty v tabulce</summary><div className="admin-table-wrap"><table><thead><tr><th>Datum</th><th>Zobrazení</th></tr></thead><tbody>{report.days.map(day => <tr key={day.date}><td>{fullDate(day.date)}</td><td>{format.format(day.views)}</td></tr>)}</tbody></table></div></details>
-        </div>
-        <div className="admin-analytics-tables">{[{ title: 'Nejnavštěvovanější stránky', rows: report.pages, names: pageNames, unit: 'Zobrazení' }, { title: 'Odkud přicházejí návštěvníci', rows: report.sources, names: channels, unit: 'Návštěvy' }].map(group => <div className="admin-records" key={group.title}><h4>{group.title}</h4>{group.rows.length ? <div className="admin-table-wrap"><table><thead><tr><th>{group.title === 'Nejnavštěvovanější stránky' ? 'Stránka' : 'Kanál'}</th><th>{group.unit}</th></tr></thead><tbody>{group.rows.map(row => <tr key={row.label}><td>{group.names[row.label] || row.label}</td><td>{format.format(row.count)}</td></tr>)}</tbody></table></div> : <p>Zatím bez dat.</p>}</div>)}</div>
+        <AnalyticsCharts report={report} />
         {report.thresholded && <p className="admin-status">Google část dat kvůli ochraně soukromí nezobrazuje. Nízké počty proto mohou být neúplné.</p>}
         <p className="admin-muted">Načteno {new Intl.DateTimeFormat('cs-CZ', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Prague' }).format(new Date(report.fetchedAt))}. Aktualizace 1× denně při prvním otevření přehledu, podle času v Česku. Nezahrnuje administraci ani testovací domény. Google může data zpřesňovat 24–48 hodin.</p>
       </>}

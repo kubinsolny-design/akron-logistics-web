@@ -10,18 +10,10 @@ import { currentMember } from '../supabase/server'
 import { defaultInquirySender, inquiryStorageProvider, validContactEmail, validInquirySender } from './inquiry-config'
 import { company as defaultCompany } from './site'
 import { readInquirySettings } from '../supabase/inquiry-settings'
+import { inquiryMessage, sendEmailWithRetry } from '../supabase/inquiry-email'
 
 function getField(formData: FormData, name: string) {
   return String(formData.get(name) ?? '').trim()
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
 }
 
 export async function sendInquiry(
@@ -125,7 +117,7 @@ async function acceptInquiry(formData: FormData, test = false, testCopy = ''): P
     if (error instanceof Error && error.message.startsWith('Příliš mnoho')) return { status: 'error', message: error.message }
     return { status: 'error', message: `Poptávku nyní nelze přijmout. Napište prosím na ${company.email} nebo zavolejte ${company.phone}.` }
   }
-  const accepted: InquiryState = { status: 'success', message: test ? `Testovací poptávka je uložená v administraci a Resend přijal e-mail pro ${recipients.join(', ')}. Doručení ještě ověřte ve schránce nebo v Resendu.` : company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
+  const accepted: InquiryState = { status: 'success', ...(!test ? { conversionId: inquiryId } : {}), message: test ? `Testovací poptávka je uložená v administraci a Resend přijal e-mail pro ${recipients.join(', ')}. Doručení ještě ověřte ve schránce nebo v Resendu.` : company.successMessage || 'Děkujeme. Poptávku jsme přijali a ozveme se vám s dalším postupem.' }
   const savedButNotSent: InquiryState = test ? { status: 'error', message: 'Testovací poptávka je uložená, ale e-mail se nepodařilo odeslat. Ověřte klíč, odesílací doménu a záznamy Resendu.' } : accepted
 
   if (!apiKey || !sender) {
@@ -138,64 +130,11 @@ async function acceptInquiry(formData: FormData, test = false, testCopy = ''): P
     }
   }
 
-  const frequencyLabels: Record<string, string> = {
-    once: 'Jednorázová přeprava',
-    regular: 'Pravidelná přeprava',
-    unknown: 'Zatím nevím',
-  }
-
-  const rows = [
-    ['Nakládka', pickup],
-    ['Vykládka', delivery],
-    ['Termín', date],
-    ['Četnost', frequencyLabels[frequency] ?? frequency],
-    ['Náklad', cargo],
-    ['Jméno a firma', name],
-    ['Telefon', phone],
-    ['E-mail', email || 'neuveden'],
-  ]
-
-  let response: Response
-  try {
-    response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        ...(inquiryId ? { 'Idempotency-Key': inquiryId } : {}),
-      },
-      body: JSON.stringify({
-        from: sender,
-        to: recipients,
-        ...(email ? { reply_to: email } : {}),
-        subject: `${test ? '[TEST WEBU – NEOBJEDNÁVAT PŘEPRAVU] ' : ''}Nová poptávka: ${pickup} → ${delivery}`,
-        html: `
-          <h1>Nová poptávka přepravy</h1>
-          <table cellpadding="8" cellspacing="0" style="border-collapse:collapse">
-            ${rows.map(([label, value]) => `<tr><th align="left" valign="top">${escapeHtml(label)}</th><td>${escapeHtml(value).replaceAll('\n', '<br>')}</td></tr>`).join('')}
-          </table>
-        `,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    })
-  } catch {
+  const sent = await sendEmailWithRetry(inquiryMessage({ pickup, delivery, date, frequency, cargo, name, email, phone }, sender, recipients, test), inquiryId, apiKey)
+  if (!sent) {
     await markInquiryEmail(inquiryId, 'failed')
-    if (inquiryId) return savedButNotSent
-    console.error('Inquiry delivery request failed.')
-    return {
-      status: 'error',
-      message: 'Poptávku se nyní nepodařilo odeslat. Zkuste to prosím znovu později.',
-    }
-  }
-
-  if (!response.ok) {
-    await markInquiryEmail(inquiryId, 'failed')
-    if (inquiryId) return savedButNotSent
-    console.error('Inquiry delivery failed with status:', response.status)
-    return {
-      status: 'error',
-      message: 'Poptávku se nyní nepodařilo odeslat. Zkuste to prosím znovu později.',
-    }
+    console.error('Inquiry notification needs administrator attention.')
+    return savedButNotSent
   }
 
   await markInquiryEmail(inquiryId, 'sent')
