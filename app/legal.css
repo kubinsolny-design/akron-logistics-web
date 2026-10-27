@@ -13,8 +13,11 @@
 .legal-page p, .legal-page li { font-size: 16px; line-height: 1.8; color: var(--muted); }
 .legal-page a, .form-action p a, .cookie-notice a, .cookie-dialog a { text-decoration: underline; text-underline-offset: 3px; }
 .legal-page .legal-updated { font-size: 12px; }
-.cookie-notice { position: fixed; z-index: 30; bottom: 20px; left: 24px; right: 24px; max-width: 1180px; margin: auto; padding: 24px; background: #fff; color: var(--ink); box-shadow: 0 8px 40px #15223630; border: 1px solid var(--line); display: flex; align-items: center; gap: 28px; }
+.cookie-notice { position: fixed; z-index: 30; bottom: 20px; left: 24px; right: 24px; max-width: 1180px; margin: auto; padding: 24px; background: #fff; color: var(--ink); box-shadow: 0 8px 40px #15223630; border: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 24px; }
 .cookie-notice p { margin: 6px 0 0; font-size: 13px; max-width: 760px; }
+.cookie-notice a { display: inline; padding: 0; border: 0; border-radius: 0; background: none; color: inherit; font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.cookie-notice .cookie-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
+.cookie-notice .cookie-actions button { min-width: 0; width: 100%; min-height: 46px; padding: 12px 16px; border-radius: 5px; font: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; white-space: normal; }
 .cookie-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-shrink: 0; }
 .cookie-secondary { background: transparent; border: 1px solid var(--ink); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; padding: 13px 18px; cursor: pointer; }
 .cookie-secondary:hover { background: #e8eaed; }
@@ -43,8 +46,11 @@
   .footer-legal a, .footer-legal button { padding: 9px 0; }
   .site-footer .footer-credit { grid-column: 1 / -1; grid-row: 1; }
   .legal-page { padding: 48px 0 65px; }
-  .cookie-notice { left: 12px; right: 12px; bottom: 12px; padding: 18px; display: block; max-height: calc(100svh - 24px); overflow: auto; }
+  .cookie-notice { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); padding: 18px; display: block; max-height: calc(100svh - 32px); overflow: auto; }
   .cookie-notice .cookie-actions { margin-top: 16px; }
   .cookie-dialog { padding: 22px; }
   .cookie-dialog .cookie-actions { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .cookie-notice .cookie-actions { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 }

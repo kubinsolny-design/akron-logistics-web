@@ -75,7 +75,7 @@ export function CookiePreferences({text: customText}:{text?:Record<string,string
   return <>
     {preference === '' && !dismissed && !open && <section className="cookie-notice" aria-label="Informace o cookies">
       <div><strong>{text.title}</strong><p>{preparing ? text.notice : 'S vaším souhlasem používáme Google Analytics pro měření návštěvnosti. Odmítnutí neomezí funkčnost webu.'} <Link href="/cookies">{text.more}</Link>.</p></div>
-      <div className="cookie-actions"><button type="button" className="cookie-secondary" onClick={() => setOpen(true)}>{text.settings}</button><button type="button" className="button" onClick={() => save(false)}>{preparing ? text.accept : 'Pouze nezbytné'}</button>{!preparing && <button type="button" className="button" onClick={() => save(true)}>Povolit analytiku</button>}</div>
+      <div className="cookie-actions">{!preparing && <button type="button" className="button" onClick={() => save(true)}>Přijmout vše</button>}<button type="button" className="cookie-secondary" onClick={() => save(false)}>{preparing ? text.accept : 'Přijmout nezbytné'}</button></div>
     </section>}
     <dialog ref={dialog} className="cookie-dialog" aria-labelledby="cookie-title" onClose={() => setOpen(false)}>
       <h2 id="cookie-title">{text.dialogTitle}</h2>

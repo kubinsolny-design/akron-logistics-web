@@ -29,7 +29,7 @@
 .footer-credit a { border: 0; text-decoration: none; }
 .privacy-confirmation a { text-decoration: none; font-weight: 700; }
 .personal-contact a { overflow-wrap: anywhere; }
-.legal-page a, .cookie-notice a, .cookie-dialog a {
+.legal-page a, .cookie-dialog a {
   display: inline-flex; align-items: center; min-height: 40px; max-width: 100%;
   padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px;
   background: #e6ebf2; color: var(--ink); font-size: 14px; font-weight: 600;
